@@ -15,6 +15,9 @@ import {
   refreshSessionIfNeeded 
 } from "@/utils/sessionUtils";
 import { validateSessionAndProfile } from "@/utils/sessionValidator";
+import { withTimeout } from "@/utils/withTimeout";
+
+const AUTH_INIT_TIMEOUT_MS = 8000;
 
 const AuthContext = createContext({});
 const OTP_VERIFIED_KEY = "alpha_otp_verified_flag";
@@ -243,7 +246,11 @@ export const AuthProvider = ({ children }) => {
 
         // Task 2: Validate session and profile completeness
         console.log('[AuthContext] Step 2: Validating existing session and profile...');
-        const validation = await validateSessionAndProfile();
+        const validation = await withTimeout(
+          validateSessionAndProfile(),
+          AUTH_INIT_TIMEOUT_MS,
+          'Auth initialization'
+        );
         
         if (!validation.isValid) {
           console.log("[AuthContext] Step 3: No valid active session/profile found during init. Clearing context.");
@@ -262,7 +269,11 @@ export const AuthProvider = ({ children }) => {
         console.error("[AuthContext] Auth initialization critical error:", e);
         if (mounted) {
           clearSession();
-          setError("Failed to initialize authentication");
+          setError(
+            e.message?.includes('timed out')
+              ? "Connection slow — you can browse the site; sign in when ready."
+              : "Failed to initialize authentication"
+          );
         }
       } finally {
         if (mounted) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import ScrollToTop from '@/components/ScrollToTop';
 import MainLayout from '@/layouts/MainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -51,6 +51,7 @@ import PendingAcceptancesPage from '@/pages/user/PendingAcceptancesPage';
 // Components
 import WhatsAppModal from '@/components/WhatsAppModal';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import MemberSignupForm from '@/components/MemberSignupForm';
 import { Loader2 } from 'lucide-react';
 
@@ -109,6 +110,8 @@ import MessageSettingsPage from '@/pages/admin/MessageSettingsPage';
 import ComposeMessagePage from '@/pages/admin/ComposeMessagePage';
 import QueueListingPage from '@/pages/admin/QueueListingPage';
 import MailListingPage from '@/pages/admin/MailListingPage';
+import AnnouncementsManagementPage from '@/pages/admin/AnnouncementsManagementPage';
+import AnnouncementSettingsPage from '@/pages/admin/AnnouncementSettingsPage';
 import TemplateManagementPage from '@/pages/admin/TemplateManagementPage';
 
 // Time Sheet Admin Pages
@@ -239,11 +242,33 @@ const AppLoadingScreen = () => (
 );
 
 // Main app content with auth check
+const AUTH_LOADING_MAX_MS = 6000;
+
+const isProtectedPath = (pathname) =>
+  pathname.startsWith('/admin') ||
+  pathname.startsWith('/student') ||
+  pathname.startsWith('/shareholder') ||
+  pathname.startsWith('/applicant') ||
+  pathname.startsWith('/user/') ||
+  pathname.startsWith('/timesheet');
+
 const AppContent = () => {
   const { loading: authLoading } = useAuth();
+  const location = useLocation();
+  const [showAnyway, setShowAnyway] = useState(false);
 
-  // Show loading screen while auth is initializing
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading) {
+      setShowAnyway(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setShowAnyway(true), AUTH_LOADING_MAX_MS);
+    return () => clearTimeout(timer);
+  }, [authLoading, location.pathname]);
+
+  const mustWaitForAuth = isProtectedPath(location.pathname);
+
+  if (authLoading && mustWaitForAuth && !showAnyway) {
     return <AppLoadingScreen />;
   }
 
@@ -754,46 +779,45 @@ const AppContent = () => {
             }
           />
 
+          <Route path="announcements" element={<Navigate to="/admin/announcements/compose" replace />} />
           <Route
-            path="messaging/settings"
+            path="announcements/compose"
             element={
               <ProtectedRoute requireAdmin={true}>
-                <MessageSettingsPage />
+                <AnnouncementsManagementPage mode="compose" />
               </ProtectedRoute>
             }
           />
           <Route
-            path="messaging/compose"
+            path="announcements/list"
             element={
               <ProtectedRoute requireAdmin={true}>
-                <ComposeMessagePage />
+                <AnnouncementsManagementPage mode="list" />
               </ProtectedRoute>
             }
           />
           <Route
-            path="messaging/queue"
+            path="announcements/scheduled"
             element={
               <ProtectedRoute requireAdmin={true}>
-                <QueueListingPage />
+                <AnnouncementsManagementPage mode="scheduled" />
               </ProtectedRoute>
             }
           />
           <Route
-            path="messaging/listing"
+            path="announcements/settings"
             element={
               <ProtectedRoute requireAdmin={true}>
-                <MailListingPage />
+                <AnnouncementSettingsPage />
               </ProtectedRoute>
             }
           />
-          <Route
-            path="templates"
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <TemplateManagementPage />
-              </ProtectedRoute>
-            }
-          />
+
+          <Route path="messaging/compose" element={<Navigate to="/admin/announcements/compose" replace />} />
+          <Route path="messaging/listing" element={<Navigate to="/admin/announcements/list" replace />} />
+          <Route path="messaging/queue" element={<Navigate to="/admin/announcements/scheduled" replace />} />
+          <Route path="messaging/settings" element={<Navigate to="/admin/announcements/settings" replace />} />
+          <Route path="templates" element={<Navigate to="/admin/announcements/compose" replace />} />
 
           <Route
             path="communication/categories"
@@ -907,6 +931,7 @@ const AppContent = () => {
       </Routes>
 
       <Toaster />
+      <SonnerToaster richColors position="top-right" />
     </>
   );
 };
@@ -915,12 +940,18 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       try {
-        // Start queue worker
+        // Defer queue worker — avoid Supabase calls blocking first paint
         if (typeof autoStartWorker === 'function') {
-          autoStartWorker();
+          setTimeout(() => {
+            try {
+              autoStartWorker();
+            } catch (error) {
+              console.warn('Queue worker failed to auto-start:', error);
+            }
+          }, 5000);
         }
       } catch (error) {
-        console.warn('Queue worker failed to auto-start:', error);
+        console.warn('Queue worker setup failed:', error);
       }
 
       // Development validation
