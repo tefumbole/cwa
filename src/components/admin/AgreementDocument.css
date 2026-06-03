@@ -1,0 +1,280 @@
+.agreement-document {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+  line-height: 1.6;
+  padding: 40px;
+  background: white;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.agreement-header {
+  text-align: center;
+  border-bottom: 2px solid #0066cc;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+}
+
+.company-logo h1 {
+  color: #0066cc;
+  font-size: 1.8rem;
+  margin: 0 0 8px 0;
+  font-weight: bold;
+}
+
+.company-tagline {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0 0 20px 0;
+}
+
+.agreement-title {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 20px 0 0 0;
+  letter-spacing: 1px;
+}
+
+.agreement-section {
+  margin-bottom: 30px;
+}
+
+.agreement-section h3 {
+  color: #0066cc;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 1rem;
+}
+
+.investment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.investment-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.investment-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.investment-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0066cc;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  background: #28a745;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.term-item {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-left: 4px solid #0066cc;
+  border-radius: 4px;
+}
+
+.term-number {
+  font-weight: bold;
+  color: #0066cc;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.term-content {
+  color: #333;
+  line-height: 1.7;
+}
+
+.term-content strong {
+  color: #0066cc;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.signature-box {
+  border: 1px solid #ddd;
+  padding: 20px;
+  text-align: center;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.signature-label {
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.signature-image {
+  max-width: 300px;
+  height: auto;
+  margin: 15px auto;
+  display: block;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: white;
+}
+
+.signature-name {
+  font-weight: bold;
+  color: #333;
+  margin-top: 15px;
+  font-size: 1.1rem;
+}
+
+.signature-date {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.approval-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  background: #f0f8ff;
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid #d0e8ff;
+}
+
+.approval-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.approval-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.approval-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.status-approved {
+  color: #28a745 !important;
+  font-weight: bold;
+}
+
+.agreement-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.agreement-footer p {
+  margin: 10px 0;
+}
+
+.footer-date {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 15px;
+}
+
+/* Print Styles */
+@media print {
+  .agreement-document {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .agreement-section {
+    page-break-inside: avoid;
+  }
+
+  .investment-grid,
+  .approval-grid {
+    background: white;
+    border: 1px solid #ddd;
+  }
+
+  .term-item {
+    background: white;
+    border-left: 2px solid #333;
+  }
+
+  .signature-box {
+    background: white;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .investment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .approval-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agreement-document {
+    padding: 20px;
+  }
+}
