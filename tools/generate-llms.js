@@ -82,7 +82,19 @@ function extractRoutes(appJsxPath) {
 }
 
 function findReactFiles(dir) {
-  return fs.readdirSync(dir).map(item => path.join(dir, item));
+  const results = [];
+  if (!fs.existsSync(dir)) return results;
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findReactFiles(fullPath));
+    } else if (/\.(jsx|tsx)$/i.test(entry.name)) {
+      results.push(fullPath);
+    }
+  }
+
+  return results;
 }
 
 function extractHelmetData(content, filePath, routes) {
@@ -136,6 +148,9 @@ function ensureDirectoryExists(dirPath) {
 
 function processPageFile(filePath, routes) {
   try {
+    if (!fs.statSync(filePath).isFile()) {
+      return null;
+    }
     const content = fs.readFileSync(filePath, 'utf8');
     return extractHelmetData(content, filePath, routes);
   } catch (error) {
