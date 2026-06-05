@@ -3,11 +3,17 @@
  * Keeps API key off the browser.
  */
 
-const API_KEY = process.env.WASENDER_API_KEY || '';
-const BASE_URL = normalizeBaseUrl(
-  process.env.WASENDER_BASE_URL || 'https://wasenderapi.com/api'
-);
-const DEFAULT_COUNTRY = (process.env.WASENDER_DEFAULT_COUNTRY || 'CM').toUpperCase();
+function getApiKey() {
+  return process.env.WASENDER_API_KEY || '';
+}
+
+function getBaseUrl() {
+  return normalizeBaseUrl(process.env.WASENDER_BASE_URL || 'https://wasenderapi.com/api');
+}
+
+function getDefaultCountry() {
+  return (process.env.WASENDER_DEFAULT_COUNTRY || 'CM').toUpperCase();
+}
 
 const COUNTRY_CODES = {
   RW: '+250',
@@ -25,7 +31,7 @@ function normalizeBaseUrl(url) {
   return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
 }
 
-export function formatPhoneNumber(phone, countryCode = DEFAULT_COUNTRY) {
+export function formatPhoneNumber(phone, countryCode = getDefaultCountry()) {
   if (!phone) return '';
 
   let cleaned = String(phone).trim().replace(/[\s\-()]/g, '');
@@ -48,12 +54,13 @@ export function formatPhoneNumber(phone, countryCode = DEFAULT_COUNTRY) {
 }
 
 export function isWasenderConfigured() {
-  return Boolean(API_KEY && !API_KEY.startsWith('your_'));
+  const key = getApiKey();
+  return Boolean(key && !key.startsWith('your_'));
 }
 
 async function wasenderRequest(method, url, { json } = {}) {
   const headers = {
-    Authorization: `Bearer ${API_KEY}`,
+    Authorization: `Bearer ${getApiKey()}`,
     Accept: 'application/json',
   };
   const options = { method, headers };
@@ -98,7 +105,7 @@ export async function sendTextMessage(toPhone, text, messageType = 'text') {
     return buildResult(false, toPhone, null, 'Invalid phone number format.');
   }
 
-  const response = await wasenderRequest('POST', `${BASE_URL}/send-message`, {
+  const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, {
     json: { to, text: String(text ?? '') },
   });
 

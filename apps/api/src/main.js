@@ -1,11 +1,7 @@
-import dotenv from 'dotenv';
+import './env.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -17,6 +13,7 @@ import dataRoutes from './routes/data.js';
 import uploadRoutes from './routes/upload.js';
 import usersRoutes from './routes/users.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = Number(process.env.PORT || 3003);
 const uploadDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../uploads'));
@@ -41,6 +38,7 @@ app.get('/health', async (_req, res) => {
       service: 'alphabridge-api',
       database: process.env.DB_NAME,
       backend: 'mysql',
+      wasender: Boolean(process.env.WASENDER_API_KEY && !String(process.env.WASENDER_API_KEY).startsWith('your_')),
     });
   } catch (err) {
     res.status(503).json({ ok: false, error: err.message });
@@ -59,4 +57,5 @@ await seedAdminUser();
 app.listen(PORT, () => {
   console.log(`AlphaBridge API listening on port ${PORT}`);
   console.log(`Uploads: ${uploadDir}`);
+  console.log(`Wasender: ${process.env.WASENDER_API_KEY ? 'configured' : 'NOT configured'}`);
 });
