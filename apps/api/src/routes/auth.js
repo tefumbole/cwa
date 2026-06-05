@@ -111,6 +111,11 @@ export async function seedAdminUser() {
   const pool = getPool();
   const [existing] = await pool.query('SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [email]);
   if (existing.length) {
+    if (process.env.NODE_ENV === 'development' && password) {
+      const hash = await bcrypt.hash(password, 10);
+      await pool.query('UPDATE users SET password_hash = ? WHERE LOWER(email) = LOWER(?)', [hash, email]);
+      console.log('[seed] Admin password synced for development:', email);
+    }
     if (phone) {
       await pool.query('UPDATE users SET phone = ? WHERE LOWER(email) = LOWER(?)', [phone, email]);
       await pool.query(
