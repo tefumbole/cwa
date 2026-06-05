@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { getMyTasks, acceptTaskAssignment, updateTaskProgress } from '@/services/taskService';
+import { getMyTasks, acceptTaskAssignment, updateTaskProgress, bulkRemoveMyTaskAssignments } from '@/services/taskService';
 import { getTaskCategories } from '@/services/taskCategoryService';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Calendar, CheckCircle, Clock, AlertCircle, ArrowRight, User, Save } from 'lucide-react';
+import { Loader2, Calendar, CheckCircle, Clock, AlertCircle, ArrowRight, User, Save, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import TaskDetailsModal from '@/components/user/TaskDetailsModal';
+import TaskBulkActionsBar from '@/components/user/TaskBulkActionsBar';
 import { Slider } from '@/components/ui/slider';
 
 export const getPriorityColor = (priority) => {
@@ -55,6 +57,8 @@ const MyTasksPage = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,6 +82,7 @@ const MyTasksPage = () => {
 
   useEffect(() => {
     loadTasks();
+    setSelectedIds([]);
   }, [statusFilter, categoryFilter]);
 
   const handleAccept = async (e, assignmentId) => {
@@ -119,6 +124,34 @@ const MyTasksPage = () => {
     setIsModalOpen(true);
   };
 
+  const toggleSelection = (assignmentId) => {
+    setSelectedIds((prev) =>
+      prev.includes(assignmentId)
+        ? prev.filter((id) => id !== assignmentId)
+        : [...prev, assignmentId]
+    );
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectedIds(checked ? tasks.map((t) => t.assignment_id) : []);
+  };
+
+  const handleBulkDelete = async (ids = selectedIds) => {
+    if (!ids.length) return;
+    if (!window.confirm(`Remove ${ids.length} selected task assignment(s) from your list?`)) return;
+
+    setBulkDeleting(true);
+    const res = await bulkRemoveMyTaskAssignments(ids);
+    if (res.success) {
+      toast({ title: 'Tasks removed', description: `${res.count} assignment(s) deleted.` });
+      setSelectedIds([]);
+      loadTasks();
+    } else {
+      toast({ title: 'Delete failed', description: res.error, variant: 'destructive' });
+    }
+    setBulkDeleting(false);
+  };
+
   const statuses = ['All', 'Pending', 'Accepted', 'In Progress', 'Completed', 'Overdue'];
 
   return (
@@ -156,6 +189,18 @@ const MyTasksPage = () => {
         </Select>
       </div>
 
+      {!loading && tasks.length > 0 && (
+        <TaskBulkActionsBar
+          totalCount={tasks.length}
+          selectedIds={selectedIds}
+          onSelectAll={handleSelectAll}
+          onClearSelection={() => setSelectedIds([])}
+          onDeleteSelected={handleBulkDelete}
+          deleting={bulkDeleting}
+          deleteLabel="Delete Selected"
+        />
+      )}
+
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-[#003D82]" />
@@ -175,21 +220,54 @@ const MyTasksPage = () => {
             
             return (
             <Card key={task.assignment_id} className={`flex flex-col hover:shadow-lg transition-shadow border-t-4 ${(isCompleted || isDeclined) ? 'opacity-75' : ''}`} 
-                  style={{borderTopColor: task.priority === 'Critical' ? '#ef4444' : task.priority === 'High' ? '#f97316' : task.priority === 'Medium' ? '#eab308' : '#22c55e'}} 
-                  onClick={() => openTask(task)}>
+                  style={{borderTopColor: task.priority === 'Critical' ? '#ef4444' : task.priority === 'High' ? '#f97316' : task.priority === 'Medium' ? '#eab308' : '#22c55e'}}>
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex gap-2 flex-wrap">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                    <Checkbox
+                      checked={selectedIds.includes(task.assignment_id)}
+                      onCheckedChange={() => toggleSelection(task.assignment_id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1"
+                      aria-label={`Select ${task.title}`}
+                    />
+                    <div className="flex gap-2 flex-wrap">
                       <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                       {task.task_categories && (
                           <Badge variant="outline" style={{borderColor: task.task_categories.color, color: task.task_categories.color, backgroundColor: `${task.task_categories.color}15`}}>
                               {task.task_categories.name}
                           </Badge>
                       )}
+                    </div>
                   </div>
-                  <Badge variant="outline" className={getStatusColor(task.assignment_status)}>
-                    {getStatusIcon(task.assignment_status)} {task.assignment_status}
-                  </Badge>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-[#003D82]"
+                      onClick={(e) => { e.stopPropagation(); openTask(task); }}
+                      title="Edit task"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBulkDelete([task.assignment_id]);
+                      }}
+                      title="Remove task"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <Badge variant="outline" className={getStatusColor(task.assignment_status)}>
+                      {getStatusIcon(task.assignment_status)} {task.assignment_status}
+                    </Badge>
+                  </div>
                 </div>
                 <h3 className="font-bold text-lg text-gray-900 line-clamp-2" title={task.title}>{task.title}</h3>
                 {task.created_by_profile && (

@@ -551,6 +551,51 @@ export const declineTaskAssignment = async (assignmentId) => {
   }
 };
 
+export const bulkRemoveMyTaskAssignments = async (assignmentIds = []) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    if (!assignmentIds.length) throw new Error('No tasks selected');
+
+    const { error } = await supabase
+      .from('task_assignments')
+      .delete()
+      .in('id', assignmentIds)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    return { success: true, count: assignmentIds.length };
+  } catch (error) {
+    console.error('Error removing task assignments:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const bulkDeclineTaskAssignments = async (assignmentIds = []) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    if (!assignmentIds.length) throw new Error('No tasks selected');
+
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from('task_assignments')
+      .update({
+        status: 'Declined',
+        declined_at: now,
+        last_update_at: now,
+      })
+      .in('id', assignmentIds)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    return { success: true, count: assignmentIds.length };
+  } catch (error) {
+    console.error('Error declining task assignments:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 export const updateTaskProgress = async (assignmentId, taskId, progress, status, comment = null, attachments = []) => {
   try {
     const updates = { 
