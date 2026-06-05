@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   deadline DATE DEFAULT NULL,
   status VARCHAR(50) DEFAULT 'Pending',
   created_by CHAR(36) DEFAULT NULL,
+  category_id CHAR(36) DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_tasks_status (status),
@@ -22,7 +23,9 @@ CREATE TABLE IF NOT EXISTS task_assignments (
   status VARCHAR(50) DEFAULT 'Pending',
   progress INT DEFAULT 0,
   accepted_at DATETIME DEFAULT NULL,
+  declined_at DATETIME DEFAULT NULL,
   completed_at DATETIME DEFAULT NULL,
+  last_update_at DATETIME DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_task_user (task_id, user_id),
@@ -171,4 +174,18 @@ CREATE TABLE IF NOT EXISTS message_logs (
   details JSON DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_message_logs_message (message_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS pending_registrations (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'user',
+  otp VARCHAR(10) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_pending_reg_email (email),
+  INDEX idx_pending_reg_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

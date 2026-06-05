@@ -200,6 +200,10 @@ router.post('/query', async (req, res) => {
       return res.status(401).json({ data: null, error: { message: 'Unauthorized' } });
     }
 
+    if (body.action === 'select' && table === 'users' && !req.user) {
+      return res.status(401).json({ data: null, error: { message: 'Unauthorized' } });
+    }
+
     if (body.action === 'insert' && !req.user && !PUBLIC_INSERT.has(table)) {
       return res.status(401).json({ data: null, error: { message: 'Unauthorized' } });
     }

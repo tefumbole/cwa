@@ -170,21 +170,43 @@ export async function getUserByUsername(username) {
  */
 export async function getAllUsersForAssignment() {
   console.log('[USER SERVICE] Fetching all users for assignment');
-  
+
+  if (useMysql) {
+    try {
+      const { data } = await mysqlUsersApi('/users?for=assignment');
+      const mapped = (data || []).map((u) => ({
+        id: u.id,
+        full_name: u.full_name || u.name,
+        name: u.full_name || u.name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+      }));
+      console.log('[USER SERVICE] Fetched', mapped.length, 'users for assignment');
+      return { success: true, data: mapped };
+    } catch (error) {
+      console.error('[USER SERVICE] Error fetching users for assignment:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, full_name, email, phone, role')
-      .eq('is_active', true)
-      .order('full_name');
-    
+      .order('full_name', { ascending: true });
+
     if (error) throw error;
-    
-    console.log('[USER SERVICE] Fetched', data?.length || 0, 'active users for assignment');
-    return data || [];
+
+    const mapped = (data || []).map((u) => ({
+      ...u,
+      name: u.full_name,
+    }));
+    console.log('[USER SERVICE] Fetched', mapped.length, 'users for assignment');
+    return { success: true, data: mapped };
   } catch (error) {
     console.error('[USER SERVICE] Error fetching users for assignment:', error);
-    throw error;
+    return { success: false, error: error.message, data: [] };
   }
 }
 

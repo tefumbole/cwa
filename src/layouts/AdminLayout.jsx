@@ -308,7 +308,7 @@ const AdminLayout = () => {
       ? item.submenu.some(sub => location.pathname.startsWith(sub.path))
       : (item.path ? location.pathname.startsWith(item.path) : false);
 
-    const isOpen = openMenus[item.label] || isActive;
+    const isOpen = Boolean(openMenus[item.label]);
 
     if (item.submenu) {
       return (

@@ -6,6 +6,17 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
+const STAFF_ROLES = [
+  'super_admin',
+  'admin',
+  'director',
+  'staff',
+  'employee',
+  'teacher',
+  'manager',
+  'user',
+];
+
 function requireAdmin(req, res, next) {
   const role = String(req.user?.role || '').toLowerCase();
   if (!['admin', 'super_admin', 'director'].includes(role)) {
@@ -14,13 +25,18 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-function serializeRow(row) {
-  const out = {};
-  for (const [k, v] of Object.entries(row)) {
-    if (v instanceof Date) out[k] = v.toISOString();
-    else out[k] = v;
-  }
-  return out;
+function serializeUser(row) {
+  return {
+    id: row.id,
+    email: row.email,
+    full_name: row.full_name || row.name,
+    name: row.full_name || row.name,
+    phone: row.phone,
+    role: row.role,
+    status: row.status || row.user_status || 'active',
+    created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    updated_at: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+  };
 }
 
 function generateTempPassword() {
@@ -32,18 +48,52 @@ function generateTempPassword() {
   return pwd;
 }
 
+async function syncProfile(pool, userRow) {
+  await pool.query(
+    `INSERT INTO profiles (id, email, full_name, phone, role, status)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       email = VALUES(email),
+       full_name = VALUES(full_name),
+       phone = VALUES(phone),
+       role = VALUES(role),
+       status = VALUES(status)`,
+    [
+      userRow.id,
+      userRow.email,
+      userRow.full_name || userRow.name,
+      userRow.phone || null,
+      userRow.role,
+      userRow.status || 'active',
+    ]
+  );
+}
+
 router.use(requireAuth, requireAdmin);
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   try {
     const pool = getPool();
-    const [rows] = await pool.query(
-      `SELECT p.*, u.status AS user_status
-       FROM profiles p
-       LEFT JOIN users u ON u.id = p.id
-       ORDER BY p.created_at DESC`
-    );
-    res.json({ data: rows.map(serializeRow), error: null });
+    const forAssignment = req.query.for === 'assignment';
+    const roleFilter = req.query.role;
+
+    let sql = `SELECT u.id, u.email, u.name, u.phone, u.role, u.status, u.created_at, u.updated_at
+               FROM users u
+               WHERE u.status = 'active'`;
+    const params = [];
+
+    if (forAssignment) {
+      sql += ` AND u.role NOT IN ('inactive', 'disabled')`;
+    }
+    if (roleFilter) {
+      sql += ' AND LOWER(u.role) = LOWER(?)';
+      params.push(roleFilter);
+    }
+
+    sql += ' ORDER BY u.name ASC, u.email ASC';
+
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows.map(serializeUser), error: null });
   } catch (err) {
     console.error('[users/list]', err);
     res.status(500).json({ data: null, error: { message: err.message } });
@@ -69,7 +119,7 @@ router.post('/', async (req, res) => {
     const id = randomUUID();
     const plainPassword = password || generateTempPassword();
     const hash = await bcrypt.hash(plainPassword, 10);
-    const userRole = role || 'guest';
+    const userRole = role || 'user';
 
     await pool.query(
       `INSERT INTO users (id, email, password_hash, name, role, status, phone)
@@ -77,11 +127,16 @@ router.post('/', async (req, res) => {
       [id, email.trim(), hash, full_name, userRole, phone || null]
     );
 
-    await pool.query(
-      `INSERT INTO profiles (id, email, full_name, phone, role)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id, email.trim(), full_name, phone || null, userRole]
-    );
+    const userRow = {
+      id,
+      email: email.trim(),
+      full_name,
+      name: full_name,
+      phone: phone || null,
+      role: userRole,
+      status: 'active',
+    };
+    await syncProfile(pool, userRow);
 
     if (['admin', 'super_admin', 'director'].includes(userRole)) {
       await pool.query(
@@ -90,9 +145,8 @@ router.post('/', async (req, res) => {
       ).catch(() => null);
     }
 
-    const [rows] = await pool.query('SELECT * FROM profiles WHERE id = ? LIMIT 1', [id]);
     res.status(201).json({
-      data: serializeRow(rows[0]),
+      data: serializeUser(userRow),
       tempPassword: password ? undefined : plainPassword,
       error: null,
     });
@@ -105,22 +159,8 @@ router.post('/', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { full_name, phone, role, password } = req.body || {};
+    const { full_name, phone, role, password, status } = req.body || {};
     const pool = getPool();
-
-    const profileUpdates = {};
-    if (full_name !== undefined) profileUpdates.full_name = full_name;
-    if (phone !== undefined) profileUpdates.phone = phone;
-    if (role !== undefined) profileUpdates.role = role;
-
-    if (Object.keys(profileUpdates).length) {
-      const keys = Object.keys(profileUpdates);
-      const setSql = keys.map((k) => `\`${k}\` = ?`).join(', ');
-      await pool.query(
-        `UPDATE profiles SET ${setSql} WHERE id = ?`,
-        [...keys.map((k) => profileUpdates[k]), id]
-      );
-    }
 
     const userUpdates = [];
     const userParams = [];
@@ -136,6 +176,10 @@ router.patch('/:id', async (req, res) => {
       userUpdates.push('role = ?');
       userParams.push(role);
     }
+    if (status !== undefined) {
+      userUpdates.push('status = ?');
+      userParams.push(status);
+    }
     if (password) {
       userUpdates.push('password_hash = ?');
       userParams.push(await bcrypt.hash(password, 10));
@@ -147,11 +191,13 @@ router.patch('/:id', async (req, res) => {
       );
     }
 
-    const [rows] = await pool.query('SELECT * FROM profiles WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE id = ? LIMIT 1', [id]);
     if (!rows.length) {
       return res.status(404).json({ data: null, error: { message: 'User not found' } });
     }
-    res.json({ data: serializeRow(rows[0]), error: null });
+
+    await syncProfile(pool, rows[0]);
+    res.json({ data: serializeUser(rows[0]), error: null });
   } catch (err) {
     console.error('[users/update]', err);
     res.status(500).json({ data: null, error: { message: err.message } });
@@ -167,7 +213,7 @@ router.delete('/:id', async (req, res) => {
 
     const pool = getPool();
     await pool.query('DELETE FROM admin_users WHERE user_id = ?', [id]).catch(() => null);
-    await pool.query('DELETE FROM profiles WHERE id = ?', [id]);
+    await pool.query('DELETE FROM profiles WHERE id = ?', [id]).catch(() => null);
     await pool.query('DELETE FROM users WHERE id = ?', [id]);
     res.json({ data: { id }, error: null });
   } catch (err) {
@@ -176,4 +222,5 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+export { STAFF_ROLES, serializeUser, syncProfile };
 export default router;

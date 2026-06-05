@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPool } from './pool.js';
 import { getOrderedCreateStatements } from './schemaStatements.js';
-import { applySchemaPatches } from './patch-schema.js';
+import { applySchemaPatches, CREATE_STATEMENTS } from './patch-schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -27,6 +27,10 @@ try {
 
   console.log('\nApplying schema patches...');
   await applySchemaPatches(pool);
+  for (const statement of CREATE_STATEMENTS) {
+    await pool.query(statement);
+    console.log('Created: pending_registrations');
+  }
   console.log('\nMigration complete.');
 } catch (error) {
   if (error.code === 'ER_ACCESS_DENIED_ERROR') {

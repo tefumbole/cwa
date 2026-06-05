@@ -11,7 +11,7 @@ import {
   allocateSerialReference,
   getAnnouncementSettings,
 } from '@/services/announcementSettingsService';
-import { fetchShareholders, fetchStudents, fetchStaff } from '@/services/recipientService';
+import { fetchShareholders, fetchStudents, fetchSystemUsers } from '@/services/recipientService';
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || 'Alpha Bridge Technologies Ltd';
 const SEND_DELAY_MS = 6000;
@@ -196,15 +196,16 @@ export async function searchRecipients(category, query = '', all = false) {
   }
 
   if (category === 'users' || category === 'user') {
-    const staff = await fetchStaff();
+    const staff = await fetchSystemUsers();
     const rows = staff.map((u) => ({
       id: u.id,
-      name: u.name || u.email,
+      name: u.name || u.full_name || u.email,
       email: u.email || '',
       phone: u.phone || '',
       address: u.address || '',
       recipient_type: 'users',
       recipient_id: u.id,
+      role: u.role,
     }));
     if (all) return rows;
     if (!q) return rows.slice(0, 50);

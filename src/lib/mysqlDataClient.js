@@ -53,7 +53,7 @@ class QueryBuilder {
     this.table = table;
     this.action = 'select';
     this.filters = [];
-    this.order = [];
+    this.orderClauses = [];
     this.limitVal = null;
     this.offsetVal = null;
     this.columns = '*';
@@ -66,8 +66,14 @@ class QueryBuilder {
   }
 
   select(columns = '*', options = {}) {
+    const cols = typeof columns === 'string' ? columns.trim() : '*';
+    if (this.action === 'insert' || this.action === 'update' || this.action === 'upsert') {
+      this.returning = true;
+      this.columns = cols;
+      return this;
+    }
     this.action = 'select';
-    this.columns = typeof columns === 'string' ? columns.trim() : '*';
+    this.columns = cols;
     if (options?.count === 'exact') this.countOpt = true;
     if (options?.head) this.headOpt = true;
     return this;
@@ -145,7 +151,7 @@ class QueryBuilder {
   }
 
   order(col, opts = {}) {
-    this.order.push({ column: col, ascending: opts.ascending !== false });
+    this.orderClauses.push({ column: col, ascending: opts.ascending !== false });
     return this;
   }
 
@@ -165,7 +171,7 @@ class QueryBuilder {
       table: this.table,
       action: this.action,
       filters: this.filters,
-      order: this.order,
+      order: this.orderClauses,
       limit: this.limitVal,
       offset: this.offsetVal,
       columns: this.columns,

@@ -12,6 +12,7 @@ import otpRoutes from './routes/otp.js';
 import dataRoutes from './routes/data.js';
 import uploadRoutes from './routes/upload.js';
 import usersRoutes from './routes/users.js';
+import registerRoutes from './routes/register.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -46,6 +47,7 @@ app.get('/health', async (_req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/auth/register', registerRoutes);
 app.use('/auth/otp', otpRoutes);
 app.use('/users', usersRoutes);
 app.use('/data', dataRoutes);

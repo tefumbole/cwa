@@ -1,5 +1,82 @@
 import { supabase } from '@/lib/customSupabaseClient';
 import { getTemplateByType, replaceTemplateVariables } from './taskMessageTemplateService';
+import { sendTaskAssignmentNotification } from './taskNotificationService';
+
+async function hydrateTasksList(tasks) {
+  if (!tasks?.length) return [];
+
+  const taskIds = tasks.map((t) => t.id);
+  const categoryIds = [...new Set(tasks.map((t) => t.category_id).filter(Boolean))];
+
+  const categoriesById = {};
+  if (categoryIds.length) {
+    const { data: categories } = await supabase
+      .from('task_categories')
+      .select('*')
+      .in('id', categoryIds);
+    (categories || []).forEach((c) => { categoriesById[c.id] = c; });
+  }
+
+  const { data: assignments } = await supabase
+    .from('task_assignments')
+    .select('id, task_id, status, progress, user_id, accepted_at, completed_at')
+    .in('task_id', taskIds);
+
+  const userIds = [...new Set((assignments || []).map((a) => a.user_id).filter(Boolean))];
+  const profilesById = {};
+  if (userIds.length) {
+    const { data: users } = await supabase.from('users').select('id, name, email, phone, role').in('id', userIds);
+    (users || []).forEach((u) => {
+      profilesById[u.id] = {
+        id: u.id,
+        full_name: u.name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+      };
+    });
+    if (!users?.length) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone, role')
+        .in('id', userIds);
+      (profiles || []).forEach((p) => { profilesById[p.id] = p; });
+    }
+  }
+
+  const assignmentsByTask = {};
+  (assignments || []).forEach((a) => {
+    if (!assignmentsByTask[a.task_id]) assignmentsByTask[a.task_id] = [];
+    assignmentsByTask[a.task_id].push({
+      ...a,
+      profiles: profilesById[a.user_id] || null,
+    });
+  });
+
+  return tasks.map((task) => ({
+    ...task,
+    task_categories: task.category_id ? categoriesById[task.category_id] || null : null,
+    task_assignments: assignmentsByTask[task.id] || [],
+  }));
+}
+
+async function fetchProfilesMap(userIds) {
+  if (!userIds.length) return {};
+  const map = {};
+  const { data: users } = await supabase.from('users').select('id, name, email, phone, role').in('id', userIds);
+  (users || []).forEach((u) => {
+    map[u.id] = { id: u.id, full_name: u.name, email: u.email, phone: u.phone, role: u.role };
+  });
+  const missing = userIds.filter((id) => !map[id]);
+  if (missing.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, phone, role')
+      .in('id', missing);
+    (profiles || []).forEach((p) => { map[p.id] = p; });
+  }
+  return map;
+}
 
 export const createTaskWithAssignments = async (taskData, assigneeIds) => {
     try {
@@ -25,26 +102,20 @@ export const createTaskWithAssignments = async (taskData, assigneeIds) => {
         if (taskError) throw taskError;
 
         if (assigneeIds && assigneeIds.length > 0) {
-            // 2. Fetch user profiles to check roles for auto-accept
-            const { data: profiles, error: profilesError } = await supabase
-                .from('profiles')
-                .select('id, role, full_name, phone, email')
-                .in('id', assigneeIds);
+            const profileMap = await fetchProfilesMap(assigneeIds);
+            const profileRows = assigneeIds.map((id) => profileMap[id]).filter(Boolean);
 
-            if (profilesError) throw profilesError;
-
-            // 3. Create assignments with auto-accept logic for admins
-            const assignments = assigneeIds.map(userId => {
-                const profile = profiles.find(p => p.id === userId);
+            const assignments = assigneeIds.map((userId) => {
+                const profile = profileMap[userId];
                 const isAdmin = profile && ['admin', 'super_admin', 'director'].includes(profile.role);
-                
+
                 return {
                     task_id: task.id,
                     user_id: userId,
                     status: isAdmin ? 'Accepted' : 'Pending',
                     progress: 0,
                     accepted_at: isAdmin ? new Date().toISOString() : null,
-                    last_update_at: new Date().toISOString()
+                    last_update_at: new Date().toISOString(),
                 };
             });
 
@@ -53,6 +124,17 @@ export const createTaskWithAssignments = async (taskData, assigneeIds) => {
                 .insert(assignments);
 
             if (assignError) throw assignError;
+
+            for (const profile of profileRows) {
+              if (profile.phone) {
+                await sendTaskAssignmentNotification(
+                  profile.phone,
+                  profile.full_name || profile.name || profile.email,
+                  taskData.title,
+                  taskData.deadline
+                ).catch((err) => console.error('Task notification failed', err));
+              }
+            }
         }
 
         return { success: true, data: task };
@@ -139,14 +221,7 @@ export const getTasks = async (filters = {}) => {
   try {
     let query = supabase
       .from('tasks')
-      .select(`
-        *,
-        task_categories(*),
-        task_assignments(
-          id, status, progress, user_id, accepted_at, completed_at,
-          profiles:user_id(id, full_name, email, phone)
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (filters.status && filters.status !== 'All') {
@@ -156,7 +231,7 @@ export const getTasks = async (filters = {}) => {
       query = query.eq('priority', filters.priority);
     }
     if (filters.category && filters.category !== 'All') {
-        query = query.eq('category_id', filters.category);
+      query = query.eq('category_id', filters.category);
     }
     if (filters.search) {
       query = query.ilike('title', `%${filters.search}%`);
@@ -165,7 +240,8 @@ export const getTasks = async (filters = {}) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    const tasksWithProgress = data.map(task => {
+    const hydrated = await hydrateTasksList(data || []);
+    const tasksWithProgress = hydrated.map((task) => {
       const assignments = task.task_assignments || [];
       const totalProgress = assignments.reduce((sum, a) => sum + (a.progress || 0), 0);
       const overallProgress = assignments.length > 0 ? Math.round(totalProgress / assignments.length) : 0;
@@ -181,22 +257,58 @@ export const getTasks = async (filters = {}) => {
 
 export const getTaskDetails = async (taskId) => {
   try {
-    const { data, error } = await supabase
+    const { data: task, error } = await supabase
       .from('tasks')
-      .select(`
-        *,
-        task_categories(*),
-        task_assignments(
-          id, status, progress, user_id, accepted_at, completed_at,
-          profiles:user_id(id, full_name, email, phone),
-          task_updates(id, progress, comment, created_at, task_attachments(id, file_url, file_name))
-        )
-      `)
+      .select('*')
       .eq('id', taskId)
       .single();
 
     if (error) throw error;
-    return { success: true, data };
+
+    const [hydrated] = await hydrateTasksList([task]);
+    const { data: assignments } = await supabase
+      .from('task_assignments')
+      .select('id, status, progress, user_id, accepted_at, completed_at, task_id')
+      .eq('task_id', taskId);
+
+    const profileMap = await fetchProfilesMap((assignments || []).map((a) => a.user_id));
+    const assignmentIds = (assignments || []).map((a) => a.id);
+    const updatesByAssignment = {};
+    const attachmentsByUpdate = {};
+
+    if (assignmentIds.length) {
+      const { data: updates } = await supabase
+        .from('task_updates')
+        .select('id, assignment_id, progress, comment, created_at')
+        .in('assignment_id', assignmentIds);
+      (updates || []).forEach((u) => {
+        if (!updatesByAssignment[u.assignment_id]) updatesByAssignment[u.assignment_id] = [];
+        updatesByAssignment[u.assignment_id].push(u);
+      });
+
+      const updateIds = (updates || []).map((u) => u.id);
+      if (updateIds.length) {
+        const { data: attachments } = await supabase
+          .from('task_attachments')
+          .select('id, update_id, file_url, file_name')
+          .in('update_id', updateIds);
+        (attachments || []).forEach((att) => {
+          if (!attachmentsByUpdate[att.update_id]) attachmentsByUpdate[att.update_id] = [];
+          attachmentsByUpdate[att.update_id].push(att);
+        });
+      }
+    }
+
+    hydrated.task_assignments = (assignments || []).map((a) => ({
+      ...a,
+      profiles: profileMap[a.user_id] || null,
+      task_updates: (updatesByAssignment[a.id] || []).map((u) => ({
+        ...u,
+        task_attachments: attachmentsByUpdate[u.id] || [],
+      })),
+    }));
+
+    return { success: true, data: hydrated };
   } catch (error) {
     console.error('Error fetching task details:', error);
     return { success: false, error: error.message };
@@ -208,38 +320,58 @@ export const getMyTasks = async (statusFilter = 'All', categoryFilter = 'All') =
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    let query = supabase
+    let assignmentQuery = supabase
       .from('task_assignments')
-      .select(`
-        id, status, progress, accepted_at, completed_at, last_update_at,
-        tasks!inner(*, 
-            created_by_profile:profiles!tasks_created_by_fkey(full_name),
-            task_categories(*)
-        )
-      `)
+      .select('id, task_id, status, progress, accepted_at, completed_at, last_update_at, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (statusFilter !== 'All') {
-       query = query.eq('status', statusFilter);
-    }
-    
-    if (categoryFilter !== 'All') {
-        query = query.eq('tasks.category_id', categoryFilter);
+      assignmentQuery = assignmentQuery.eq('status', statusFilter);
     }
 
-    const { data, error } = await query;
+    const { data: assignments, error } = await assignmentQuery;
     if (error) throw error;
-    
-    const formattedData = data.map(assignment => ({
-        ...assignment.tasks,
-        assignment_id: assignment.id,
-        assignment_status: assignment.status,
-        my_progress: assignment.progress,
-        accepted_at: assignment.accepted_at,
-        completed_at: assignment.completed_at,
-        last_update_at: assignment.last_update_at
-    }));
+    if (!assignments?.length) return { success: true, data: [] };
+
+    const taskIds = assignments.map((a) => a.task_id);
+    let taskQuery = supabase.from('tasks').select('*').in('id', taskIds);
+    if (categoryFilter !== 'All') {
+      taskQuery = taskQuery.eq('category_id', categoryFilter);
+    }
+    const { data: tasks, error: taskError } = await taskQuery;
+    if (taskError) throw taskError;
+
+    const tasksById = {};
+    (tasks || []).forEach((t) => { tasksById[t.id] = t; });
+
+    const categoryIds = [...new Set((tasks || []).map((t) => t.category_id).filter(Boolean))];
+    const categoriesById = {};
+    if (categoryIds.length) {
+      const { data: categories } = await supabase.from('task_categories').select('*').in('id', categoryIds);
+      (categories || []).forEach((c) => { categoriesById[c.id] = c; });
+    }
+
+    const creatorIds = [...new Set((tasks || []).map((t) => t.created_by).filter(Boolean))];
+    const creatorMap = await fetchProfilesMap(creatorIds);
+
+    const formattedData = assignments
+      .map((assignment) => {
+        const task = tasksById[assignment.task_id];
+        if (!task) return null;
+        return {
+          ...task,
+          task_categories: task.category_id ? categoriesById[task.category_id] || null : null,
+          created_by_profile: task.created_by ? creatorMap[task.created_by] || null : null,
+          assignment_id: assignment.id,
+          assignment_status: assignment.status,
+          my_progress: assignment.progress,
+          accepted_at: assignment.accepted_at,
+          completed_at: assignment.completed_at,
+          last_update_at: assignment.last_update_at,
+        };
+      })
+      .filter(Boolean);
 
     return { success: true, data: formattedData };
   } catch (error) {
@@ -251,24 +383,36 @@ export const getMyTasks = async (statusFilter = 'All', categoryFilter = 'All') =
 export const acceptTaskAssignment = async (assignmentId) => {
   try {
     const now = new Date().toISOString();
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('task_assignments')
-      .update({ 
-          status: 'Accepted', 
-          accepted_at: now,
-          last_update_at: now
+      .update({
+        status: 'Accepted',
+        accepted_at: now,
+        last_update_at: now,
       })
-      .eq('id', assignmentId)
-      .select(`*, tasks(id, title, status)`)
-      .single();
+      .eq('id', assignmentId);
 
     if (error) throw error;
 
-    if (data.tasks.status === 'Pending') {
-        await supabase.from('tasks').update({ status: 'In Progress' }).eq('id', data.tasks.id);
+    const { data: assignment, error: fetchError } = await supabase
+      .from('task_assignments')
+      .select('*')
+      .eq('id', assignmentId)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const { data: task, error: taskError } = await supabase
+      .from('tasks')
+      .select('id, title, status')
+      .eq('id', assignment.task_id)
+      .single();
+    if (taskError) throw taskError;
+
+    if (task.status === 'Pending') {
+      await supabase.from('tasks').update({ status: 'In Progress' }).eq('id', task.id);
     }
 
-    return { success: true, data };
+    return { success: true, data: { ...assignment, tasks: task } };
   } catch (error) {
     console.error('Error accepting task:', error);
     return { success: false, error: error.message };
@@ -276,25 +420,37 @@ export const acceptTaskAssignment = async (assignmentId) => {
 };
 
 export const declineTaskAssignment = async (assignmentId) => {
-    try {
-        const now = new Date().toISOString();
-        const { data, error } = await supabase
-          .from('task_assignments')
-          .update({ 
-              status: 'Declined', 
-              declined_at: now,
-              last_update_at: now
-          })
-          .eq('id', assignmentId)
-          .select(`*, tasks(id, title, status)`)
-          .single();
-    
-        if (error) throw error;
-        return { success: true, data };
-      } catch (error) {
-        console.error('Error declining task:', error);
-        return { success: false, error: error.message };
-      }
+  try {
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from('task_assignments')
+      .update({
+        status: 'Declined',
+        declined_at: now,
+        last_update_at: now,
+      })
+      .eq('id', assignmentId);
+
+    if (error) throw error;
+
+    const { data: assignment, error: fetchError } = await supabase
+      .from('task_assignments')
+      .select('*')
+      .eq('id', assignmentId)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const { data: task } = await supabase
+      .from('tasks')
+      .select('id, title, status')
+      .eq('id', assignment.task_id)
+      .single();
+
+    return { success: true, data: { ...assignment, tasks: task || null } };
+  } catch (error) {
+    console.error('Error declining task:', error);
+    return { success: false, error: error.message };
+  }
 };
 
 export const updateTaskProgress = async (assignmentId, taskId, progress, status, comment = null, attachments = []) => {

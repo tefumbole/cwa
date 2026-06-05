@@ -28,6 +28,25 @@ export const SCHEMA_PATCHES = [
   'ALTER TABLE whatsapp_message_logs ADD COLUMN related_registration_id CHAR(36) NULL',
   'ALTER TABLE whatsapp_message_logs ADD COLUMN retry_count INT DEFAULT 0',
   'ALTER TABLE whatsapp_message_logs ADD COLUMN sent_at DATETIME NULL',
+  'ALTER TABLE tasks ADD COLUMN category_id CHAR(36) NULL',
+  'ALTER TABLE task_assignments ADD COLUMN last_update_at DATETIME NULL',
+  'ALTER TABLE task_assignments ADD COLUMN declined_at DATETIME NULL',
+];
+
+export const CREATE_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS pending_registrations (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'user',
+    otp VARCHAR(10) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_pending_reg_email (email),
+    INDEX idx_pending_reg_phone (phone)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 ];
 
 export async function applySchemaPatches(pool) {

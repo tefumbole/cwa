@@ -29,7 +29,7 @@ const CATEGORIES = [
 
 const RECIPIENT_TABS = [
 	{ value: 'customers', label: 'Customers', selectAllLabel: 'All Customers' },
-	{ value: 'users', label: 'Staff / Users', selectAllLabel: 'All Users' },
+	{ value: 'users', label: 'System Users', selectAllLabel: 'All Users' },
 	{ value: 'custom', label: 'Custom Phone', selectAllLabel: '' },
 ];
 
