@@ -31,38 +31,45 @@ const ShareholdersPage = () => {
   const { toast } = useToast();
   const contentRef = useRef(null);
 
-  const [loading, setLoading] = useState(true);
+  const [priceLoading, setPriceLoading] = useState(true);
+  const [agreeing, setAgreeing] = useState(false);
   const [sharePrice, setSharePrice] = useState(1000);
   const [currency, setCurrency] = useState('USD');
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchSharePrice = async () => {
-      setLoading(true);
+      setPriceLoading(true);
       try {
         const settings = await getSystemSettings();
-        setSharePrice(settings.price_per_share);
-        setCurrency(settings.currency);
+        if (!cancelled) {
+          setSharePrice(settings.price_per_share);
+          setCurrency(settings.currency);
+        }
       } catch (err) {
         console.error('Error loading share price:', err);
-        // Use defaults
       } finally {
-        setLoading(false);
+        if (!cancelled) setPriceLoading(false);
       }
     };
 
     fetchSharePrice();
+    return () => { cancelled = true; };
   }, []);
 
   const handleAgree = () => {
+    if (agreeing) return;
+    setAgreeing(true);
     localStorage.setItem('shareholderAgreementAccepted', 'true');
     toast({
-      title: "Agreement Accepted",
-      description: "Redirecting to shares portal...",
-      className: "bg-green-600 text-white border-none",
+      title: 'Agreement Accepted',
+      description: 'Redirecting to shares portal...',
+      className: 'bg-green-600 text-white border-none',
     });
     setTimeout(() => {
       navigate('/shares');
-    }, 1000);
+    }, 600);
   };
 
   const handleDisagree = () => {
@@ -113,7 +120,7 @@ const ShareholdersPage = () => {
             </SectionCard>
 
             <SectionCard number="2" icon={DollarSign} title="Share Price">
-                {loading ? (
+                {priceLoading ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Loading current price...</span>
@@ -189,14 +196,15 @@ const ShareholdersPage = () => {
         </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className="bg-[#002855] border-t border-[#D4AF37]/30 py-6 sticky bottom-0 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Footer Actions — keep above site footer and WhatsApp widget */}
+      <div className="bg-[#002855] border-t border-[#D4AF37]/30 py-6 sticky bottom-0 z-[55] shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+        <div className="max-w-4xl mx-auto px-4 pr-24 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-400 text-center sm:text-left">
                 Do you accept the terms outlined in the Shareholders Agreement?
             </p>
             <div className="flex gap-4 w-full sm:w-auto">
                 <Button 
+                    type="button"
                     onClick={handleDisagree}
                     variant="outline"
                     className="flex-1 sm:flex-none border-red-500/50 text-red-400 hover:bg-red-950/30 hover:text-red-300"
@@ -204,11 +212,12 @@ const ShareholdersPage = () => {
                     I Disagree
                 </Button>
                 <Button 
+                    type="button"
                     onClick={handleAgree}
-                    className="flex-1 sm:flex-none bg-[#D4AF37] text-[#003D82] hover:bg-[#b5952f] font-bold px-8 shadow-lg shadow-[#D4AF37]/10"
-                    disabled={loading}
+                    disabled={agreeing}
+                    className="flex-1 sm:flex-none !bg-[#D4AF37] !text-[#003D82] hover:!bg-[#b5952f] disabled:!opacity-70 font-bold px-8 shadow-lg shadow-[#D4AF37]/20 border border-[#D4AF37]/40"
                 >
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {agreeing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                     I Agree
                 </Button>
             </div>

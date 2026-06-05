@@ -8,6 +8,21 @@ import { supabase } from '@/lib/customSupabaseClient';
 const DEFAULT_PRICE = 1000;
 const DEFAULT_CURRENCY = 'USD';
 
+const DEFAULT_SETTINGS = {
+  price_per_share: DEFAULT_PRICE,
+  total_shares_available: 100,
+  total_sold_admin_override: 0,
+  currency: DEFAULT_CURRENCY,
+  total_available: 100,
+};
+
+function withTimeout(promise, ms = 5000, fallback = null) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 /**
  * Fetches current share price from system_settings
  * @returns {Promise<number>} Share price (defaults to 1000 if not found)
@@ -39,38 +54,36 @@ export const getSharePrice = async () => {
  */
 export const getSystemSettings = async () => {
   try {
-    const { data, error } = await supabase
-      .from('system_settings')
-      .select('*')
-      .single();
+    const result = await withTimeout(
+      supabase.from('system_settings').select('*').single(),
+      5000,
+      null
+    );
+
+    if (!result) {
+      console.warn('sharePriceService: Settings request timed out, using defaults');
+      return { ...DEFAULT_SETTINGS };
+    }
+
+    const { data, error } = result;
 
     if (error) {
       console.error('sharePriceService: Error fetching system settings:', error);
-      return {
-        price_per_share: DEFAULT_PRICE,
-        total_shares_available: 100,
-        total_sold_admin_override: 0,
-        currency: DEFAULT_CURRENCY
-      };
+      return { ...DEFAULT_SETTINGS };
     }
 
     return {
       price_per_share: parseFloat(data?.price_per_share) || DEFAULT_PRICE,
-      total_shares_available: parseInt(data?.total_shares_available) || 100,
-      total_sold_admin_override: parseInt(data?.total_sold_admin_override) || 0,
+      total_shares_available: parseInt(data?.total_shares_available, 10) || 100,
+      total_sold_admin_override: parseInt(data?.total_sold_admin_override, 10) || 0,
       currency: data?.currency || DEFAULT_CURRENCY,
-      total_available: (parseInt(data?.total_shares_available) || 100) - (parseInt(data?.total_sold_admin_override) || 0)
+      total_available:
+        (parseInt(data?.total_shares_available, 10) || 100) -
+        (parseInt(data?.total_sold_admin_override, 10) || 0),
     };
-
   } catch (err) {
     console.error('sharePriceService: Unexpected error:', err);
-    return {
-      price_per_share: DEFAULT_PRICE,
-      total_shares_available: 100,
-      total_sold_admin_override: 0,
-      currency: DEFAULT_CURRENCY,
-      total_available: 100
-    };
+    return { ...DEFAULT_SETTINGS };
   }
 };
 

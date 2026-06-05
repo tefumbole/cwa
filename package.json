@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host :: --port 3000",
     "dev:api": "npm run dev --prefix apps/api",
-    "dev:local": "docker compose up -d && npm run db:migrate && npm run dev:api & npm run dev",
+    "dev:local": "bash tools/start-local-dev.sh",
+    "dev:local:quick": "docker compose up -d && npm run db:migrate && npm run dev:api & npm run dev",
     "build": "node tools/generate-llms.js || true && vite build",
     "preview": "vite preview --host :: --port 3000",
     "lint": "eslint . --quiet",
