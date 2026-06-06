@@ -1,28 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   CheckCircle2, ChevronDown, ChevronUp, ArrowRight,
   Brain, Cloud, Shield, Briefcase, Phone, Network, Video
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { trainingModules } from '@/data/trainingData';
+import { getTrainingPrograms } from '@/services/coursesService';
+import { trainingModules } from '@/utils/trainingCourseUtils';
 
 const iconMap = {
-  Brain: Brain,
-  Cloud: Cloud,
-  Shield: Shield,
-  Briefcase: Briefcase,
-  Phone: Phone,
-  Network: Network,
-  Video: Video
+  Brain, Cloud, Shield, Briefcase, Phone, Network, Video
 };
 
 function TrainingsPage() {
   const [expandedModule, setExpandedModule] = useState(null);
+  const [programs, setPrograms] = useState(trainingModules);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getTrainingPrograms()
+      .then(setPrograms)
+      .catch(() => setPrograms(trainingModules));
+  }, []);
 
   const toggleModule = (id) => {
     setExpandedModule(expandedModule === id ? null : id);
@@ -87,7 +89,7 @@ function TrainingsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#003D82] mb-2">7</div>
+              <div className="text-4xl font-bold text-[#003D82] mb-2">{programs.length}</div>
               <div className="text-gray-600">Training Programs</div>
             </div>
             <div className="text-center">
@@ -119,7 +121,7 @@ function TrainingsPage() {
           </div>
 
           <div className="space-y-6">
-            {trainingModules.map((module, index) => {
+            {programs.map((module, index) => {
               const IconComponent = iconMap[module.icon];
               
               return (
@@ -181,7 +183,7 @@ function TrainingsPage() {
                         <div className="px-6 md:px-8 py-8 bg-gradient-to-b from-gray-50 to-white">
                           {/* Curriculum Sections */}
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            {module.sections.map((section, sectionIdx) => (
+                            {(module.sections || []).map((section, sectionIdx) => (
                               <div 
                                 key={sectionIdx}
                                 className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"

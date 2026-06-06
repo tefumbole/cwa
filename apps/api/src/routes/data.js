@@ -81,7 +81,7 @@ function buildWhere(filters) {
         if (f.value === null) clauses.push(`\`${f.col}\` IS NULL`);
         else {
           clauses.push(`\`${f.col}\` = ?`);
-          params.push(f.value);
+          params.push(f.value === true ? 1 : f.value === false ? 0 : f.value);
         }
         break;
       case 'neq':

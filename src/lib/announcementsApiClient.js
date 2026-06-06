@@ -106,6 +106,12 @@ const announcementsApiClient = {
         return jsonResponse(record, true, 201);
       }
 
+      const templateDeleteMatch = path.match(/^\/announcements\/templates\/([^/]+)$/);
+      if (templateDeleteMatch && method === 'DELETE') {
+        await announcementService.deleteAnnouncementTemplate(templateDeleteMatch[1]);
+        return jsonResponse({ success: true });
+      }
+
       if (path === '/announcements' && method === 'POST') {
         const { data, files } = await parseBody(options);
         const result = await announcementService.createAnnouncementFromRequest(data, files, data.createdBy);

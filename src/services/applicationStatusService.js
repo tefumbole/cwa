@@ -25,17 +25,12 @@ export const getStatusHistory = async (applicationId) => {
 export const getApplicationsByStatus = async (status) => {
   const { data, error } = await supabase
     .from('applications')
-    .select(`
-      *,
-      jobs (
-        title
-      )
-    `)
+    .select('*')
     .eq('status', status)
-    .order('status_changed_at', { ascending: false });
+    .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data || [];
 };
 
 export const updateApplicationStatus = async (id, newStatus, extraData = {}, changedBy) => {
@@ -54,10 +49,13 @@ export const updateApplicationStatus = async (id, newStatus, extraData = {}, cha
   // 2. Prepare update payload
   const updatePayload = {
     status: newStatus,
-    status_changed_at: now,
-    status_changed_by: changedBy,
     updated_at: now
   };
+
+  if (changedBy) {
+    updatePayload.status_changed_at = now;
+    updatePayload.status_changed_by = changedBy;
+  }
 
   // Add extra fields based on status
   if (newStatus === 'rejected') {

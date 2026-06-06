@@ -11,6 +11,11 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
+/** Must match src/utils/storageUrl.js sanitizeStorageKey */
+function sanitizeStorageKey(input) {
+  return String(input || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
 const storage = multer.diskStorage({
   destination: (req, _file, cb) => {
     const bucket = (req.params.bucket || 'default').replace(/[^a-z0-9_-]/gi, '');
@@ -18,25 +23,35 @@ const storage = multer.diskStorage({
     ensureDir(dir);
     cb(null, dir);
   },
-  filename: (_req, file, cb) => {
-    cb(null, file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_'));
+  filename: (req, file, cb) => {
+    const custom = req.query.path || req.body?.path;
+    cb(null, sanitizeStorageKey(custom || file.originalname || 'file'));
   },
 });
 
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
-router.post('/:bucket', requireAuth, upload.single('file'), (req, res) => {
+router.post('/:bucket', requireAuth, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      const message = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large (max 50MB).' : err.message;
+      return res.status(400).json({ error: message });
+    }
+    next();
+  });
+}, (req, res) => {
   const bucket = req.params.bucket.replace(/[^a-z0-9_-]/gi, '');
-  const filename = req.body.path || req.file?.filename;
-  if (!req.file) {
+  const storedPath = req.file?.filename;
+  if (!req.file || !storedPath) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  res.json({ path: filename, Key: filename, bucket });
+  res.json({ path: storedPath, Key: storedPath, bucket });
 });
 
 router.get('/:bucket/:filename', (req, res) => {
   const bucket = req.params.bucket.replace(/[^a-z0-9_-]/gi, '');
-  const filePath = path.join(uploadRoot, bucket, path.basename(req.params.filename));
+  const safe = sanitizeStorageKey(path.basename(req.params.filename));
+  const filePath = path.join(uploadRoot, bucket, safe);
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Not found' });
   }

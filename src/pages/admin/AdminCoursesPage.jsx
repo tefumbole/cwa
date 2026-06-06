@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCourses, deleteCourse } from '@/services/coursesService';
+import { getTrainingCourses, deleteCourse, reorderCourses, syncTrainingCourses } from '@/services/coursesService';
 import { getFeedbackByCourse, deleteFeedback } from '@/services/feedbackService';
 import CourseFormModal from '@/components/admin/CourseFormModal';
 import EditCourseForm from '@/components/admin/EditCourseForm';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus, Edit, Trash2, Search, BookOpen, Loader2, AlertCircle, MessageCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, BookOpen, Loader2, AlertCircle, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import StarRating from '@/components/StarRating';
@@ -39,6 +39,7 @@ const AdminCoursesPage = ({ defaultTab }) => {
     const [selectedCourseFeedback, setSelectedCourseFeedback] = useState([]);
     const [selectedCourseName, setSelectedCourseName] = useState('');
     const [loadingFeedback, setLoadingFeedback] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     const { toast } = useToast();
 
@@ -49,10 +50,30 @@ const AdminCoursesPage = ({ defaultTab }) => {
         }
     }, [defaultTab]);
 
+    useEffect(() => {
+        (async () => {
+            try {
+                setSyncing(true);
+                const result = await syncTrainingCourses();
+                await loadCourses();
+                if (result.created || result.updated || result.removed || result.archived) {
+                    toast({
+                        title: 'Training programs synced',
+                        description: `${result.updated} updated, ${result.created} created, ${result.removed} removed${result.archived ? `, ${result.archived} archived` : ''}.`,
+                    });
+                }
+            } catch (error) {
+                console.warn('Training sync skipped:', error.message);
+            } finally {
+                setSyncing(false);
+            }
+        })();
+    }, []);
+
     const loadCourses = async () => {
         setLoading(true);
         try {
-            const data = await getAllCourses();
+            const data = await getTrainingCourses();
             setCourses(data);
         } catch (error) {
             toast({ title: "Fetch Error", description: error.message, variant: "destructive" });
@@ -116,6 +137,21 @@ const AdminCoursesPage = ({ defaultTab }) => {
         (c.description || '').toLowerCase().includes(search.toLowerCase())
     );
 
+    const moveCourse = async (index, direction) => {
+        const list = [...filteredCourses];
+        const target = index + direction;
+        if (target < 0 || target >= list.length) return;
+        const swapped = [...list];
+        [swapped[index], swapped[target]] = [swapped[target], swapped[index]];
+        try {
+            await reorderCourses(swapped.map((c) => c.id));
+            toast({ title: 'Order updated', description: 'Course display order saved.' });
+            loadCourses();
+        } catch (error) {
+            toast({ title: 'Reorder failed', description: error.message, variant: 'destructive' });
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
@@ -144,6 +180,7 @@ const AdminCoursesPage = ({ defaultTab }) => {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
+                            <TableHead className="font-bold text-[#003D82] w-20">Order</TableHead>
                             <TableHead className="font-bold text-[#003D82]">Course Name</TableHead>
                             <TableHead className="font-bold text-[#003D82] w-1/3">Description</TableHead>
                             <TableHead className="font-bold text-[#003D82]">Category</TableHead>
@@ -167,8 +204,18 @@ const AdminCoursesPage = ({ defaultTab }) => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredCourses.map((course) => (
+                            filteredCourses.map((course, index) => (
                                 <TableRow key={course.id} className="hover:bg-blue-50/50 transition-colors">
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === 0} onClick={() => moveCourse(index, -1)}>
+                                                <ChevronUp className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === filteredCourses.length - 1} onClick={() => moveCourse(index, 1)}>
+                                                <ChevronDown className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="font-medium text-gray-900">{course.name}</TableCell>
                                     <TableCell className="text-gray-600 truncate max-w-md" title={course.description}>
                                         {course.description}

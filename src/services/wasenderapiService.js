@@ -2,9 +2,11 @@ import { format } from 'date-fns';
 
 /**
  * WasenderAPI client — aligned with New Vision Travel / Manukeza contract.
- * Auth: Bearer token. Send: POST {base}/send-message with { to, text }.
+ * With VITE_DATA_BACKEND=mysql, sends go through the API (WASENDER_API_KEY in apps/api/.env).
  */
 
+const USE_API_PROXY = import.meta.env.VITE_DATA_BACKEND === 'mysql';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 const API_KEY = import.meta.env.VITE_WASENDER_API_KEY;
 const BASE_URL = normalizeBaseUrl(
   import.meta.env.VITE_WASENDER_BASE_URL ||
@@ -21,6 +23,89 @@ const COUNTRY_CODES = {
   KE: '+254',
   TZ: '+255',
 };
+
+function getAuthToken() {
+  try {
+    const raw = localStorage.getItem('alpha_supabase_auth');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.access_token || parsed?.currentSession?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
+async function sendViaApi(body) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getAuthToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const phone = formatPhoneNumber(body.to) || body.to;
+  const payload = { ...body, to: phone };
+
+  const res = await fetch(`${API_BASE}/whatsapp/send`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+  return {
+    success: Boolean(json.success),
+    status: json.success ? 'sent' : 'failed',
+    error: json.error || null,
+    phone_number: json.phone_number || body.to,
+    messageSid: json.messageSid || json.provider_sid || null,
+    provider_sid: json.provider_sid || json.messageSid || null,
+    data: json.data || json,
+  };
+}
+
+async function sendDocumentViaApi(phone, text, fileBlob, fileName) {
+  const token = getAuthToken();
+  const form = new FormData();
+  form.append('file', fileBlob, fileName || 'document.pdf');
+  form.append('to', phone);
+  if (text) form.append('text', text);
+  form.append('fileName', fileName || 'document.pdf');
+
+  const res = await fetch(`${API_BASE}/whatsapp/send-document`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+
+  const responseText = await res.text();
+  let json = {};
+  try {
+    json = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    json = { error: responseText || res.statusText || 'Request failed' };
+  }
+  if (!res.ok || !json.success) {
+    const errMsg = json.error || json.message || responseText || 'Failed to send WhatsApp document';
+    return buildResult(false, phone, json, typeof errMsg === 'string' ? errMsg : 'Failed to send WhatsApp document');
+  }
+  return buildResult(true, json.phone_number || phone, json.data || json, null);
+}
+
+async function uploadBufferViaApi(buffer, mimeType, fileName = 'file.bin') {
+  const token = getAuthToken();
+  const blob = buffer instanceof Blob ? buffer : new Blob([buffer], { type: mimeType });
+  const form = new FormData();
+  form.append('file', blob, fileName);
+
+  const res = await fetch(`${API_BASE}/whatsapp/upload-buffer`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.success) {
+    return { success: false, error: json.error || 'Upload failed', public_url: null };
+  }
+  return { success: true, public_url: json.public_url, error: null };
+}
 
 export const maskKey = (key) =>
   key && key.length > 8 ? `${key.substring(0, 4)}***${key.slice(-4)}` : 'MISSING';
@@ -71,6 +156,7 @@ export function formatPhoneNumber(phone, countryCode = DEFAULT_COUNTRY) {
 }
 
 export function isWasenderConfigured() {
+  if (USE_API_PROXY) return true;
   return Boolean(API_KEY);
 }
 
@@ -116,7 +202,15 @@ function buildResult(success, phone, body, error) {
 }
 
 export async function sendTextMessage(toPhone, text, messageType = 'text') {
-  if (!isWasenderConfigured()) {
+  if (USE_API_PROXY) {
+    const result = await sendViaApi({ to: toPhone, text: String(text ?? '') });
+    if (!result.success && result.error?.includes('missing')) {
+      return buildResult(false, toPhone, null, 'Wasender API key missing. Set WASENDER_API_KEY in apps/api/.env');
+    }
+    return result;
+  }
+
+  if (!API_KEY) {
     return buildResult(false, toPhone, null, 'Wasender API key missing. Set VITE_WASENDER_API_KEY.');
   }
 
@@ -148,8 +242,12 @@ export async function sendOtp(toPhone, otp, context = null) {
   return sendTextMessage(toPhone, message, 'otp');
 }
 
-export async function uploadBuffer(buffer, mimeType = 'application/pdf') {
-  if (!isWasenderConfigured()) {
+export async function uploadBuffer(buffer, mimeType = 'application/pdf', fileName = 'file.bin') {
+  if (USE_API_PROXY) {
+    return uploadBufferViaApi(buffer, mimeType, fileName);
+  }
+
+  if (!API_KEY) {
     return { success: false, error: 'Wasender API key missing.', public_url: null };
   }
 
@@ -163,7 +261,7 @@ export async function uploadBuffer(buffer, mimeType = 'application/pdf') {
   if (response.ok && payload?.publicUrl) {
     return {
       success: true,
-      public_url: payload.publicUrl,
+      public_url: payload.publicUrl || payload.public_url || payload.data?.publicUrl,
       error: null,
     };
   }
@@ -177,6 +275,14 @@ export async function uploadBuffer(buffer, mimeType = 'application/pdf') {
 }
 
 export async function sendDocumentMessage(toPhone, documentUrl, text = null, fileName = null) {
+  if (USE_API_PROXY) {
+    return sendViaApi({ to: toPhone, text, documentUrl, fileName });
+  }
+
+  if (!API_KEY) {
+    return buildResult(false, toPhone, null, 'Wasender API key missing. Set VITE_WASENDER_API_KEY.');
+  }
+
   const to = formatPhoneNumber(toPhone);
   if (!to) return buildResult(false, toPhone, null, 'Invalid phone number.');
 
@@ -194,7 +300,41 @@ export async function sendDocumentMessage(toPhone, documentUrl, text = null, fil
   return buildResult(false, to, body, body?.message || 'Send failed');
 }
 
+/**
+ * Send a PDF/document buffer via WhatsApp (New Vision pattern: text → upload → document).
+ * Preferred for shareholder agreements and any generated PDFs in mysql mode.
+ */
+export async function sendDocumentBuffer(toPhone, text, fileBlob, fileName = 'document.pdf') {
+  const phone = formatPhoneNumber(toPhone) || toPhone;
+  if (!phone) return buildResult(false, toPhone, null, 'Invalid phone number format.');
+
+  if (USE_API_PROXY) {
+    return sendDocumentViaApi(phone, text, fileBlob, fileName);
+  }
+
+  if (!API_KEY) {
+    return buildResult(false, toPhone, null, 'Wasender API key missing.');
+  }
+
+  const textResult = await sendTextMessage(phone, text, 'document-intro');
+  if (!textResult.success) return textResult;
+
+  await new Promise((r) => setTimeout(r, 3000));
+
+  const buffer = fileBlob instanceof Blob ? await fileBlob.arrayBuffer() : fileBlob;
+  const upload = await uploadBuffer(new Uint8Array(buffer), 'application/pdf', fileName);
+  if (!upload.success || !upload.public_url) {
+    return buildResult(false, phone, null, upload.error || 'Failed to upload document');
+  }
+
+  return sendDocumentMessage(phone, upload.public_url, null, fileName);
+}
+
 export async function sendImageMessage(toPhone, imageUrl, text = null) {
+  if (USE_API_PROXY) {
+    return sendViaApi({ to: toPhone, text, imageUrl });
+  }
+
   const to = formatPhoneNumber(toPhone);
   if (!to) return buildResult(false, toPhone, null, 'Invalid phone number.');
 

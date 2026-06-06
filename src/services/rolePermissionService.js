@@ -19,7 +19,11 @@ const DEFAULT_PERMISSIONS = [
   'MEMBERS_ADD', 'MEMBERS_EDIT', 'MEMBERS_DELETE', 'MEMBERS_VIEW',
   'SHAREHOLDERS_ADD', 'SHAREHOLDERS_EDIT', 'SHAREHOLDERS_DELETE', 'SHAREHOLDERS_VIEW',
   'SETTINGS_VIEW', 'SETTINGS_EDIT',
-  'EVENTS_ADD', 'EVENTS_EDIT', 'EVENTS_DELETE', 'EVENTS_VIEW'
+  'EVENTS_ADD', 'EVENTS_EDIT', 'EVENTS_DELETE', 'EVENTS_VIEW',
+  'menu.dashboard', 'menu.events', 'menu.invitations', 'menu.event_templates',
+  'menu.tasks', 'menu.jobs', 'menu.users', 'menu.members', 'menu.shareholders',
+  'menu.courses', 'menu.announcements', 'menu.timesheets', 'menu.operations',
+  'menu.system', 'menu.roles',
 ];
 
 const DEFAULT_ROLES = [

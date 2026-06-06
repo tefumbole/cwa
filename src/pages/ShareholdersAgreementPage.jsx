@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Info, Scale, PieChart, DollarSign, Users, RefreshCw, PenTool, CheckCircle, AlertTriangle } from 'lucide-react';
-import FAQAccordion from '@/components/FAQAccordion';
 import { Button } from '@/components/ui/button';
 import DigitalSignatureModal from '@/components/DigitalSignatureModal';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,6 +10,12 @@ import { supabase } from '@/lib/customSupabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { generateShareholderAgreementPDF, uploadSignature } from '@/utils/pdfGenerator';
 import { getSystemSettings } from '@/services/settingsService';
+import { parseLicenseSections, personalizeLicenseSection } from '@/data/defaultLicenseAgreement';
+import FAQAccordion from '@/components/FAQAccordion';
+
+const ICON_MAP = {
+  Info, Scale, PieChart, DollarSign, Users, RefreshCw, ShieldCheck,
+};
 
 const SectionCard = ({ number, icon: Icon, title, children }) => (
   <motion.div 
@@ -46,12 +51,17 @@ const ShareholdersAgreementPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [shareSettings, setShareSettings] = useState(null);
+  const [licenseSections, setLicenseSections] = useState([]);
   const [shareholderStatus, setShareholderStatus] = useState({ signed: false, date: null });
 
   useEffect(() => {
     async function fetchData() {
       const settings = await getSystemSettings();
       setShareSettings(settings);
+      const sections = parseLicenseSections(settings?.license_agreement_json).map((s) =>
+        personalizeLicenseSection(s, settings)
+      );
+      setLicenseSections(sections);
 
       if (user) {
         const { data } = await supabase.from('shareholders').select('agreement_signed_at').eq('email', user.email).single();
@@ -124,38 +134,16 @@ const ShareholdersAgreementPage = () => {
         )}
 
         <div className="space-y-8">
-            <SectionCard number="1" icon={Info} title="About the Company">
-              <p>Alpha Bridge Technologies Ltd is a private limited company registered in Rwanda, specializing in IT consultancy, networking, and security systems.</p>
-            </SectionCard>
-            <SectionCard number="2" icon={DollarSign} title="Share Price">
-              <p>The value of one (1) share is <strong className="text-[#D4AF37]">USD ${shareSettings?.price_per_share || 500}</strong>. This price is subject to change based on future valuations.</p>
-            </SectionCard>
-            <SectionCard number="3" icon={PieChart} title="Share Issuance">
-              <ul className="list-disc pl-5 space-y-2 marker:text-[#D4AF37]">
-                <li>Shares are issued after a vesting period of <strong className="text-white">24 months</strong>.</li>
-                <li>During this period, your investment is treated as <em>Convertible Equity</em>.</li>
-              </ul>
-            </SectionCard>
-            <SectionCard number="4" icon={Users} title="Share Ownership">
-              <p>Ownership percentage is calculated based on shares held relative to total authorized shares.</p>
-            </SectionCard>
-            <SectionCard number="5" icon={Scale} title="Share Value">
-              <p>The value of shares can fluctuate based on market conditions and company performance.</p>
-            </SectionCard>
-            <SectionCard number="6" icon={DollarSign} title="Dividends (Profit Sharing)">
-              <ul className="list-disc pl-5 space-y-2 marker:text-[#D4AF37]">
-                <li>Dividends are <strong className="text-red-400">not guaranteed</strong> and are declared by the Board of Directors from company profits.</li>
-              </ul>
-            </SectionCard>
-            <SectionCard number="7" icon={Users} title="Management & Voting">
-              <p>Shareholders vote on critical matters like Director elections and major structural changes.</p>
-            </SectionCard>
-            <SectionCard number="8" icon={RefreshCw} title="Share Transfer & Exit">
-              <ul className="list-disc pl-5 mt-2 space-y-2 marker:text-[#D4AF37]">
-                <li><strong className="text-white">Right of First Refusal:</strong> Existing shareholders have the first right to buy shares.</li>
-                <li><strong className="text-white">Transfer Approval:</strong> Transfers to third parties require Board approval.</li>
-              </ul>
-            </SectionCard>
+            {licenseSections.map((section) => {
+              const Icon = ICON_MAP[section.icon] || Info;
+              return (
+                <SectionCard key={section.number} number={section.number} icon={Icon} title={section.title}>
+                  {(section.paragraphs || []).map((paragraph, idx) => (
+                    <p key={idx}>{paragraph}</p>
+                  ))}
+                </SectionCard>
+              );
+            })}
         </div>
 
         <div className="flex flex-col items-center justify-center pt-12 pb-8 space-y-6">

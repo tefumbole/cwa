@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminHorizontalNav from '@/components/admin/AdminHorizontalNav';
+import { INVITATION_NAV } from '@/config/invitationNavConfig';
 import { getAllInvitations, deleteInvitation, resendInvitation } from '@/services/invitationService';
 import { getAllEvents } from '@/services/eventService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,6 +79,7 @@ const InvitationListPage = () => {
 
     return (
         <div className="p-6 space-y-6">
+            <AdminHorizontalNav items={INVITATION_NAV} title="Digital Invitations" description="Manage event invitations and entry." />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-[#003D82]">Invitations</h1>

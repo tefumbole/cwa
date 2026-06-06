@@ -17,7 +17,9 @@ const AdminShareHolderDashboardPage = () => {
     totalInvestment: 0,
     completedPayments: 0,
     pendingPayments: 0,
-    availableShares: 100
+    availableShares: 100,
+    totalCompanyShares: 100,
+    pricePerShare: 1000,
   });
 
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,9 @@ const AdminShareHolderDashboardPage = () => {
         totalInvestment: statsData?.totalInvestment || 0,
         completedPayments: statsData?.completedPayments || 0,
         pendingPayments: statsData?.pendingPayments || 0,
-        availableShares: statsData?.availableShares || 100
+        availableShares: statsData?.availableShares || 100,
+        totalCompanyShares: statsData?.totalCompanyShares || 100,
+        pricePerShare: statsData?.pricePerShare || 1000,
       };
 
       console.log('[DASHBOARD] Processed stats:', safeStats);
@@ -66,7 +70,9 @@ const AdminShareHolderDashboardPage = () => {
         totalInvestment: 0,
         completedPayments: 0,
         pendingPayments: 0,
-        availableShares: 100
+        availableShares: 100,
+        totalCompanyShares: 100,
+        pricePerShare: 1000,
       });
     } finally {
       setLoading(false);
@@ -226,7 +232,7 @@ const AdminShareHolderDashboardPage = () => {
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Total Company Shares</p>
-              <p className="text-2xl font-bold text-gray-800">100</p>
+              <p className="text-2xl font-bold text-gray-800">{stats.totalCompanyShares ?? 100}</p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Allocated Shares</p>
@@ -242,13 +248,15 @@ const AdminShareHolderDashboardPage = () => {
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600">Allocation Progress</span>
               <span className="font-medium text-gray-800">
-                {stats.totalShares > 0 ? ((stats.totalShares / 100) * 100).toFixed(1) : 0}%
+                {stats.totalCompanyShares > 0
+                  ? ((stats.totalShares / stats.totalCompanyShares) * 100).toFixed(1)
+                  : 0}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min((stats.totalShares / 100) * 100, 100)}%` }}
+                style={{ width: `${Math.min((stats.totalShares / (stats.totalCompanyShares || 100)) * 100, 100)}%` }}
               />
             </div>
           </div>

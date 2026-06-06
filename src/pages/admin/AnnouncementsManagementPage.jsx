@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import {
 	Megaphone, Plus, Send, Trash2, Search, Paperclip, Save, Calendar, Users, Eye, Loader2,
@@ -45,7 +45,9 @@ function formatScheduleTime(value) {
 
 function parseSchedulesJson(item) {
 	try {
-		const parsed = JSON.parse(item?.schedulesJson || '[]');
+		const raw = item?.schedulesJson || '[]';
+		let parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+		if (typeof parsed === 'string') parsed = JSON.parse(parsed);
 		return Array.isArray(parsed) ? parsed : [];
 	} catch {
 		return [];
@@ -71,16 +73,18 @@ function ScheduleTimesCell({ item }) {
 
 const AnnouncementsManagementPage = ({ mode: modeProp }) => {
 	const { user } = useAuth();
+	const navigate = useNavigate();
 	const bodyRef = useRef(null);
 	const fileInputRef = useRef(null);
 
 	const location = useLocation();
-	const mode = modeProp || (location.pathname.includes('/list') ? 'list' : location.pathname.includes('/scheduled') ? 'scheduled' : 'compose');
+	const mode = modeProp || (location.pathname.includes('/list') ? 'list' : location.pathname.includes('/scheduled') ? 'scheduled' : location.pathname.includes('/templates') ? 'templates' : 'compose');
 
 	const pageTitles = {
 		compose: { title: 'Compose Announcement', desc: 'Create and send WhatsApp messages to customers and staff.' },
 		list: { title: 'All Announcements', desc: 'View and manage sent or draft announcements.' },
 		scheduled: { title: 'Scheduled Announcements', desc: 'Announcements queued to send at a future time.' },
+		templates: { title: 'Announcement Templates', desc: 'Saved message templates from compose and previous announcements.' },
 	};
 	const pageMeta = pageTitles[mode] || pageTitles.compose;
 	const [announcements, setAnnouncements] = useState([]);
@@ -137,6 +141,18 @@ const AnnouncementsManagementPage = ({ mode: modeProp }) => {
 	}, []);
 
 	useEffect(() => { loadLists(); }, [loadLists]);
+
+	useEffect(() => {
+		const incoming = location.state?.template;
+		if (mode !== 'compose' || !incoming) return;
+		setTitle(incoming.subject || '');
+		setHeaderHtml(incoming.header_html || 'Alpha Bridge Technologies Ltd');
+		setBodyHtml(incoming.body_html || 'Dear {name},');
+		setCategory(incoming.category || 'general');
+		setTemplateKey('blank');
+		toast.success('Template loaded into compose form.');
+		window.history.replaceState({}, document.title);
+	}, [mode, location.state]);
 
 	useEffect(() => {
 		if (mode !== 'scheduled') return undefined;
@@ -375,6 +391,35 @@ const AnnouncementsManagementPage = ({ mode: modeProp }) => {
 		} finally {
 			setBusy(false);
 		}
+	}
+
+	async function handleDeleteTemplate(id) {
+		if (!window.confirm('Delete this template?')) return;
+		setBusy(true);
+		try {
+			const res = await announcementsApiClient.fetch(`/announcements/templates/${id}`, { method: 'DELETE' });
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error);
+			toast.success('Template deleted.');
+			loadLists();
+		} catch (err) {
+			toast.error(err.message || 'Unable to delete template');
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	function useTemplateInCompose(tmpl) {
+		navigate('/admin/announcements/compose', {
+			state: {
+				template: {
+					subject: tmpl.subject,
+					header_html: tmpl.header_html,
+					body_html: tmpl.body_html,
+					category: tmpl.category,
+				},
+			},
+		});
 	}
 
 	async function handleSaveTemplate() {
@@ -701,6 +746,11 @@ const AnnouncementsManagementPage = ({ mode: modeProp }) => {
 									<div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
 										Scheduled announcements send automatically at the chosen time. Use <strong>Send</strong> if a scheduled time has passed.
 									</div>
+									{loading ? (
+										<div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>
+									) : scheduled.length === 0 ? (
+										<div className="p-8 text-center text-muted-foreground">No scheduled announcements yet. Schedule one from Compose.</div>
+									) : (
 									<Table>
 										<TableHeader>
 											<TableRow>
@@ -725,6 +775,47 @@ const AnnouncementsManagementPage = ({ mode: modeProp }) => {
 											))}
 										</TableBody>
 									</Table>
+									)}
+								</CardContent>
+							</Card>
+					)}
+
+					{mode === 'templates' && (
+							<Card>
+								<CardHeader>
+									<CardTitle>Saved Templates</CardTitle>
+									<CardDescription>Templates saved during announcement creation. Use one in Compose or delete it.</CardDescription>
+								</CardHeader>
+								<CardContent className="p-0">
+									{loading ? (
+										<div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>
+									) : templates.length === 0 ? (
+										<div className="p-8 text-center text-muted-foreground">No templates saved yet. Save a template from Compose before sending.</div>
+									) : (
+										<Table>
+											<TableHeader>
+												<TableRow>
+													<TableHead>Name</TableHead>
+													<TableHead>Category</TableHead>
+													<TableHead>Subject</TableHead>
+													<TableHead className="text-right">Actions</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												{templates.map((tmpl) => (
+													<TableRow key={tmpl.id}>
+														<TableCell className="font-medium">{tmpl.name}</TableCell>
+														<TableCell><Badge variant="outline">{tmpl.category || 'general'}</Badge></TableCell>
+														<TableCell>{tmpl.subject || '—'}</TableCell>
+														<TableCell className="text-right space-x-2">
+															<Button size="sm" variant="outline" onClick={() => useTemplateInCompose(tmpl)} disabled={busy}>Use in Compose</Button>
+															<Button size="sm" variant="ghost" className="text-red-600" onClick={() => handleDeleteTemplate(tmpl.id)} disabled={busy}><Trash2 className="w-3 h-3" /></Button>
+														</TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
+									)}
 								</CardContent>
 							</Card>
 					)}

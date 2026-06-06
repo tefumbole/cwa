@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllFeedback, deleteFeedback } from '@/services/feedbackService';
-import { getCourses } from '@/services/coursesService';
+import { getTrainingCourses } from '@/services/coursesService';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ const AdminFeedbackPage = () => {
         try {
             const [feedbackData, coursesData] = await Promise.all([
                 getAllFeedback(),
-                getCourses()
+                getTrainingCourses()
             ]);
             setFeedback(feedbackData);
             setCourses(coursesData);

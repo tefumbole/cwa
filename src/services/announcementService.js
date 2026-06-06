@@ -31,6 +31,20 @@ function parseJson(value, fallback = null) {
   }
 }
 
+function ensureJsonArray(value, fallback = []) {
+  const parsed = parseJson(value, fallback);
+  if (Array.isArray(parsed)) return parsed;
+  if (typeof parsed === 'string') {
+    try {
+      const nested = JSON.parse(parsed);
+      return Array.isArray(nested) ? nested : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
 export function parseScheduleTimestamp(value, offsetOverride = null) {
   if (!value) return NaN;
   const raw = String(value).trim();
@@ -117,9 +131,9 @@ function mapAnnouncement(row) {
     reference: row.reference,
     status: row.status,
     whatsapp_status: row.whatsapp_status,
-    schedulesJson: JSON.stringify(row.schedules_json || []),
+    schedulesJson: JSON.stringify(ensureJsonArray(row.schedules_json, [])),
     scheduledAt: row.scheduled_at,
-    attachmentsJson: JSON.stringify(row.attachments_json || []),
+    attachmentsJson: JSON.stringify(ensureJsonArray(row.attachments_json, [])),
     attachment: row.attachment,
     isSent: row.is_sent,
     isActive: row.is_active,
@@ -228,21 +242,34 @@ async function saveAttachments(files = []) {
   for (const file of files) {
     if (!file) continue;
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${(file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(filename, file, {
+    const renamed = file instanceof File
+      ? new File([file], filename, { type: file.type || 'application/octet-stream' })
+      : file;
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filename, renamed, {
       upsert: false,
     });
-    if (!error) saved.push(filename);
+    if (!error) saved.push(data?.path || data?.Key || filename);
   }
   return saved;
 }
 
 async function sendAttachmentFile(toPhone, filename, caption) {
-  const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(filename);
-  if (error) throw error;
-
-  const buffer = await data.arrayBuffer();
   const mime = mimeForFilename(filename);
-  const upload = await uploadBuffer(new Uint8Array(buffer), mime);
+  const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(filename);
+
+  let buffer;
+  if (error) {
+    const publicRes = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
+    const publicUrl = publicRes?.data?.publicUrl;
+    if (!publicUrl || publicUrl.includes('localhost') || publicUrl.startsWith('/api/')) {
+      throw new Error(error.message || 'Download failed');
+    }
+    if (mime.startsWith('image/')) return sendImageMessage(toPhone, publicUrl, caption);
+    return sendDocumentMessage(toPhone, publicUrl, caption, filename);
+  }
+
+  buffer = await data.arrayBuffer();
+  const upload = await uploadBuffer(new Uint8Array(buffer), mime, filename);
   if (!upload.success || !upload.public_url) {
     throw new Error(upload.error || 'Failed to upload attachment to WhatsApp');
   }
@@ -299,7 +326,13 @@ async function dispatchMessages(announcement, recipients) {
 export async function listAnnouncements({ status } = {}) {
   await processScheduledAnnouncements();
 
-  let query = supabase.from('announcements').select('*').eq('is_active', true).order('created_at', { ascending: false });
+  let query = supabase.from('announcements').select('*').eq('is_active', 1).order('created_at', { ascending: false });
+
+  if (status === 'scheduled') {
+    query = query.eq('status', 'scheduled');
+  } else if (status) {
+    query = query.eq('status', status);
+  }
 
   const { data, error } = await query;
   if (error) throw error;
@@ -310,10 +343,8 @@ export async function listAnnouncements({ status } = {}) {
     items = items.filter(
       (a) =>
         a.status === 'scheduled' ||
-        parseJson(a.schedulesJson, []).some((s) => s.status === 'pending')
+        ensureJsonArray(a.schedulesJson).some((s) => s.status === 'pending')
     );
-  } else if (status) {
-    items = items.filter((a) => a.status === status);
   }
 
   return items;
@@ -356,7 +387,7 @@ export async function previewAnnouncementPayload(body, files = []) {
 export async function createAnnouncementFromRequest(body, files = [], userId = null) {
   const settings = await getAnnouncementSettings();
   const recipients = parseJson(body.recipients, []);
-  const scheduleTimes = parseJson(body.schedules, []);
+  const scheduleTimes = parseJson(body.schedules, Array.isArray(body.schedules) ? body.schedules : []);
   const scheduledAt = body.scheduled_at || scheduleTimes[0] || '';
   const sendNow = truthy(body.send_now);
   const scheduleForLater = truthy(body.schedule_for_later) || Boolean(scheduledAt && !sendNow);
@@ -439,7 +470,7 @@ export async function sendAnnouncement(id) {
       whatsapp_status: results.failed ? 'partial' : 'sent',
       sent_count: results.sent,
       send_results_json: results,
-      schedules_json: parseJson(announcement.schedulesJson, []).map((s) => ({
+      schedules_json: ensureJsonArray(announcement.schedulesJson).map((s) => ({
         ...s,
         status: 'sent',
         sent_at: new Date().toISOString(),
@@ -455,7 +486,7 @@ export async function processScheduledAnnouncements() {
   const { data: items, error } = await supabase
     .from('announcements')
     .select('*')
-    .eq('is_active', true)
+    .eq('is_active', 1)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -468,7 +499,7 @@ export async function processScheduledAnnouncements() {
   for (const row of items || []) {
     if (row.is_sent && row.status === 'sent') continue;
 
-    let schedules = row.schedules_json || [];
+    let schedules = ensureJsonArray(row.schedules_json, []);
     if (!schedules.length && row.scheduled_at) {
       schedules = [{ scheduled_at: row.scheduled_at, status: 'pending' }];
     }

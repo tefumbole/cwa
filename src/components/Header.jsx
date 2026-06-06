@@ -98,7 +98,6 @@ function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
               <NavLink to="/">Home</NavLink>
-              <NavLink to="/services">Services</NavLink>
               <NavLink to="/trainings">Training</NavLink>
               <NavLink to="/events">Events</NavLink>
 
@@ -232,7 +231,6 @@ function Header() {
             <div className="lg:hidden pb-4 animate-slide-in-from-top bg-[#003D82] absolute left-0 right-0 top-20 px-4 shadow-xl border-t border-gray-800 z-50 overflow-y-auto max-h-[calc(100vh-5rem)]">
               <nav className="flex flex-col space-y-4 pt-4 pb-10">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">Home</Link>
-                <Link to="/services" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">Services</Link>
                 <Link to="/trainings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">Training</Link>
                 <Link to="/events" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">Events</Link>
                 

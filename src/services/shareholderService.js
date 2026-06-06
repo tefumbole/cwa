@@ -1,10 +1,23 @@
 import { supabase } from "@/lib/customSupabaseClient";
 import { generateReferenceNumber } from "@/utils/referenceNumberGenerator";
+import { getSystemSettings } from "@/services/sharePriceService";
 
 /**
  * Shareholder Service
  * Comprehensive service for managing shareholder data
  */
+
+export const getShareholderDisplayName = (shareholder) =>
+  shareholder?.full_name?.trim() ||
+  shareholder?.name?.trim() ||
+  '—';
+
+export const getShareholderWorth = (shareholder, pricePerShare = 1000) => {
+  const shares = parseInt(shareholder?.shares_assigned, 10) || 0;
+  const stored = parseFloat(shareholder?.investment_amount);
+  if (!Number.isNaN(stored) && stored > 0) return stored;
+  return shares * (parseFloat(pricePerShare) || 1000);
+};
 
 /**
  * Fetches all shareholders from database
@@ -19,6 +32,12 @@ export const getAllShareholders = async (filters = {}) => {
     let query = supabase
       .from('shareholders')
       .select('*', { count: 'exact' });
+
+    if (filters.trashOnly) {
+      query = query.not('deleted_at', 'is', null);
+    } else if (!filters.includeDeleted) {
+      query = query.is('deleted_at', null);
+    }
 
     // Apply status filter if provided
     if (filters.status && filters.status !== 'all') {
@@ -74,6 +93,7 @@ export const getApprovedShareholders = async () => {
       .from('shareholders')
       .select('*')
       .eq('status', 'approved')
+      .is('deleted_at', null)
       .order('approved_at', { ascending: false });
 
     if (error) {
@@ -264,7 +284,7 @@ export const updateShareholder = async (id, updates) => {
  * @returns {Promise<Object>} { success, error }
  */
 export const deleteShareholder = async (id) => {
-  console.log('[SERVICE] deleteShareholder called, ID:', id);
+  console.log('[SERVICE] deleteShareholder (soft) called, ID:', id);
   
   try {
     if (!id) {
@@ -273,7 +293,7 @@ export const deleteShareholder = async (id) => {
 
     const { error } = await supabase
       .from('shareholders')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);
 
     if (error) {
@@ -281,13 +301,58 @@ export const deleteShareholder = async (id) => {
       return { success: false, error };
     }
 
-    console.log('[SERVICE] Shareholder deleted successfully');
+    console.log('[SERVICE] Shareholder moved to trash');
     return { success: true };
 
   } catch (error) {
     console.error('[SERVICE] deleteShareholder catch error:', error);
     return { success: false, error };
   }
+};
+
+export const softDeleteShareholders = async (ids = []) => {
+  if (!ids.length) return { success: true, count: 0 };
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('shareholders')
+    .update({ deleted_at: now })
+    .in('id', ids);
+  if (error) return { success: false, error };
+  return { success: true, count: ids.length };
+};
+
+export const restoreShareholders = async (ids = []) => {
+  if (!ids.length) return { success: true, count: 0 };
+  const { error } = await supabase
+    .from('shareholders')
+    .update({ deleted_at: null })
+    .in('id', ids);
+  if (error) return { success: false, error };
+  return { success: true, count: ids.length };
+};
+
+export const permanentDeleteShareholders = async (ids = []) => {
+  if (!ids.length) return { success: true, count: 0 };
+  const { error } = await supabase
+    .from('shareholders')
+    .delete()
+    .in('id', ids);
+  if (error) return { success: false, error };
+  return { success: true, count: ids.length };
+};
+
+export const updateShareholderName = async (id, fullName) => {
+  if (!id || !fullName?.trim()) {
+    return { success: false, error: new Error('Name is required') };
+  }
+  const { data, error } = await supabase
+    .from('shareholders')
+    .update({ full_name: fullName.trim(), name: fullName.trim() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) return { success: false, error };
+  return { success: true, data };
 };
 
 /**
@@ -298,9 +363,14 @@ export const getShareholderStats = async () => {
   console.log('[SERVICE] getShareholderStats called');
   
   try {
+    const settings = await getSystemSettings();
+    const totalCompanyShares = settings.total_shares_available || 100;
+    const pricePerShare = settings.price_per_share || 1000;
+
     const { data: allShareholders, error } = await supabase
       .from('shareholders')
-      .select('status, shares_assigned, investment_amount, payment_status');
+      .select('status, shares_assigned, investment_amount, payment_status, deleted_at')
+      .is('deleted_at', null);
 
     if (error) {
       console.error('[SERVICE] getShareholderStats error:', error);
@@ -313,7 +383,10 @@ export const getShareholderStats = async () => {
     const pending = shareholders.filter(s => s.status === 'pending_approval');
     
     const totalShares = approved.reduce((sum, s) => sum + (parseInt(s.shares_assigned) || 0), 0);
-    const totalInvestment = approved.reduce((sum, s) => sum + (parseFloat(s.investment_amount) || 0), 0);
+    const totalInvestment = approved.reduce(
+      (sum, s) => sum + getShareholderWorth(s, pricePerShare),
+      0
+    );
     
     const completedPayments = approved.filter(s => 
       s.payment_status === 'completed' || s.payment_status === 'paid'
@@ -327,11 +400,13 @@ export const getShareholderStats = async () => {
       totalShareholders: shareholders.length,
       approvedShareholders: approved.length,
       pendingShareholders: pending.length,
-      totalShares: totalShares,
-      totalInvestment: totalInvestment,
-      completedPayments: completedPayments,
-      pendingPayments: pendingPayments,
-      availableShares: 100 - totalShares
+      totalShares,
+      totalInvestment,
+      completedPayments,
+      pendingPayments,
+      totalCompanyShares,
+      availableShares: Math.max(0, totalCompanyShares - totalShares),
+      pricePerShare,
     };
 
     console.log('[SERVICE] Stats calculated:', stats);
@@ -347,9 +422,16 @@ export const getShareholderStats = async () => {
       totalInvestment: 0,
       completedPayments: 0,
       pendingPayments: 0,
-      availableShares: 100
+      totalCompanyShares: 100,
+      availableShares: 100,
+      pricePerShare: 1000,
     };
   }
+};
+
+export const getAvailableSharesForSubscription = async () => {
+  const stats = await getShareholderStats();
+  return stats.availableShares;
 };
 
 /**
@@ -479,10 +561,40 @@ export const saveShareholderRegistration = async (formData) => {
   }
 };
 
+/**
+ * Approved shareholders with payment still pending
+ */
+export const getPendingPaymentShareholders = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('shareholders')
+      .select('*')
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .order('approved_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).filter((row) => {
+      const status = (row.payment_status || '').toLowerCase();
+      return !status || status === 'pending' || status === 'pay later';
+    });
+  } catch (error) {
+    console.error('[SERVICE] getPendingPaymentShareholders error:', error);
+    return [];
+  }
+};
+
+export const updateShareholderPaymentStatus = async (id, paymentStatus) => {
+  return updateShareholder(id, { payment_status: paymentStatus });
+};
+
 export default {
   getAllShareholders,
   getApprovedShareholders,
   getPendingShareholders,
+  getPendingPaymentShareholders,
+  updateShareholderPaymentStatus,
   getShareholderById,
   getShareholderByReference,
   createShareholder,

@@ -8,7 +8,6 @@ import { validateImageSize } from '@/utils/imageCompression';
  */
 export const uploadLogo = async (file) => {
   try {
-    // 1. Validate File
     const validation = validateImageSize(file);
     if (!validation.valid) {
       throw new Error(validation.error);
@@ -16,58 +15,105 @@ export const uploadLogo = async (file) => {
 
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
-      throw new Error("Invalid file type. Only PNG, JPG, JPEG, WebP, and SVG are allowed.");
+      throw new Error('Invalid file type. Only PNG, JPG, JPEG, WebP, and SVG are allowed.');
     }
 
-    // 2. Prepare Upload
     const fileExt = file.name.split('.').pop();
     const fileName = `system-logo-${Date.now()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
 
-    // 3. Upload to Supabase Storage ('system-assets' bucket)
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('system-assets')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
       });
 
     if (uploadError) {
-      console.error("Storage upload error:", uploadError);
+      console.error('Storage upload error:', uploadError);
       throw new Error("Failed to upload image. Ensure 'system-assets' bucket exists.");
     }
 
-    // 4. Get Public URL
+    const storedPath = uploadData?.path || uploadData?.Key || filePath;
     const { data: { publicUrl } } = supabase.storage
       .from('system-assets')
-      .getPublicUrl(filePath);
+      .getPublicUrl(storedPath);
 
     if (!publicUrl) {
-      throw new Error("Failed to retrieve public URL for uploaded logo.");
+      throw new Error('Failed to retrieve public URL for uploaded logo.');
     }
 
-    return { publicUrl, filePath };
+    return { publicUrl, filePath: storedPath };
   } catch (error) {
-    console.error("Logo upload service error:", error);
+    console.error('Logo upload service error:', error);
     throw error;
   }
 };
 
 /**
- * Deletes a logo from Supabase Storage.
- * @param {string} filePath - The storage path of the file to delete
+ * Uploads a PDF letterhead image (header or footer) to Supabase Storage.
+ * @param {File} file
+ * @param {'header' | 'footer'} type
  */
-export const deleteLogo = async (filePath) => {
-    if (!filePath) return;
-    
-    try {
-        const { error } = await supabase.storage
-            .from('system-assets')
-            .remove([filePath]);
-            
-        if (error) throw error;
-    } catch (error) {
-        console.error("Error deleting logo:", error);
-        throw error;
-    }
+export const uploadPdfLetterheadImage = async (file, type) => {
+  if (!['header', 'footer'].includes(type)) {
+    throw new Error('Invalid letterhead type. Use "header" or "footer".');
+  }
+
+  const validation = validateImageSize(file);
+  if (!validation.valid) {
+    throw new Error(validation.error);
+  }
+
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Invalid file type. Only PNG, JPG, JPEG, WebP, and SVG are allowed.');
+  }
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `pdf-${type}-${Date.now()}.${fileExt}`;
+  const filePath = `pdf-letterhead/${fileName}`;
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('system-assets')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error("Failed to upload image. Ensure 'system-assets' bucket exists.");
+  }
+
+  const storedPath = uploadData?.path || uploadData?.Key || filePath;
+  const { data: { publicUrl } } = supabase.storage
+    .from('system-assets')
+    .getPublicUrl(storedPath);
+
+  if (!publicUrl) {
+    throw new Error('Failed to retrieve public URL for uploaded image.');
+  }
+
+  return { publicUrl, filePath: storedPath };
 };
+
+/**
+ * Deletes a file from Supabase Storage (system-assets bucket).
+ * @param {string} filePath
+ */
+export const deleteStoredAsset = async (filePath) => {
+  if (!filePath) return;
+
+  try {
+    const { error } = await supabase.storage
+      .from('system-assets')
+      .remove([filePath]);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting stored asset:', error);
+    throw error;
+  }
+};
+
+export const deleteLogo = deleteStoredAsset;

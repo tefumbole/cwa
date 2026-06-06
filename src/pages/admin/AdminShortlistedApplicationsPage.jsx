@@ -15,6 +15,8 @@ import { useAuth } from '@/context/AuthContext';
 import ApplicationReviewModal from '@/components/admin/ApplicationReviewModal';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const applicantName = (app) => app.full_name || app.candidate_name || 'Applicant';
+
 const AdminShortlistedApplicationsPage = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ const AdminShortlistedApplicationsPage = () => {
             if (sendWhatsAppInvite && invitingApp.phone) {
                 const waMessage = `Your interview for ${invitingApp.jobs?.title || 'the position'} is scheduled for ${inviteData.date} at ${inviteData.time}. Please check your email for details and confirm.`;
                 await WhatsAppService.sendMessage(invitingApp.phone, waMessage, 'interview_scheduled', {
-                    recipient_name: invitingApp.candidate_name,
+                    recipient_name: applicantName(invitingApp),
                     recipient_type: 'applicant'
                 });
                 toast({ title: "WhatsApp Sent", description: "Notification sent to candidate's phone." });
@@ -150,7 +152,7 @@ const AdminShortlistedApplicationsPage = () => {
                   <TableRow key={app.id}>
                     <TableCell>
                         <div className="flex flex-col">
-                            <span className="font-medium">{app.candidate_name}</span>
+                            <span className="font-medium">{applicantName(app)}</span>
                             <span className="text-xs text-gray-500">{app.email}</span>
                         </div>
                     </TableCell>

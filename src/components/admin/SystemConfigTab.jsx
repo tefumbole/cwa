@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, UploadCloud, Trash2, Image as ImageIcon, Save, CheckCircle } from 'lucide-react';
+import { Loader2, UploadCloud, Trash2, Image as ImageIcon, Save } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { getSystemSettings, updateSystemSettings } from '@/services/settingsService';
-import { uploadLogo, deleteLogo } from '@/services/logoUploadService';
+import { uploadLogo, uploadPdfLetterheadImage, deleteStoredAsset } from '@/services/logoUploadService';
 
 const SystemConfigTab = () => {
     const { toast } = useToast();
@@ -15,13 +15,21 @@ const SystemConfigTab = () => {
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef(null);
+    const headerInputRef = useRef(null);
+    const footerInputRef = useRef(null);
 
     const [config, setConfig] = useState({
         developed_by: '',
         copyright_text: '',
         logo_url: '',
-        logo_file_path: ''
+        logo_file_path: '',
+        pdf_header_url: '',
+        pdf_header_file_path: '',
+        pdf_footer_url: '',
+        pdf_footer_file_path: '',
     });
+    const [uploadingHeader, setUploadingHeader] = useState(false);
+    const [uploadingFooter, setUploadingFooter] = useState(false);
 
     useEffect(() => {
         loadSettings();
@@ -36,7 +44,11 @@ const SystemConfigTab = () => {
                     developed_by: data.developed_by || '',
                     copyright_text: data.copyright_text || '',
                     logo_url: data.logo_url || '',
-                    logo_file_path: data.logo_file_path || ''
+                    logo_file_path: data.logo_file_path || '',
+                    pdf_header_url: data.pdf_header_url || '',
+                    pdf_header_file_path: data.pdf_header_file_path || '',
+                    pdf_footer_url: data.pdf_footer_url || '',
+                    pdf_footer_file_path: data.pdf_footer_file_path || '',
                 });
             }
         } catch (error) {
@@ -56,7 +68,7 @@ const SystemConfigTab = () => {
             setSaving(true);
             await updateSystemSettings({
                 developed_by: config.developed_by,
-                copyright_text: config.copyright_text
+                copyright_text: config.copyright_text,
             });
             toast({ 
                 title: "Settings Saved", 
@@ -78,7 +90,7 @@ const SystemConfigTab = () => {
             
             // 1. Delete old logo if exists
             if (config.logo_file_path) {
-                await deleteLogo(config.logo_file_path);
+                await deleteStoredAsset(config.logo_file_path);
             }
 
             // 2. Upload new logo
@@ -129,7 +141,7 @@ const SystemConfigTab = () => {
         try {
             setUploading(true);
             if (config.logo_file_path) {
-                await deleteLogo(config.logo_file_path);
+                await deleteStoredAsset(config.logo_file_path);
             }
             
             await updateSystemSettings({
@@ -145,6 +157,112 @@ const SystemConfigTab = () => {
             setUploading(false);
         }
     };
+
+    const handleLetterheadUpload = async (file, type) => {
+        if (!file) return;
+
+        const setUploadingState = type === 'header' ? setUploadingHeader : setUploadingFooter;
+        const urlKey = type === 'header' ? 'pdf_header_url' : 'pdf_footer_url';
+        const pathKey = type === 'header' ? 'pdf_header_file_path' : 'pdf_footer_file_path';
+
+        try {
+            setUploadingState(true);
+
+            if (config[pathKey]) {
+                await deleteStoredAsset(config[pathKey]);
+            }
+
+            const { publicUrl, filePath } = await uploadPdfLetterheadImage(file, type);
+
+            await updateSystemSettings({
+                [urlKey]: publicUrl,
+                [pathKey]: filePath,
+            });
+
+            setConfig((prev) => ({
+                ...prev,
+                [urlKey]: publicUrl,
+                [pathKey]: filePath,
+            }));
+
+            toast({
+                title: `${type === 'header' ? 'Header' : 'Footer'} Updated`,
+                description: `PDF ${type} image uploaded successfully.`,
+            });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+        } finally {
+            setUploadingState(false);
+        }
+    };
+
+    const handleRemoveLetterhead = async (type) => {
+        const label = type === 'header' ? 'header' : 'footer';
+        if (!window.confirm(`Remove the PDF ${label} image?`)) return;
+
+        const urlKey = type === 'header' ? 'pdf_header_url' : 'pdf_footer_url';
+        const pathKey = type === 'header' ? 'pdf_header_file_path' : 'pdf_footer_file_path';
+        const setUploadingState = type === 'header' ? setUploadingHeader : setUploadingFooter;
+
+        try {
+            setUploadingState(true);
+            if (config[pathKey]) {
+                await deleteStoredAsset(config[pathKey]);
+            }
+
+            await updateSystemSettings({
+                [urlKey]: null,
+                [pathKey]: null,
+            });
+
+            setConfig((prev) => ({ ...prev, [urlKey]: '', [pathKey]: '' }));
+            toast({ title: 'Removed', description: `PDF ${label} image removed.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message });
+        } finally {
+            setUploadingState(false);
+        }
+    };
+
+    const renderLetterheadUpload = (type, label, inputRef, imageUrl, isUploading) => (
+        <div className="space-y-3">
+            <Label>{label}</Label>
+            <input
+                type="file"
+                ref={inputRef}
+                className="hidden"
+                accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                onChange={(e) => handleLetterheadUpload(e.target.files?.[0], type)}
+            />
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center min-h-[180px] bg-gray-50/50">
+                {isUploading ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                ) : imageUrl ? (
+                    <div className="w-full flex flex-col items-center gap-3">
+                        <div className="w-full bg-white rounded-lg border p-2 flex items-center justify-center">
+                            <img src={imageUrl} alt={label} className="max-w-full max-h-28 object-contain" />
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                                Replace
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleRemoveLetterhead(type)}>
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center space-y-3">
+                        <UploadCloud className="w-8 h-8 text-blue-600 mx-auto" />
+                        <p className="text-sm text-gray-600">Upload {label.toLowerCase()} image</p>
+                        <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                            Select Image
+                        </Button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 
     if (loading) {
         return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
@@ -271,6 +389,24 @@ const SystemConfigTab = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>PDF Header &amp; Footer</CardTitle>
+                    <CardDescription>
+                        Upload header and footer images applied to all generated PDF documents (agreements, announcements, messages).
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {renderLetterheadUpload('header', 'PDF Header Image', headerInputRef, config.pdf_header_url, uploadingHeader)}
+                        {renderLetterheadUpload('footer', 'PDF Footer Image', footerInputRef, config.pdf_footer_url, uploadingFooter)}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4">
+                        Use PNG or JPG letterhead artwork. Recommended width: 800–1200px. Logo watermark uses the system logo above.
+                    </p>
+                </CardContent>
+            </Card>
         </div>
     );
 };

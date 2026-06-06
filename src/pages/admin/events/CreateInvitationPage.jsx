@@ -7,6 +7,8 @@ import { createInvitation, updateInvitationStatus } from '@/services/invitationS
 import { sendInvitationViaWhatsApp } from '@/services/whatsappInvitationService';
 import { getAllTemplates } from '@/services/templateService';
 import { isValidUUID, checkEventExists } from '@/utils/uuidValidator';
+import AdminHorizontalNav from '@/components/admin/AdminHorizontalNav';
+import { INVITATION_NAV } from '@/config/invitationNavConfig';
 import PremiumInvitationRenderer, { drawPremiumInvitation } from '@/components/PremiumInvitationRenderer';
 import QRCode from 'qrcode';
 
@@ -239,15 +241,13 @@ const CreateInvitationPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[#003D82]">Create Premium Invitation</h1>
-          <p className="text-gray-500">Design and generate a high-quality digital event invitation.</p>
-        </div>
+      <AdminHorizontalNav
+        items={INVITATION_NAV}
+        title="Digital Invitations"
+        description="Design and generate high-quality digital event invitations."
+      />
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-end gap-4">
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/admin/invitations')}>
-             View All Invitations
-          </Button>
           <Button variant="outline" onClick={() => setIsManualEntry(!isManualEntry)}>
             {isManualEntry ? <><UserCheck className="w-4 h-4 mr-2"/> Select System User</> : <><UserPlus className="w-4 h-4 mr-2"/> Manual Entry</>}
           </Button>

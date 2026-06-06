@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/customSupabaseClient';
+import { enrichSystemSettingsAssets } from '@/utils/storageUrl';
 
 /**
  * Service to handle system settings via Supabase
@@ -22,17 +23,17 @@ export const getSystemSettings = async () => {
                 .insert([{ developed_by: 'Alpha Bridge', copyright_text: 'All rights reserved' }])
                 .select()
                 .single();
-             if (!insertError) return newData;
+             if (!insertError) return enrichSystemSettingsAssets(newData);
         }
         console.warn('getSystemSettings error:', error.message);
-        return {
+        return enrichSystemSettingsAssets({
             developed_by: 'Alpha Bridge',
             copyright_text: 'All rights reserved',
             logo_url: null
-        };
+        });
     }
     
-    return data;
+    return enrichSystemSettingsAssets(data);
   } catch (error) {
     console.error('System settings fetch exception:', error);
     throw error;
@@ -72,7 +73,7 @@ export const updateSystemSettings = async (newSettings) => {
     }
 
     if (result.error) throw result.error;
-    return result.data;
+    return enrichSystemSettingsAssets(result.data);
   } catch (error) {
     console.error('System settings update exception:', error);
     throw error;

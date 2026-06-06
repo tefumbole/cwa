@@ -30,7 +30,7 @@ const AdminDashboard = () => {
     { title: "Manage Users", icon: Users, link: "/admin/users", desc: "Staff & Admins" },
     { title: "Recruitment", icon: Briefcase, link: "/admin/recruitment-dashboard", desc: "Jobs & Applications" },
     { title: "Shareholders", icon: TrendingUp, link: "/admin/shareholders", desc: "Equity Management" },
-    { title: "Settings", icon: Settings, link: "/admin/settings", desc: "System Config" },
+    { title: "General Settings", icon: Settings, link: "/admin/general-settings", desc: "System Config" },
   ];
 
   return (
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="flex gap-2">
-            <Link to="/admin/settings">
+            <Link to="/admin/general-settings">
                 <Button variant="outline" className="border-[#003D82] text-[#003D82] hover:bg-blue-50">
                     <Settings className="w-4 h-4 mr-2" /> Settings
                 </Button>
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
                 <div className="mt-6 pt-4 bg-gray-50 p-4 rounded-lg">
                     <h4 className="text-sm font-bold text-gray-700 mb-2">My Profile</h4>
                     <p className="text-xs text-gray-500 mb-1">Update your contact info in Settings.</p>
-                    <Link to="/admin/settings">
+                    <Link to="/admin/general-settings">
                         <Button size="sm" className="w-full bg-[#003D82] text-white hover:bg-[#002855]">
                              Go to Profile Settings
                         </Button>

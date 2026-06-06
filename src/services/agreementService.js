@@ -1,348 +1,233 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from '@/lib/customSupabaseClient';
-import { sendWhatsAppMessage } from '@/services/wasenderapiService';
+import { sendDocumentBuffer, formatPhoneNumber } from '@/services/wasenderapiService';
 import { formatPrice } from '@/services/sharePriceService';
 
-/**
- * Agreement Service
- * Handles PDF generation, storage, and WhatsApp delivery of shareholder agreements
- */
+function sanitizeFilename(name) {
+  return String(name || 'shareholder').replace(/[^a-zA-Z0-9._-]/g, '_');
+}
 
-/**
- * Generates PDF from HTML element
- * @param {string} elementId - ID of HTML element to convert
- * @param {string} filename - Output filename
- * @returns {Promise<Object>} { success, pdf, error }
- */
-export const generatePDFFromHTML = async (elementId, filename) => {
-  console.log('[AGREEMENT] Generating PDF from element:', elementId);
-  console.log('[AGREEMENT] Filename:', filename);
-  
+function resolvePublicUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  return `${origin}${url.startsWith('/') ? url : `/${url}`}`;
+}
+
+export const generatePDFFromHTML = async (elementId) => {
   try {
     const element = document.getElementById(elementId);
-    
-    if (!element) {
-      console.error('[AGREEMENT] Element not found:', elementId);
-      throw new Error(`Element with ID "${elementId}" not found`);
-    }
+    if (!element) throw new Error(`Element with ID "${elementId}" not found`);
 
-    console.log('[AGREEMENT] Capturing element as canvas');
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: 1.25,
       useCORS: true,
       logging: false,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
     });
 
-    console.log('[AGREEMENT] Canvas captured, generating PDF');
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-
     const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidthMm = 210;
+    const pageHeightMm = 297;
+    const imgWidthMm = pageWidthMm;
+    const pageHeightPx = Math.floor((canvas.width * pageHeightMm) / imgWidthMm);
 
-    // Add first page
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    let renderedHeight = 0;
+    let pageIndex = 0;
 
-    // Add additional pages if needed
-    let pageCount = 1;
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pageCount++;
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+    while (renderedHeight < canvas.height) {
+      const sliceHeight = Math.min(pageHeightPx, canvas.height - renderedHeight);
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceHeight;
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(
+        canvas,
+        0,
+        renderedHeight,
+        canvas.width,
+        sliceHeight,
+        0,
+        0,
+        canvas.width,
+        sliceHeight
+      );
+
+      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.72);
+      const sliceHeightMm = (sliceHeight * imgWidthMm) / canvas.width;
+
+      if (pageIndex > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, sliceHeightMm);
+
+      renderedHeight += sliceHeight;
+      pageIndex += 1;
     }
 
-    console.log('[AGREEMENT] PDF generated successfully, pages:', pageCount);
     return { success: true, pdf };
-
   } catch (error) {
     console.error('[AGREEMENT] Error generating PDF:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Downloads PDF to user's device
- * @param {jsPDF} pdf - PDF object
- * @param {string} filename - Download filename
- * @returns {Object} { success, error }
- */
 export const downloadPDF = (pdf, filename) => {
-  console.log('[AGREEMENT] Downloading PDF:', filename);
   try {
-    if (!pdf) {
-      throw new Error('PDF object is required');
-    }
-
+    if (!pdf) throw new Error('PDF object is required');
     pdf.save(filename);
-    console.log('[AGREEMENT] PDF downloaded successfully');
     return { success: true };
-
   } catch (error) {
-    console.error('[AGREEMENT] Error downloading PDF:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Uploads agreement PDF to Supabase storage
- * @param {string} shareholderId - Shareholder UUID
- * @param {Blob} pdfBlob - PDF blob data
- * @param {string} filename - File name
- * @returns {Promise<Object>} { success, publicUrl, path, error }
- */
 export const uploadAgreementPDF = async (shareholderId, pdfBlob, filename) => {
-  console.log('[AGREEMENT] Uploading PDF to storage');
-  console.log('[AGREEMENT] Shareholder ID:', shareholderId);
-  console.log('[AGREEMENT] Filename:', filename);
-  
   try {
     if (!shareholderId || !pdfBlob || !filename) {
       throw new Error('Shareholder ID, PDF blob, and filename are required');
     }
 
-    const filePath = `agreements/${shareholderId}/${filename}`;
-    console.log('[AGREEMENT] Upload path:', filePath);
+    const storedName = `agreement-${shareholderId}-${Date.now()}.pdf`;
 
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('shareholder-agreements')
-      .upload(filePath, pdfBlob, {
+      .upload(storedName, pdfBlob, {
         contentType: 'application/pdf',
-        upsert: true
+        upsert: true,
       });
 
-    if (uploadError) {
-      console.error('[AGREEMENT] Upload error:', uploadError);
-      throw uploadError;
-    }
+    if (error) throw error;
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    const storedPath = data?.path || data?.Key || storedName;
+    const { data: urlData } = supabase.storage
       .from('shareholder-agreements')
-      .getPublicUrl(filePath);
+      .getPublicUrl(storedPath);
 
-    console.log('[AGREEMENT] PDF uploaded successfully');
-    console.log('[AGREEMENT] Public URL:', publicUrl);
-    return { success: true, publicUrl, path: filePath };
-
+    const publicUrl = resolvePublicUrl(urlData?.publicUrl);
+    return { success: true, publicUrl, path: storedPath, blob: pdfBlob };
   } catch (error) {
     console.error('[AGREEMENT] Error uploading PDF:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Saves PDF URL and path to shareholders table
- * @param {string} shareholderId - Shareholder UUID
- * @param {string} pdfUrl - Public URL of PDF
- * @param {string} pdfPath - Storage path of PDF
- * @returns {Promise<Object>} { success, error }
- */
 export const savePDFToShareholder = async (shareholderId, pdfUrl, pdfPath) => {
-  console.log('[AGREEMENT] Saving PDF info to database');
-  console.log('[AGREEMENT] Shareholder ID:', shareholderId);
-  
   try {
-    if (!shareholderId || !pdfUrl || !pdfPath) {
-      throw new Error('Shareholder ID, PDF URL, and path are required');
-    }
-
     const { error } = await supabase
       .from('shareholders')
       .update({
         agreement_pdf_url: pdfUrl,
         agreement_pdf_path: pdfPath,
-        pdf_generated_at: new Date().toISOString()
+        pdf_generated_at: new Date().toISOString(),
       })
       .eq('id', shareholderId);
 
-    if (error) {
-      console.error('[AGREEMENT] Database update error:', error);
-      throw error;
-    }
-
-    console.log('[AGREEMENT] PDF info saved to database');
+    if (error) throw error;
     return { success: true };
-
   } catch (error) {
-    console.error('[AGREEMENT] Error saving PDF to database:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Orchestrates complete PDF generation, upload, and database save
- * @param {string} shareholderId - Shareholder UUID
- * @param {string} elementId - HTML element ID to convert
- * @returns {Promise<Object>} { success, pdfUrl, error }
- */
-export const generateAndSaveAgreementPDF = async (shareholderId, elementId) => {
-  console.log('[AGREEMENT] Starting PDF generation workflow');
-  console.log('[AGREEMENT] Shareholder ID:', shareholderId);
-  console.log('[AGREEMENT] Element ID:', elementId);
-  
+export const generateAgreementPDFBlob = async (shareholderId, elementId, shareholderName) => {
+  const filename = `Shareholder-Agreement-${sanitizeFilename(shareholderName || shareholderId)}.pdf`;
+  const { success, pdf, error } = await generatePDFFromHTML(elementId);
+  if (!success || !pdf) throw new Error(error || 'Failed to generate PDF');
+  const pdfBlob = pdf.output('blob');
+  return { pdf, pdfBlob, filename };
+};
+
+export const generateAndSaveAgreementPDF = async (shareholderId, elementId, shareholderName) => {
   try {
-    if (!shareholderId || !elementId) {
-      throw new Error('Shareholder ID and element ID are required');
-    }
+    const { pdfBlob, filename } = await generateAgreementPDFBlob(shareholderId, elementId, shareholderName);
 
-    // Generate PDF
-    const filename = `agreement-${shareholderId}-${Date.now()}.pdf`;
-    console.log('[AGREEMENT] Step 1: Generating PDF');
-    const { success: pdfSuccess, pdf, error: pdfError } = await generatePDFFromHTML(elementId, filename);
-
-    if (!pdfSuccess || !pdf) {
-      throw new Error(pdfError || 'Failed to generate PDF');
-    }
-
-    // Convert PDF to blob
-    console.log('[AGREEMENT] Step 2: Converting to blob');
-    const pdfBlob = pdf.output('blob');
-
-    // Upload to storage
-    console.log('[AGREEMENT] Step 3: Uploading to storage');
     const { success: uploadSuccess, publicUrl, path, error: uploadError } = await uploadAgreementPDF(
       shareholderId,
       pdfBlob,
       filename
     );
 
-    if (!uploadSuccess) {
-      throw new Error(uploadError || 'Failed to upload PDF');
-    }
+    if (!uploadSuccess) throw new Error(uploadError || 'Failed to upload PDF');
 
-    // Save to database
-    console.log('[AGREEMENT] Step 4: Saving to database');
     const { success: saveSuccess, error: saveError } = await savePDFToShareholder(
       shareholderId,
       publicUrl,
       path
     );
 
-    if (!saveSuccess) {
-      throw new Error(saveError || 'Failed to save PDF info to database');
-    }
+    if (!saveSuccess) throw new Error(saveError || 'Failed to save PDF info to database');
 
-    console.log('[AGREEMENT] PDF generation workflow completed successfully');
-    return { success: true, pdfUrl: publicUrl };
-
+    return { success: true, pdfUrl: publicUrl, pdfBlob, filename };
   } catch (error) {
-    console.error('[AGREEMENT] Error in PDF generation workflow:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Sends shareholder agreement via WhatsApp
- * @param {string} shareholderPhone - Phone number
- * @param {string} shareholderName - Shareholder name
- * @param {string} agreementUrl - PDF URL
- * @param {Object} investmentDetails - { approvedShares, sharePrice, totalInvestment }
- * @returns {Promise<Object>} { success, error }
- */
 export const sendAgreementViaWhatsApp = async (
   shareholderPhone,
   shareholderName,
-  agreementUrl,
+  pdfBlob,
+  fileName,
   investmentDetails
 ) => {
-  console.log('[AGREEMENT] Sending agreement via WhatsApp');
-  console.log('[AGREEMENT] To:', shareholderPhone);
-  console.log('[AGREEMENT] Name:', shareholderName);
-  
   try {
-    if (!shareholderPhone || !shareholderName || !agreementUrl) {
-      throw new Error('Phone number, name, and agreement URL are required');
+    if (!shareholderPhone || !shareholderName || !pdfBlob) {
+      throw new Error('Phone number, name, and PDF are required');
     }
 
-    const { approvedShares, sharePrice, totalInvestment } = investmentDetails;
-    console.log('[AGREEMENT] Investment details:', { approvedShares, sharePrice, totalInvestment });
+    const phone = shareholderPhone;
+    const formattedPhone = formatPhoneNumber(phone);
+    if (!formattedPhone) {
+      throw new Error(`Invalid phone number: ${phone}. Use international format e.g. +237675321739`);
+    }
 
+    const { approvedShares, sharePrice, totalInvestment } = investmentDetails || {};
     const message = `Dear ${shareholderName},
 
 Congratulations! Your shareholder agreement has been approved.
 
-📋 Investment Summary:
+Investment Summary:
 • Approved Shares: ${approvedShares || 0}
 • Share Price: ${formatPrice(sharePrice || 0)}
 • Total Investment: ${formatPrice(totalInvestment || 0)}
 
-📄 Your signed shareholder agreement is ready for download:
-${agreementUrl}
-
-Please download and keep this document for your records.
+Your signed shareholder agreement PDF is attached in the next message.
 
 Thank you for investing with Alpha Bridge Technologies.
 
 Best regards,
 Alpha Bridge Technologies Team`;
 
-    console.log('[AGREEMENT] Sending WhatsApp message');
-    const result = await sendWhatsAppMessage(
-      shareholderPhone,
+    const result = await sendDocumentBuffer(
+      formattedPhone,
       message,
-      {
-        name: shareholderName,
-        recipient_name: shareholderName
-      },
-      null,
-      agreementUrl
+      pdfBlob,
+      fileName || 'Shareholder-Agreement.pdf'
     );
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to send WhatsApp message');
     }
 
-    console.log('[AGREEMENT] Agreement sent via WhatsApp successfully');
     return { success: true };
-
   } catch (error) {
     console.error('[AGREEMENT] Error sending WhatsApp message:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Fetches shareholder record from database
- * @param {string} shareholderId - Shareholder UUID
- * @returns {Promise<Object>} { success, shareholder, error }
- */
 export const getShareholderAgreement = async (shareholderId) => {
-  console.log('[AGREEMENT] Fetching shareholder:', shareholderId);
-  
   try {
-    if (!shareholderId) {
-      throw new Error('Shareholder ID is required');
-    }
-
     const { data, error } = await supabase
       .from('shareholders')
       .select('*')
       .eq('id', shareholderId)
       .single();
 
-    if (error) {
-      console.error('[AGREEMENT] Fetch error:', error);
-      throw error;
-    }
-
-    if (!data) {
-      throw new Error('Shareholder not found');
-    }
-
-    console.log('[AGREEMENT] Shareholder fetched successfully');
+    if (error) throw error;
+    if (!data) throw new Error('Shareholder not found');
     return { success: true, shareholder: data };
-
   } catch (error) {
-    console.error('[AGREEMENT] Error fetching shareholder:', error);
     return { success: false, error: error.message };
   }
 };
@@ -352,7 +237,8 @@ export default {
   downloadPDF,
   uploadAgreementPDF,
   savePDFToShareholder,
+  generateAgreementPDFBlob,
   generateAndSaveAgreementPDF,
   sendAgreementViaWhatsApp,
-  getShareholderAgreement
+  getShareholderAgreement,
 };

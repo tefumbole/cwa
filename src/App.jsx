@@ -30,6 +30,7 @@ import SharesPage from '@/pages/SharesPage';
 import ShareholderConfirmationPage from '@/components/ShareholderConfirmationPage';
 import AdminShareHolderListPage from '@/pages/AdminShareHolderListPage';
 import ShareholdersAgreementPage from '@/pages/ShareholdersAgreementPage';
+import SignedAgreementVerifyPage from '@/pages/SignedAgreementVerifyPage';
 import SharePurchasePortal from '@/pages/SharePurchasePortal';
 import QRScannerPage from '@/pages/QRScannerPage';
 import StudentProgressPage from '@/pages/StudentProgressPage';
@@ -47,6 +48,7 @@ import ShareholderDashboard from '@/pages/ShareholderDashboard';
 import ApplicantDashboard from '@/pages/ApplicantDashboard';
 import MyTasksPage from '@/pages/user/MyTasksPage'; 
 import PendingAcceptancesPage from '@/pages/user/PendingAcceptancesPage';
+import AdminShareHolderTrashPage from '@/pages/admin/shareholders/AdminShareHolderTrashPage';
 import TaskInvitePage from '@/pages/TaskInvitePage'; 
 
 // Components
@@ -74,6 +76,7 @@ import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
 import AdminUsersPage from '@/pages/admin/AdminUsersPage'; 
 import AdminRolesPage from '@/pages/admin/AdminRolesPage';
 import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
+import GeneralSystemSettingsPage from '@/pages/admin/GeneralSystemSettingsPage';
 import AdminMembersPage from '@/pages/admin/AdminMembersPage';
 import AdminCoursesPage from '@/pages/admin/AdminCoursesPage';
 import AdminRegistrationsPage from '@/pages/admin/AdminRegistrationsPage';
@@ -99,6 +102,7 @@ import AdminShareSettingsPage from '@/pages/admin/AdminShareSettingsPage';
 import ShareSignedSharesPage from '@/pages/admin/ShareSignedSharesPage';
 import PendingShareApprovalsPage from '@/pages/admin/shareholders/PendingShareApprovalsPage';
 import SignedAgreementsPage from '@/pages/admin/shareholders/SignedAgreementsPage';
+import PendingPaymentsPage from '@/pages/admin/shareholders/PendingPaymentsPage';
 import SharesListPage from '@/pages/admin/shareholders/SharesListPage';
 
 // Communication Admin Pages
@@ -148,7 +152,9 @@ import DesignTemplatesPage from '@/pages/admin/events/DesignTemplatesPage';
 import PlaceholderPage from '@/pages/admin/events/PlaceholderPage';
 import WhatsAppTemplatesPage from '@/pages/admin/WhatsAppTemplatesPage';
 import WebhookSettingsPage from '@/pages/admin/WebhookSettingsPage';
-import MealSelectionsPage from '@/pages/admin/MealSelectionsPage';
+import MealsListPage from '@/pages/admin/events/MealsListPage';
+import CreateMealPage from '@/pages/admin/events/CreateMealPage';
+import AnnouncementCategoriesPage from '@/pages/admin/AnnouncementCategoriesPage';
 
 // --- AUDIO MIXING ASSISTANT ADMIN IMPORTS ---
 import AudioAdminDashboard from '@/pages/admin/audio/AudioAdminDashboard';
@@ -282,7 +288,7 @@ const AppContent = () => {
         {/* Public Website Routes */}
         <Route element={<LayoutContextWrapper />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="services" element={<ServicesPage />} />
+          <Route path="services" element={<Navigate to="/trainings" replace />} />
           <Route path="trainings" element={<TrainingsPage />} />
           <Route path="events" element={<EventsPage />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
@@ -301,6 +307,7 @@ const AppContent = () => {
           <Route path="shareholders" element={<ShareholdersPage />} />
           <Route path="shares" element={<SharesPage />} />
           <Route path="shareholders-agreement" element={<ShareholdersAgreementPage />} />
+          <Route path="verify/agreement/:shareholderId" element={<SignedAgreementVerifyPage />} />
           <Route path="share-purchase" element={<SharePurchasePortal />} />
           <Route 
             path="shareholder-confirmation/:referenceNumber" 
@@ -454,7 +461,9 @@ const AppContent = () => {
           <Route path="events/templates" element={<ProtectedRoute requireAdmin={true}><DesignTemplatesPage /></ProtectedRoute>} />
           <Route path="events/wa-templates" element={<ProtectedRoute requireAdmin={true}><WhatsAppTemplatesPage /></ProtectedRoute>} />
           <Route path="events/webhooks" element={<ProtectedRoute requireAdmin={true}><WebhookSettingsPage /></ProtectedRoute>} />
-          <Route path="events/meal-selections" element={<ProtectedRoute requireAdmin={true}><MealSelectionsPage /></ProtectedRoute>} />
+          <Route path="events/meals" element={<ProtectedRoute requireAdmin={true}><MealsListPage /></ProtectedRoute>} />
+          <Route path="events/meals/create" element={<ProtectedRoute requireAdmin={true}><CreateMealPage /></ProtectedRoute>} />
+          <Route path="events/meal-selections" element={<Navigate to="/admin/events/meals" replace />} />
           
           <Route
             path="invitations"
@@ -529,6 +538,22 @@ const AppContent = () => {
             element={
               <ProtectedRoute requireAdmin={true}>
                 <TaskSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tasks/my-tasks"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <MyTasksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tasks/pending-acceptances"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <PendingAcceptancesPage />
               </ProtectedRoute>
             }
           />
@@ -675,10 +700,26 @@ const AppContent = () => {
             }
           />
           <Route
+            path="shareholders/trash"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminShareHolderTrashPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="shareholders/pending-approvals"
             element={
               <ProtectedRoute requireAdmin={true}>
                 <PendingShareApprovalsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="shareholders/pending-payments"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <PendingPaymentsPage />
               </ProtectedRoute>
             }
           />
@@ -767,9 +808,17 @@ const AppContent = () => {
 
           <Route
             path="settings"
+            element={<Navigate to="/admin/general-settings" replace />}
+          />
+          <Route
+            path="system/general-settings"
+            element={<Navigate to="/admin/general-settings" replace />}
+          />
+          <Route
+            path="general-settings"
             element={
               <ProtectedRoute requireSuperAdmin={true}>
-                <AdminSettingsPage />
+                <GeneralSystemSettingsPage />
               </ProtectedRoute>
             }
           />
@@ -804,6 +853,22 @@ const AppContent = () => {
             element={
               <ProtectedRoute requireAdmin={true}>
                 <AnnouncementsManagementPage mode="scheduled" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="announcements/templates"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AnnouncementsManagementPage mode="templates" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="announcements/categories"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AnnouncementCategoriesPage />
               </ProtectedRoute>
             }
           />

@@ -5,7 +5,10 @@ dist/
 .env.*.local
 apps/api/.env
 data/export/
+data/import/
 apps/api/uploads/
 .DS_Store
 *.log
 .vite/
+myvps
+myvps.pub

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getAllMembers, deleteMember } from '@/services/membersService';
 import AddMemberForm from '@/components/admin/AddMemberForm';
 import MemberCard from '@/components/admin/MemberCard';
@@ -34,6 +35,7 @@ const AdminMembersPage = () => {
 
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Check admin status on mount and when user changes
   useEffect(() => {
@@ -74,6 +76,17 @@ const AdminMembersPage = () => {
       setIsLoading(false);
     }
   }, [isAdmin, adminCheckLoading]);
+
+  useEffect(() => {
+    if (adminCheckLoading || !isAdmin) return;
+    if (searchParams.get('action') === 'new') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('action');
+      setSearchParams(next, { replace: true });
+    }
+  }, [adminCheckLoading, isAdmin, searchParams, setSearchParams]);
 
   const loadData = async () => {
     setIsLoading(true);

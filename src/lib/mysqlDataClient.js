@@ -283,13 +283,22 @@ const storage = {
         form.append('file', file);
         form.append('path', filePath);
         const token = getToken();
-        const res = await fetch(`${API_BASE}/upload/${bucket}`, {
-          method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: form,
-        });
-        const json = await res.json();
-        if (!res.ok) return { data: null, error: json };
+        const res = await fetch(
+          `${API_BASE}/upload/${bucket}?path=${encodeURIComponent(filePath)}`,
+          {
+            method: 'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: form,
+          }
+        );
+        const text = await res.text();
+        let json = {};
+        try {
+          json = text ? JSON.parse(text) : {};
+        } catch {
+          json = { error: text || res.statusText || 'Upload failed' };
+        }
+        if (!res.ok) return { data: null, error: json.error ? json : { message: text || 'Upload failed' } };
         return { data: json, error: null };
       },
 
@@ -301,8 +310,10 @@ const storage = {
       },
 
       getPublicUrl(filePath) {
+        const safe = String(filePath || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
         return {
-          data: { publicUrl: `${API_BASE}/upload/${bucket}/${encodeURIComponent(filePath)}` },
+          data: { publicUrl: `${origin}${API_BASE}/upload/${bucket}/${encodeURIComponent(safe)}` },
         };
       },
 

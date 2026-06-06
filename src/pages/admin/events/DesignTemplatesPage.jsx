@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import AdminHorizontalNav from '@/components/admin/AdminHorizontalNav';
+import { EVENT_TEMPLATES_NAV } from '@/config/eventTemplatesNavConfig';
 import { getAllTemplates, deleteInvitationTemplate, toggleTemplateStatus } from '@/services/templateService';
 import TemplateUploadForm from '@/components/TemplateUploadForm';
 import TemplateList from '@/components/TemplateList';
@@ -65,13 +67,18 @@ const DesignTemplatesPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
+      <AdminHorizontalNav
+        items={EVENT_TEMPLATES_NAV}
+        title="Templates & Config"
+        description="Manage invitation design templates, WhatsApp messages, and webhooks."
+      />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#003D82] flex items-center">
-            <LayoutTemplate className="w-6 h-6 mr-3 text-[#D4AF37]" />
+          <h2 className="text-xl font-bold text-[#003D82] flex items-center">
+            <LayoutTemplate className="w-5 h-5 mr-2 text-[#D4AF37]" />
             Design Templates
-          </h1>
+          </h2>
           <p className="text-gray-500 mt-1">Manage your invitation background templates.</p>
         </div>
         <Button onClick={() => setIsUploadModalOpen(true)} className="bg-[#003D82] text-white hover:bg-blue-800">

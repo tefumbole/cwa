@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminHorizontalNav from '@/components/admin/AdminHorizontalNav';
+import { EVENT_NAV } from '@/config/eventNavConfig';
 import { getAllEvents, deleteEvent } from '@/services/eventService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -38,6 +40,7 @@ const EventManagerPage = () => {
 
     return (
         <div className="space-y-6">
+            <AdminHorizontalNav items={EVENT_NAV} title="Event Management" description="Manage events, meals, and analytics." />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-[#003D82]">Event Manager</h1>

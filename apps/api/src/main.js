@@ -14,6 +14,8 @@ import uploadRoutes from './routes/upload.js';
 import usersRoutes from './routes/users.js';
 import registerRoutes from './routes/register.js';
 import tasksRoutes from './routes/tasks.js';
+import whatsappRoutes from './routes/whatsapp.js';
+import systemRoutes from './routes/system.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -54,6 +56,18 @@ app.use('/tasks', tasksRoutes);
 app.use('/users', usersRoutes);
 app.use('/data', dataRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/whatsapp', whatsappRoutes);
+app.use('/system', systemRoutes);
+
+app.use((err, _req, res, next) => {
+  if (err?.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ success: false, error: 'Uploaded file is too large.' });
+  }
+  if (err?.name === 'MulterError') {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+  next(err);
+});
 
 await checkDatabaseConnection();
 await seedAdminUser();

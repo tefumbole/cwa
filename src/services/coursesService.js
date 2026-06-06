@@ -1,16 +1,31 @@
 import { supabase } from "@/lib/customSupabaseClient";
 
+const AUTH_STORAGE_KEY = 'alpha_supabase_auth';
+
+function isLoggedInAdmin() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    const user = parsed?.user || parsed?.currentSession?.user;
+    return user?.role === 'admin' || user?.role === 'super_admin';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Service to manage courses in Supabase.
  * Uses array results (no .single / .maybeSingle) to avoid PGRST116 completely.
  */
 
-// Fetch all courses
+// Fetch all courses (including archived legacy rows)
 export const getCourses = async () => {
   try {
     const { data, error } = await supabase
       .from("courses")
       .select("*")
+      .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) throw error;
@@ -133,6 +148,112 @@ export const deleteCourse = async (id) => {
   }
 };
 
-// Aliases for backward compatibility if needed
-export const getAllCourses = getCourses;
+export const reorderCourses = async (orderedIds = []) => {
+  for (let i = 0; i < orderedIds.length; i += 1) {
+    await updateCourse(orderedIds[i], { sort_order: i + 1 });
+  }
+  return true;
+};
+
+/** Replace course list with canonical training programs from trainingData.js */
+export const syncTrainingCourses = async () => {
+  const { trainingModules, mapTrainingModuleToCoursePayload, getTrainingModuleTitles } = await import(
+    '@/utils/trainingCourseUtils'
+  );
+
+  const existing = await getCourses();
+  const trainingTitles = new Set(getTrainingModuleTitles());
+  const results = { updated: 0, created: 0, removed: 0, archived: 0 };
+
+  for (let i = 0; i < trainingModules.length; i += 1) {
+    const payload = mapTrainingModuleToCoursePayload(trainingModules[i], i + 1);
+    const match = existing.find((c) => c.name === payload.name);
+    if (match) {
+      await updateCourse(match.id, payload);
+      results.updated += 1;
+    } else {
+      await createCourse(payload);
+      results.created += 1;
+    }
+  }
+
+  for (const course of existing) {
+    if (trainingTitles.has(course.name)) continue;
+    try {
+      await deleteCourse(course.id);
+      results.removed += 1;
+    } catch {
+      await updateCourse(course.id, { status: 'archived', sort_order: 9999 });
+      results.archived += 1;
+    }
+  }
+
+  return results;
+};
+
+export async function ensureTrainingCoursesSynced() {
+  const { needsTrainingSync } = await import('@/utils/trainingCourseUtils');
+  const existing = await getCourses();
+  if (!needsTrainingSync(existing)) return null;
+  if (!isLoggedInAdmin()) return null;
+  return syncTrainingCourses();
+}
+
+export async function getTrainingCourses(options = {}) {
+  const { sync = true } = options;
+  const { getTrainingModuleTitles } = await import('@/utils/trainingCourseUtils');
+  const titles = new Set(getTrainingModuleTitles());
+
+  if (sync) {
+    await ensureTrainingCoursesSynced();
+  }
+
+  const courses = await getCourses();
+  return courses
+    .filter((c) => c.status !== 'archived' && titles.has(c.name))
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.name.localeCompare(b.name));
+}
+
+/** Single source for public Training page and admin Course list display shape. */
+export async function getTrainingPrograms() {
+  const {
+    mapCourseToTrainingProgram,
+    trainingModules,
+    needsTrainingSync,
+    getTrainingModuleTitles,
+  } = await import('@/utils/trainingCourseUtils');
+
+  const fallback = () => trainingModules.map((m) => ({ ...m, id: m.id }));
+
+  try {
+    let courses = await getCourses();
+
+    if (needsTrainingSync(courses) && isLoggedInAdmin()) {
+      try {
+        await syncTrainingCourses();
+        courses = await getCourses();
+      } catch (error) {
+        console.warn('Training sync failed:', error.message);
+      }
+    }
+
+    if (needsTrainingSync(courses)) {
+      return fallback();
+    }
+
+    const titles = new Set(getTrainingModuleTitles());
+    const trainingCourses = courses
+      .filter((c) => c.status !== 'archived' && titles.has(c.name))
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.name.localeCompare(b.name));
+
+    if (!trainingCourses.length) return fallback();
+
+    return trainingCourses.map((c, i) => mapCourseToTrainingProgram(c, i));
+  } catch {
+    return fallback();
+  }
+}
+
+// Trainings = Courses: registration and admin lists use active training programs only
+export const getAllCourses = getTrainingCourses;
 export const getCourseById = getCourse;

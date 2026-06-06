@@ -5,12 +5,15 @@ export const createEvent = async (eventData) => {
     try {
         const { data, error } = await supabase.from('events').insert([{
             name: eventData.name,
-            event_name: eventData.name, // required by schema
+            event_name: eventData.name,
+            title: eventData.name,
             description: eventData.description,
-            event_date: eventData.date, // required by schema
-            event_time: eventData.time, // required by schema
-            location: eventData.location || 'TBA', // required by schema
-            banner_url: eventData.banner_url
+            event_date: eventData.date,
+            event_time: eventData.time,
+            location: eventData.location || 'TBA',
+            banner_url: eventData.banner_url,
+            specify_meals: eventData.specify_meals ? 1 : 0,
+            meals_json: eventData.meals_json || [],
         }]).select().single();
         
         if (error) {

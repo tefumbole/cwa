@@ -13,6 +13,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import ApplicationReviewModal from '@/components/admin/ApplicationReviewModal';
 
+const applicantName = (app) => app.full_name || app.candidate_name || 'Applicant';
+
 const AdminRejectedApplicationsPage = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +113,7 @@ const AdminRejectedApplicationsPage = () => {
                     <TableCell className="font-mono text-xs">{app.reference_number}</TableCell>
                     <TableCell>
                         <div className="flex flex-col">
-                            <span className="font-medium">{app.candidate_name}</span>
+                            <span className="font-medium">{applicantName(app)}</span>
                             <span className="text-xs text-gray-500">{app.email}</span>
                         </div>
                     </TableCell>

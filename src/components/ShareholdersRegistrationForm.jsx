@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2, User, Mail, Phone, Hash, Building2, MapPin, CheckCircle2, AlertCircle, Info, FileSignature, FileText, Globe } from 'lucide-react';
 import { calculateTotalInvestment, formatPrice, getSystemSettings } from '@/services/sharePriceService';
 import { getCountryCodeOptions, combinePhoneNumber, validatePhoneNumber } from '@/services/countryCodeService';
-import { saveShareholderRegistration } from '@/services/shareholderService';
+import { saveShareholderRegistration, getAvailableSharesForSubscription } from '@/services/shareholderService';
 import { sendWhatsAppMessage } from '@/services/wasenderapiService';
 import SignaturePadModal from '@/components/SignaturePadModal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -80,10 +80,11 @@ const ShareholdersRegistrationForm = () => {
       setPriceLoading(true);
       try {
         const settings = await getSystemSettings();
+        const available = await getAvailableSharesForSubscription();
         console.log('[FORM] Settings loaded:', settings);
         setSharePrice(settings.price_per_share);
         setCurrency(settings.currency);
-        setAvailableShares(settings.total_available);
+        setAvailableShares(available);
         
         const initialTotal = await calculateTotalInvestment(1, settings.price_per_share);
         setFormData(prev => ({ ...prev, total_investment: initialTotal }));

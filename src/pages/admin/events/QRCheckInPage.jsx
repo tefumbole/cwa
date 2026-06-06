@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import jsQR from 'jsqr';
+import AdminHorizontalNav from '@/components/admin/AdminHorizontalNav';
+import { INVITATION_NAV } from '@/config/invitationNavConfig';
 import { checkInInvitation } from '@/services/invitationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -99,11 +101,12 @@ const QRCheckInPage = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-[#003D82]">QR Check-In Desk</h1>
-                <p className="text-gray-500">Scan guest invitation QR codes to manage event entry.</p>
-            </div>
+        <div className="max-w-5xl mx-auto p-6 space-y-6">
+            <AdminHorizontalNav
+                items={INVITATION_NAV}
+                title="Digital Invitations"
+                description="Scan guest invitation QR codes to manage event entry."
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Scanner Section */}
