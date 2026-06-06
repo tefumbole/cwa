@@ -7,6 +7,7 @@ import { getOrderedCreateStatements } from './schemaStatements.js';
 import { applySchemaPatches, CREATE_STATEMENTS } from './patch-schema.js';
 import { seedSystemSettings } from './seed-system-settings.js';
 import { seedTrainingCourses } from './seed-training-courses.js';
+import { seedRbac } from './seed-rbac.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -38,6 +39,8 @@ try {
   await seedSystemSettings(pool);
   console.log('\nSeeding training courses...');
   await seedTrainingCourses(pool);
+  console.log('\nSeeding RBAC roles & permissions...');
+  await seedRbac(pool);
   console.log('\nMigration complete.');
 } catch (error) {
   if (error.code === 'ER_ACCESS_DENIED_ERROR') {

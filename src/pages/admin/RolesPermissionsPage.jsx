@@ -11,6 +11,7 @@ import {
   addPermissionToRole,
   removePermissionFromRole
 } from '@/services/roleService';
+import { getPermissionsByCategory } from '@/config/permissionCatalog';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,23 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const AVAILABLE_PERMISSIONS = [
-  { id: 'view_jobs', label: 'View Jobs' },
-  { id: 'view_applications', label: 'View Applications' },
-  { id: 'upload_files', label: 'Upload Files' },
-  { id: 'apply_for_jobs', label: 'Apply for Jobs' },
-  { id: 'view_applicant_dashboard', label: 'View Applicant Dashboard' },
-  { id: 'manage_members', label: 'Manage Members' },
-  { id: 'manage_users', label: 'Manage Users' },
-  { id: 'manage_roles', label: 'Manage Roles' },
-  { id: 'manage_tasks', label: 'Manage Tasks' },
-  { id: 'manage_shareholders', label: 'Manage Shareholders' },
-  { id: 'manage_courses', label: 'Manage Courses' },
-  { id: 'manage_events', label: 'Manage Events' },
-  { id: 'manage_jobs', label: 'Manage Jobs' },
-  { id: 'view_reports', label: 'View Reports' },
-  { id: 'view_dashboard', label: 'View Dashboard' }
-];
+const PERMISSIONS_BY_CATEGORY = getPermissionsByCategory();
 
 const CreateRoleModal = ({ onSuccess }) => {
   const [open, setOpen] = useState(false);
@@ -304,32 +289,38 @@ const PermissionsEditor = ({ role, onUpdate }) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {AVAILABLE_PERMISSIONS.map(perm => {
-          const isChecked = permissions.includes(perm.id);
-          return (
-            <div
-              key={perm.id}
-              className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Checkbox
-                id={`perm-${perm.id}`}
-                checked={isChecked}
-                onCheckedChange={(checked) => handleTogglePermission(perm.id, checked)}
-                disabled={updating}
-              />
-              <Label
-                htmlFor={`perm-${perm.id}`}
-                className="flex-1 cursor-pointer text-sm font-medium text-gray-900"
-              >
-                {perm.label}
-              </Label>
-              {isChecked && <Check className="w-4 h-4 text-green-500" />}
-            </div>
-          );
-        })}
-      </div>
+    <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+      {Object.entries(PERMISSIONS_BY_CATEGORY).map(([category, perms]) => (
+        <div key={category} className="border rounded-lg p-4 bg-white">
+          <h4 className="text-sm font-bold text-[#003D82] mb-3 uppercase tracking-wide">{category}</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {perms.map((perm) => {
+              const isChecked = permissions.includes(perm.id);
+              return (
+                <div
+                  key={perm.id}
+                  className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Checkbox
+                    id={`perm-${role.id}-${perm.id}`}
+                    checked={isChecked}
+                    onCheckedChange={(checked) => handleTogglePermission(perm.id, checked)}
+                    disabled={updating || role.name === 'Super Admin'}
+                    className="mt-0.5"
+                  />
+                  <Label
+                    htmlFor={`perm-${role.id}-${perm.id}`}
+                    className="flex-1 cursor-pointer text-sm text-gray-900 leading-snug"
+                  >
+                    {perm.label}
+                  </Label>
+                  {isChecked && <Check className="w-4 h-4 text-green-500 shrink-0" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -374,9 +365,12 @@ const RolesPermissionsPage = () => {
       
       if (rolesRes.success) {
         setRoles(rolesRes.data || []);
-        if (rolesRes.data?.length > 0 && !selectedRole) {
-          setSelectedRole(rolesRes.data[0]);
-        }
+        setSelectedRole((prev) => {
+          if (prev && rolesRes.data?.some((r) => r.id === prev.id)) return prev;
+          return rolesRes.data?.[0] || null;
+        });
+      } else if (rolesRes.error) {
+        toast({ title: 'Error', description: rolesRes.error, variant: 'destructive' });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -500,7 +494,7 @@ const RolesPermissionsPage = () => {
                     ) : filteredUsers.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                          No users found matching your search.
+                          {searchTerm ? 'No users found matching your search.' : 'No users found. Create a user to assign roles.'}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -557,7 +551,10 @@ const RolesPermissionsPage = () => {
                 <div className="lg:col-span-1 space-y-2">
                   <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Select Role</h3>
                   <div className="space-y-2">
-                    {roles.map(r => (
+                    {roles.length === 0 ? (
+                      <p className="text-sm text-gray-500">No roles yet. Create one to get started.</p>
+                    ) : (
+                      roles.map((r) => (
                       <div key={r.id} className="flex items-center gap-2">
                         <Button 
                           variant={selectedRole?.id === r.id ? "default" : "outline"}
@@ -567,7 +564,7 @@ const RolesPermissionsPage = () => {
                           <Shield className="w-4 h-4 mr-2" />
                           {formatRoleLabel(r.name)}
                         </Button>
-                        {!['Super Admin', 'Administrator', 'Staff', 'User'].includes(r.name) && (
+                        {!r.is_default && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -578,7 +575,8 @@ const RolesPermissionsPage = () => {
                           </Button>
                         )}
                       </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
                 <div className="lg:col-span-3">
