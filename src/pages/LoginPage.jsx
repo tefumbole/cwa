@@ -11,6 +11,7 @@ import { Eye, EyeOff, Loader2, User, Lock, ArrowRight, MessageSquare, RefreshCw,
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { validateSessionAndProfile } from '@/utils/sessionValidator';
+import { APP_VERSION, APP_VERSION_LABEL } from '@/constants/appVersion';
 
 /*
  * TASK 8 SUMMARY OF FIXES:
@@ -290,6 +291,9 @@ const LoginPage = () => {
              <div className="absolute top-0 left-0 w-full h-full bg-[#003D82] opacity-10 pattern-grid-lg"></div>
              <h1 className="text-3xl font-bold text-[#003D82] relative z-10">Alpha Bridge</h1>
              <p className="text-[#003D82] font-medium text-sm tracking-wider uppercase relative z-10 opacity-80">Technologies Ltd</p>
+             <p className="text-[#003D82] text-xs font-semibold relative z-10 mt-2 opacity-90">
+               {APP_VERSION_LABEL} {APP_VERSION}
+             </p>
           </div>
 
           <div className="p-8">

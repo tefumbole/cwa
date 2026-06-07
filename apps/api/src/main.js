@@ -16,6 +16,7 @@ import registerRoutes from './routes/register.js';
 import tasksRoutes from './routes/tasks.js';
 import whatsappRoutes from './routes/whatsapp.js';
 import systemRoutes from './routes/system.js';
+import { APP_VERSION } from './constants/appVersion.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -40,6 +41,7 @@ app.get('/health', async (_req, res) => {
     res.json({
       ok: true,
       service: 'alphabridge-api',
+      version: 'ABT_ERP_V.1.1.1',
       database: process.env.DB_NAME,
       backend: 'mysql',
       wasender: Boolean(process.env.WASENDER_API_KEY && !String(process.env.WASENDER_API_KEY).startsWith('your_')),

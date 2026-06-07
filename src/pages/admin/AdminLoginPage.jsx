@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Lock, User, Loader2, AlertCircle, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion, AnimatePresence } from 'framer-motion';
+import { APP_VERSION, APP_VERSION_LABEL } from '@/constants/appVersion';
 
 // Import Modals
 import AdminSignUpModal from '@/components/AdminSignUpModal';
@@ -93,6 +94,9 @@ const AdminLoginPage = () => {
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37] text-[#1E3A8A] text-xs font-bold rounded-full">
               <ShieldCheck className="w-3 h-3" /> SECURE ADMIN PORTAL
             </div>
+            <p className="text-blue-100 text-xs font-semibold mt-3 tracking-wide">
+              {APP_VERSION_LABEL} {APP_VERSION}
+            </p>
           </div>
           <div className="absolute top-0 left-0 w-full h-full bg-blue-900 opacity-20 transform -skew-y-12 scale-150"></div>
         </div>
