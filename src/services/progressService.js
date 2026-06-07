@@ -5,10 +5,17 @@ export const getProgress = async (registrationId) => {
     try {
         const { data, error } = await supabase
             .from('student_progress')
-            .select('*, courses(*)') // Join with courses
+            .select('*')
             .eq('registration_id', registrationId);
         if (error) throw error;
-        return data;
+
+        const rows = data || [];
+        if (!rows.length) return rows;
+
+        const courseIds = [...new Set(rows.map((r) => r.course_id).filter(Boolean))];
+        const { data: courses } = await supabase.from('courses').select('id, name').in('id', courseIds);
+        const courseMap = Object.fromEntries((courses || []).map((c) => [c.id, c]));
+        return rows.map((row) => ({ ...row, courses: courseMap[row.course_id] || null }));
     } catch (error) {
         console.error("Error getting progress:", error);
         throw error;
@@ -19,13 +26,28 @@ export const getAllStudentProgress = async () => {
     try {
         const { data, error } = await supabase
             .from('student_progress')
-            .select(`
-                *,
-                registrations (client_name),
-                courses (name)
-            `);
+            .select('*');
         if (error) throw error;
-        return data;
+
+        const rows = data || [];
+        if (!rows.length) return rows;
+
+        const regIds = [...new Set(rows.map((r) => r.registration_id).filter(Boolean))];
+        const courseIds = [...new Set(rows.map((r) => r.course_id).filter(Boolean))];
+
+        const [{ data: registrations }, { data: courses }] = await Promise.all([
+          supabase.from('registrations').select('id, client_name').in('id', regIds),
+          supabase.from('courses').select('id, name').in('id', courseIds),
+        ]);
+
+        const regMap = Object.fromEntries((registrations || []).map((r) => [r.id, r]));
+        const courseMap = Object.fromEntries((courses || []).map((c) => [c.id, c]));
+
+        return rows.map((row) => ({
+          ...row,
+          registrations: regMap[row.registration_id] || null,
+          courses: courseMap[row.course_id] || null,
+        }));
     } catch (error) {
          console.error("Error getting all progress:", error);
         throw error;

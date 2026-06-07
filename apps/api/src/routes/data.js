@@ -320,10 +320,14 @@ router.post('/query', async (req, res) => {
 
       await pool.query(`UPDATE \`${table}\` SET ${setSql}${whereSql}`, [...values, ...whereParams]);
 
-      if (body.single && filters.some((f) => f.col === 'id' && f.op === 'eq')) {
-        const idFilter = filters.find((f) => f.col === 'id' && f.op === 'eq');
+      const idFilter = filters.find((f) => f.col === 'id' && f.op === 'eq');
+      if (idFilter) {
         const [rows] = await pool.query(`SELECT * FROM \`${table}\` WHERE id = ? LIMIT 1`, [idFilter.value]);
-        return res.json({ data: rows[0] ? serializeRow(rows[0], table, req.user) : null, error: null });
+        const row = rows[0] ? serializeRow(rows[0], table, req.user) : null;
+        if (body.single) {
+          return res.json({ data: row, error: null });
+        }
+        return res.json({ data: row ? [row] : [], error: null });
       }
       return res.json({ data: null, error: null });
     }

@@ -3,7 +3,9 @@ import jsPDF from 'jspdf';
 
 export const generateCertificate = async (studentData, courseData) => {
     try {
-        const { count } = await supabase.from('certificates').select('*', { count: 'exact', head: true });
+        const { count } = await supabase
+          .from('certificates')
+          .select('id', { count: 'exact', head: true });
         const certNumber = `CERT-${String((count || 0) + 1).padStart(3, '0')}`;
         
         const certData = {

@@ -5,7 +5,9 @@ import { sendRegistrationConfirmation } from './emailService'; // Reusing or new
 export const generateInvoice = async (registrationData) => {
     try {
         // 1. Generate Invoice Number (Simple logic: Count + 1)
-        const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+        const { count } = await supabase
+          .from('invoices')
+          .select('id', { count: 'exact', head: true });
         const invoiceNumber = `INV-${String((count || 0) + 1).padStart(3, '0')}`;
         
         // 2. Calculate Totals

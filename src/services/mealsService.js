@@ -18,6 +18,7 @@ export async function createMeal(payload) {
       name: payload.name,
       description: payload.description || null,
       category: payload.category || 'General',
+      image_url: payload.image_url || null,
       sort_order: payload.sort_order ?? 0,
       is_active: true,
     }])

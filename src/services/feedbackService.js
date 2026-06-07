@@ -140,14 +140,22 @@ export const getAllFeedback = async () => {
      try {
         const { data, error } = await supabase
             .from('course_feedback')
-            .select(`
-                *,
-                courses (name)
-            `)
+            .select('*')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data;
+
+        const feedback = data || [];
+        if (!feedback.length) return feedback;
+
+        const { getTrainingCourses } = await import('@/services/coursesService');
+        const courses = await getTrainingCourses();
+        const courseMap = Object.fromEntries(courses.map((c) => [c.id, c.name]));
+
+        return feedback.map((row) => ({
+          ...row,
+          courses: row.course_id ? { name: courseMap[row.course_id] || 'Unknown course' } : null,
+        }));
     } catch (error) {
         console.error("Error fetching all feedback:", error);
         throw error;

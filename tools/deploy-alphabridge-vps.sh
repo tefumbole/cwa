@@ -27,8 +27,11 @@ fi
 echo "==> 4. Install & migrate"
 cd apps/api && npm install && cd ../..
 npm run db:migrate
-if [[ -d data/export ]] && ls data/export/*.json >/dev/null 2>&1; then
+if [[ "${IMPORT_EXPORT:-0}" == "1" ]] && [[ -d data/export ]] && ls data/export/*.json >/dev/null 2>&1; then
+  echo "    IMPORT_EXPORT=1 — importing data/export (one-time / explicit only)"
   node apps/api/src/db/import-from-export.js "$ROOT/data/export" || true
+else
+  echo "    Skipping data/export import (set IMPORT_EXPORT=1 to enable)"
 fi
 
 echo "==> 5. Frontend env + build"

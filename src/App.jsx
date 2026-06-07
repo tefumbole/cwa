@@ -962,40 +962,44 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="timesheet/create-activity"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <ActivityManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="timesheet/fill-timesheet"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <FillTimeSheetPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="timesheet/working-week"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <WorkingWeekPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="timesheet/monthly-summary"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <MonthlyHoursSummaryPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
-        <Route
-          path="timesheet/create-activity"
-          element={
-            <ProtectedRoute>
-              <ActivityManagementPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="timesheet/fill-timesheet"
-          element={
-            <ProtectedRoute>
-              <FillTimeSheetPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="timesheet/working-week"
-          element={
-            <ProtectedRoute>
-              <WorkingWeekPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="timesheet/monthly-summary"
-          element={
-            <ProtectedRoute>
-              <MonthlyHoursSummaryPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/timesheet/create-activity" element={<Navigate to="/admin/timesheet/create-activity" replace />} />
+        <Route path="/timesheet/fill-timesheet" element={<Navigate to="/admin/timesheet/fill-timesheet" replace />} />
+        <Route path="/timesheet/working-week" element={<Navigate to="/admin/timesheet/working-week" replace />} />
+        <Route path="/timesheet/monthly-summary" element={<Navigate to="/admin/timesheet/monthly-summary" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

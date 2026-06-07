@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus, Edit, Trash2, Search, BookOpen, Loader2, AlertCircle, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, BookOpen, Loader2, AlertCircle, MessageCircle, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import StarRating from '@/components/StarRating';
@@ -152,6 +152,25 @@ const AdminCoursesPage = ({ defaultTab }) => {
         }
     };
 
+    const moveCourseToEdge = async (index, edge) => {
+        const list = [...filteredCourses];
+        if (index < 0 || index >= list.length) return;
+        const reordered = [...list];
+        const [item] = reordered.splice(index, 1);
+        if (edge === 'first') {
+            reordered.unshift(item);
+        } else {
+            reordered.push(item);
+        }
+        try {
+            await reorderCourses(reordered.map((c) => c.id));
+            toast({ title: 'Order updated', description: edge === 'first' ? 'Course moved to first.' : 'Course moved to last.' });
+            loadCourses();
+        } catch (error) {
+            toast({ title: 'Reorder failed', description: error.message, variant: 'destructive' });
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
@@ -208,11 +227,17 @@ const AdminCoursesPage = ({ defaultTab }) => {
                                 <TableRow key={course.id} className="hover:bg-blue-50/50 transition-colors">
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === 0} onClick={() => moveCourse(index, -1)}>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === 0} onClick={() => moveCourseToEdge(index, 'first')} title="Move to first">
+                                                <ChevronsUp className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === 0} onClick={() => moveCourse(index, -1)} title="Move up">
                                                 <ChevronUp className="w-4 h-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === filteredCourses.length - 1} onClick={() => moveCourse(index, 1)}>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === filteredCourses.length - 1} onClick={() => moveCourse(index, 1)} title="Move down">
                                                 <ChevronDown className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === filteredCourses.length - 1} onClick={() => moveCourseToEdge(index, 'last')} title="Move to last">
+                                                <ChevronsDown className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     </TableCell>

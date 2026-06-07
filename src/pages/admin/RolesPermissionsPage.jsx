@@ -11,7 +11,7 @@ import {
   addPermissionToRole,
   removePermissionFromRole
 } from '@/services/roleService';
-import { getPermissionsByCategory } from '@/config/permissionCatalog';
+import { getPermissionsByCategory, getAllPermissionIds } from '@/config/permissionCatalog';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -280,6 +280,55 @@ const PermissionsEditor = ({ role, onUpdate }) => {
     }
   };
 
+  const handleToggleCategory = async (categoryPermIds, checked) => {
+    if (role.name === 'Super Admin') return;
+    setUpdating(true);
+    try {
+      for (const permId of categoryPermIds) {
+        const isChecked = permissions.includes(permId);
+        if (checked && !isChecked) {
+          await addPermissionToRole(role.name, permId);
+        } else if (!checked && isChecked) {
+          await removePermissionFromRole(role.name, permId);
+        }
+      }
+      await fetchPermissions();
+      toast({ title: 'Success', description: checked ? 'Category permissions enabled' : 'Category permissions cleared' });
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to update category permissions', variant: 'destructive' });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleToggleAll = async (checked) => {
+    if (role.name === 'Super Admin') return;
+    const allIds = getAllPermissionIds();
+    setUpdating(true);
+    try {
+      for (const permId of allIds) {
+        const isChecked = permissions.includes(permId);
+        if (checked && !isChecked) {
+          await addPermissionToRole(role.name, permId);
+        } else if (!checked && isChecked) {
+          await removePermissionFromRole(role.name, permId);
+        }
+      }
+      await fetchPermissions();
+      toast({ title: 'Success', description: checked ? 'All permissions enabled' : 'All permissions cleared' });
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to update permissions', variant: 'destructive' });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const allPermissionIds = getAllPermissionIds();
+  const allChecked = allPermissionIds.length > 0 && allPermissionIds.every((id) => permissions.includes(id));
+  const someChecked = allPermissionIds.some((id) => permissions.includes(id));
+
   if (loading) {
     return (
       <div className="flex justify-center py-10">
@@ -290,9 +339,42 @@ const PermissionsEditor = ({ role, onUpdate }) => {
 
   return (
     <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-      {Object.entries(PERMISSIONS_BY_CATEGORY).map(([category, perms]) => (
+      {role.name !== 'Super Admin' && (
+        <div className="flex items-center gap-3 p-3 border rounded-lg bg-blue-50 border-blue-200">
+          <Checkbox
+            id={`perm-all-${role.id}`}
+            checked={allChecked}
+            onCheckedChange={(checked) => handleToggleAll(Boolean(checked))}
+            disabled={updating}
+          />
+          <Label htmlFor={`perm-all-${role.id}`} className="cursor-pointer font-semibold text-[#003D82]">
+            Select all permissions for this role
+            {someChecked && !allChecked ? ' (partial)' : ''}
+          </Label>
+        </div>
+      )}
+      {Object.entries(PERMISSIONS_BY_CATEGORY).map(([category, perms]) => {
+        const categoryPermIds = perms.map((p) => p.id);
+        const categoryAllChecked = categoryPermIds.every((id) => permissions.includes(id));
+        const categorySomeChecked = categoryPermIds.some((id) => permissions.includes(id));
+
+        return (
         <div key={category} className="border rounded-lg p-4 bg-white">
-          <h4 className="text-sm font-bold text-[#003D82] mb-3 uppercase tracking-wide">{category}</h4>
+          <div className="flex items-center gap-3 mb-3">
+            <Checkbox
+              id={`perm-cat-${role.id}-${category}`}
+              checked={categoryAllChecked}
+              onCheckedChange={(checked) => handleToggleCategory(categoryPermIds, Boolean(checked))}
+              disabled={updating || role.name === 'Super Admin'}
+            />
+            <Label
+              htmlFor={`perm-cat-${role.id}-${category}`}
+              className="text-sm font-bold text-[#003D82] uppercase tracking-wide cursor-pointer"
+            >
+              {category}
+              {categorySomeChecked && !categoryAllChecked ? ' (partial)' : ''}
+            </Label>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {perms.map((perm) => {
               const isChecked = permissions.includes(perm.id);
@@ -320,7 +402,8 @@ const PermissionsEditor = ({ role, onUpdate }) => {
             })}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

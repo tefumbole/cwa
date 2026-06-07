@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/context/PermissionContext';
-import { isCurrentUserAdmin } from '@/services/whatsappAdminService';
 import { MENU_PERMISSIONS, itemVisible } from '@/config/adminMenuPermissions';
 import { 
   LayoutDashboard, 
@@ -77,7 +76,8 @@ const AdminLayout = () => {
       }
 
       try {
-        const adminStatus = await isCurrentUserAdmin();
+        const userRole = String(profile?.role || user?.app_metadata?.role || user?.user_metadata?.role || '').toLowerCase();
+        const adminStatus = ['admin', 'super_admin', 'director', 'manager'].includes(userRole);
         if (isMounted) {
           setIsAdmin(adminStatus);
         }
@@ -94,7 +94,7 @@ const AdminLayout = () => {
     return () => {
       isMounted = false;
     };
-  }, [user]);
+  }, [user, profile]);
 
   const handleLogout = async () => {
     try {
@@ -236,9 +236,9 @@ const AdminLayout = () => {
           icon: Clock,
           permission: MENU_PERMISSIONS.timesheets,
           submenu: [
-            { label: 'Create Activity', path: '/timesheet/create-activity', icon: PlusCircle },
-            { label: 'Fill Time Sheet', path: '/timesheet/fill-timesheet', icon: Clock },
-            { label: 'Working Week', path: '/timesheet/working-week', icon: CalendarClock },
+            { label: 'Create Activity', path: '/admin/timesheet/create-activity', icon: PlusCircle },
+            { label: 'Fill Time Sheet', path: '/admin/timesheet/fill-timesheet', icon: Clock },
+            { label: 'Working Week', path: '/admin/timesheet/working-week', icon: CalendarClock },
           ]
         },
       ]

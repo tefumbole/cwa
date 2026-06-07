@@ -33,8 +33,11 @@ echo ""
 echo "========== 5. INSTALL + DB =========="
 cd apps/api && npm install && cd ../..
 npm run db:migrate
-if [[ -d data/export ]] && [[ -f data/export/courses.json ]]; then
+if [[ "${IMPORT_EXPORT:-0}" == "1" ]] && [[ -d data/export ]] && [[ -f data/export/courses.json ]]; then
+  echo "IMPORT_EXPORT=1 — importing data/export"
   node apps/api/src/db/import-from-export.js "$ROOT/data/export" || true
+else
+  echo "Skipping data/export import (set IMPORT_EXPORT=1 to enable)"
 fi
 
 echo ""

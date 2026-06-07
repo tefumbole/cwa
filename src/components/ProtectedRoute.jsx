@@ -3,13 +3,33 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/customSupabaseClient';
 import { Loader2 } from 'lucide-react';
 import AccessDeniedPage from '@/components/AccessDeniedPage';
-import { isCurrentUserAdmin } from '@/services/whatsappAdminService';
 
-const ProtectedRoute = ({ 
-  children, 
-  requireAdmin = false, 
-  requireSuperAdmin = false, 
-  requiredPermission = null 
+const ADMIN_ROLES = ['admin', 'super_admin', 'director', 'manager'];
+
+async function resolveUserRole(session) {
+  const fromMeta =
+    session?.user?.app_metadata?.role ||
+    session?.user?.user_metadata?.role ||
+    session?.user?.role;
+  if (fromMeta) return String(fromMeta).toLowerCase();
+
+  const userId = session?.user?.id;
+  if (!userId) return '';
+
+  try {
+    const profileService = await import('@/services/profileService');
+    const profile = await profileService.getProfile(userId);
+    return String(profile?.role || '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+const ProtectedRoute = ({
+  children,
+  requireAdmin = false,
+  requireSuperAdmin = false,
+  requiredPermission = null,
 }) => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
@@ -23,23 +43,22 @@ const ProtectedRoute = ({
 
     const verifyAccess = async () => {
       try {
-        // Safety timeout to prevent infinite loading screens
         timeoutId = setTimeout(() => {
           if (isMounted && loading) {
-            console.warn("ProtectedRoute: Access verification timed out.");
-            setError("Verification timed out. Please refresh.");
+            console.warn('ProtectedRoute: Access verification timed out.');
+            setError('Verification timed out. Please refresh.');
             setLoading(false);
           }
-        }, 10000); // 10 seconds timeout
+        }, 10000);
 
         const { data, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError) {
           throw sessionError;
         }
 
         const session = data?.session;
-        
+
         if (!session) {
           if (isMounted) {
             setIsAuthenticated(false);
@@ -50,28 +69,39 @@ const ProtectedRoute = ({
 
         if (isMounted) setIsAuthenticated(true);
 
-        // Check admin status using WhatsApp-based verification
         if (requireAdmin || requireSuperAdmin || requiredPermission) {
-          const adminStatus = await isCurrentUserAdmin();
-          
+          const userRole = await resolveUserRole(session);
+          let allowed = false;
+
+          if (requireSuperAdmin) {
+            allowed = userRole === 'super_admin';
+          } else if (requiredPermission) {
+            if (userRole === 'super_admin') {
+              allowed = true;
+            } else if (ADMIN_ROLES.includes(userRole)) {
+              allowed = true;
+            }
+          } else if (requireAdmin) {
+            allowed = ADMIN_ROLES.includes(userRole);
+          }
+
           if (isMounted) {
-            setAuthorized(adminStatus);
+            setAuthorized(allowed);
             setLoading(false);
           }
           return;
         }
 
-        // If no specific requirement, just require auth
         if (isMounted) {
           setAuthorized(true);
           setLoading(false);
         }
       } catch (e) {
-        console.error("ProtectedRoute: Access verification error:", e);
+        console.error('ProtectedRoute: Access verification error:', e);
         if (isMounted) {
           setAuthorized(false);
           setIsAuthenticated(false);
-          setError("Authentication failed. Please log in again.");
+          setError('Authentication failed. Please log in again.');
           setLoading(false);
         }
       } finally {
@@ -100,8 +130,9 @@ const ProtectedRoute = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
         <p className="text-red-500 font-medium mb-4">{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
           className="px-4 py-2 bg-[#003D82] text-white rounded-md hover:bg-blue-800 transition-colors"
         >
           Retry

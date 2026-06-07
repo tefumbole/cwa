@@ -15,6 +15,9 @@ const TABLE_NAME_MAP = {
   whatsapp_message_log: 'whatsapp_message_logs',
 };
 
+/** Tables that must never be overwritten from stale export on deploy */
+const SKIP_IMPORT_TABLES = new Set(['shareholders', 'users', 'profiles', 'otp_sessions']);
+
 /** Import parents before children */
 const IMPORT_PRIORITY = [
   'profiles.json',
@@ -173,6 +176,10 @@ async function main() {
   for (const file of sorted) {
     const exportName = file.replace('.json', '');
     const tableName = TABLE_NAME_MAP[exportName] || exportName;
+    if (SKIP_IMPORT_TABLES.has(tableName)) {
+      console.log('Skip protected table:', tableName);
+      continue;
+    }
     const rows = JSON.parse(fs.readFileSync(path.join(EXPORT_DIR, file), 'utf8'));
     const result = await importTable(pool, tableName, rows);
     summary.push({ file, table: tableName, ...result });

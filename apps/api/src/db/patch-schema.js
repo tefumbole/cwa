@@ -61,6 +61,13 @@ export const SCHEMA_PATCHES = [
   'ALTER TABLE users ADD COLUMN username VARCHAR(100) NULL',
   'ALTER TABLE profiles ADD COLUMN username VARCHAR(100) NULL',
   'ALTER TABLE otp_sessions ADD COLUMN purpose VARCHAR(50) DEFAULT \'login\'',
+  'ALTER TABLE event_meals ADD COLUMN image_url TEXT NULL',
+  'ALTER TABLE registrations ADD COLUMN company_name VARCHAR(255) NULL',
+  'ALTER TABLE registrations ADD COLUMN course_ids JSON NULL',
+  'ALTER TABLE registrations ADD COLUMN total_price DECIMAL(14,2) NULL',
+  'ALTER TABLE registrations ADD COLUMN status VARCHAR(50) DEFAULT \'pending\'',
+  'ALTER TABLE registrations ADD COLUMN payment_id VARCHAR(255) NULL',
+  'ALTER TABLE registrations ADD COLUMN payment_date DATETIME NULL',
 ];
 
 export const CREATE_STATEMENTS = [
@@ -131,24 +138,63 @@ export const CREATE_STATEMENTS = [
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_ann_category_slug (slug)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS certificates (
+    id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    certificate_number VARCHAR(100) NOT NULL,
+    registration_id CHAR(36) DEFAULT NULL,
+    student_name VARCHAR(255) NOT NULL,
+    course_name VARCHAR(255) NOT NULL,
+    completion_date DATETIME DEFAULT NULL,
+    status VARCHAR(50) DEFAULT 'active',
+    revoked_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_certificates_reg (registration_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS invoices (
+    id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    invoice_number VARCHAR(100) NOT NULL,
+    registration_id CHAR(36) DEFAULT NULL,
+    client_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) DEFAULT NULL,
+    courses_json JSON DEFAULT NULL,
+    subtotal DECIMAL(14,2) DEFAULT 0,
+    tax DECIMAL(14,2) DEFAULT 0,
+    total DECIMAL(14,2) DEFAULT 0,
+    payment_method VARCHAR(100) DEFAULT NULL,
+    payment_status VARCHAR(50) DEFAULT 'pending',
+    payment_date DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_invoices_reg (registration_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS student_progress (
+    id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    registration_id CHAR(36) NOT NULL,
+    course_id CHAR(36) NOT NULL,
+    progress_percentage DECIMAL(5,2) DEFAULT 0,
+    status VARCHAR(50) DEFAULT 'not_started',
+    start_date DATETIME DEFAULT NULL,
+    completion_date DATETIME DEFAULT NULL,
+    last_updated DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_progress_reg (registration_id),
+    INDEX idx_progress_course (course_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS course_feedback (
+    id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    registration_id CHAR(36) DEFAULT NULL,
+    course_id CHAR(36) DEFAULT NULL,
+    student_name VARCHAR(255) DEFAULT NULL,
+    rating INT DEFAULT 5,
+    feedback_text TEXT DEFAULT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_feedback_course (course_id),
+    INDEX idx_feedback_reg (registration_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 ];
 
-export const DATA_PATCHES = [
-  `UPDATE shareholders s1
-   INNER JOIN shareholders s2 ON s2.id != s1.id
-     AND s2.deleted_at IS NULL
-     AND s2.phone_number = s1.phone_number
-     AND s2.shares_assigned = s1.shares_assigned
-     AND s2.status = 'approved'
-     AND s2.full_name IS NOT NULL AND TRIM(s2.full_name) != ''
-   SET s1.deleted_at = NOW()
-   WHERE s1.deleted_at IS NULL
-     AND s1.status = 'approved'
-     AND (s1.full_name IS NULL OR TRIM(s1.full_name) = '')
-     AND (s1.name IS NULL OR TRIM(s1.name) = '')
-     AND (s1.email IS NULL OR TRIM(s1.email) = '')
-     AND s1.phone_number IS NOT NULL`,
-];
+export const DATA_PATCHES = [];
 
 export async function applySchemaPatches(pool) {
   for (const sql of SCHEMA_PATCHES) {
