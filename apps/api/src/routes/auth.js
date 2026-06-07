@@ -26,6 +26,7 @@ function buildSession(user, profile) {
       id: user.id,
       email: user.email,
       phone: profile?.phone || user.phone || null,
+      role: profile?.role || user.role,
       user_metadata: { full_name: profile?.full_name || user.name },
       app_metadata: { role: profile?.role || user.role },
     },

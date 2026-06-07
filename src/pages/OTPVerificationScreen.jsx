@@ -130,7 +130,7 @@ const OTPVerificationScreen = () => {
         className: "bg-green-600 text-white border-none",
     });
 
-    navigate(destination, { replace: true });
+    navigate(destination, { replace: true, state: { verifiedRole: profileData.role } });
   };
 
   const handleResend = async () => {

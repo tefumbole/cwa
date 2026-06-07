@@ -418,6 +418,18 @@ export const AuthProvider = ({ children }) => {
           }
 
           const p = await getProfile(currentUser.id);
+
+          // Refresh JWT/session so role metadata is current before admin redirect
+          try {
+            const { data: refreshed } = await supabase.auth.refreshSession();
+            if (refreshed?.session?.user) {
+              setSession(refreshed.session);
+              setUser(refreshed.session.user);
+            }
+          } catch (refreshErr) {
+            console.warn('[AuthContext] Session refresh after OTP failed (non-fatal):', refreshErr);
+          }
+
           return { success: true, profile: p };
         }
 

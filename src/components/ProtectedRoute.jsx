@@ -1,28 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/lib/customSupabaseClient';
 import { Loader2 } from 'lucide-react';
 import AccessDeniedPage from '@/components/AccessDeniedPage';
+import { useAuth } from '@/context/AuthContext';
+import { usePermission } from '@/context/PermissionContext';
 
 const ADMIN_ROLES = ['admin', 'super_admin', 'director', 'manager'];
 
-async function resolveUserRole(session) {
-  const fromMeta =
-    session?.user?.app_metadata?.role ||
-    session?.user?.user_metadata?.role ||
-    session?.user?.role;
-  if (fromMeta) return String(fromMeta).toLowerCase();
+function normalizeRole(role) {
+  const raw = String(role || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (raw === 'superadmin' || raw === 'super admin') return 'super_admin';
+  return raw.replace(/\s+/g, '_');
+}
 
-  const userId = session?.user?.id;
-  if (!userId) return '';
-
+function getRoleFromStoredToken() {
   try {
-    const profileService = await import('@/services/profileService');
-    const profile = await profileService.getProfile(userId);
-    return String(profile?.role || '').toLowerCase();
+    const raw = localStorage.getItem('alpha_supabase_auth');
+    if (!raw) return '';
+    const parsed = JSON.parse(raw);
+    const token = parsed?.access_token || parsed?.currentSession?.access_token;
+    if (!token || !token.includes('.')) return '';
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return normalizeRole(payload.role);
   } catch {
     return '';
   }
+}
+
+function resolveUserRole({ role, profile, user, session, fallbackRole }) {
+  const candidates = [
+    fallbackRole,
+    role,
+    profile?.role,
+    user?.app_metadata?.role,
+    user?.user_metadata?.role,
+    user?.role,
+    session?.user?.app_metadata?.role,
+    session?.user?.user_metadata?.role,
+    session?.user?.role,
+    getRoleFromStoredToken(),
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeRole(candidate);
+    if (normalized) return normalized;
+  }
+  return '';
 }
 
 const ProtectedRoute = ({
@@ -31,93 +55,23 @@ const ProtectedRoute = ({
   requireSuperAdmin = false,
   requiredPermission = null,
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState(null);
+  const {
+    user,
+    session,
+    role,
+    profile,
+    loading: authLoading,
+    isProfileLoading,
+  } = useAuth();
+  const { hasPermission } = usePermission();
   const location = useLocation();
 
-  useEffect(() => {
-    let isMounted = true;
-    let timeoutId;
+  const needsRoleCheck = requireAdmin || requireSuperAdmin || requiredPermission;
+  const fallbackRole = location.state?.verifiedRole;
+  const userRole = resolveUserRole({ role, profile, user, session, fallbackRole });
+  const waitingForRole = Boolean(user && needsRoleCheck && !userRole && (authLoading || isProfileLoading));
 
-    const verifyAccess = async () => {
-      try {
-        timeoutId = setTimeout(() => {
-          if (isMounted && loading) {
-            console.warn('ProtectedRoute: Access verification timed out.');
-            setError('Verification timed out. Please refresh.');
-            setLoading(false);
-          }
-        }, 10000);
-
-        const { data, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          throw sessionError;
-        }
-
-        const session = data?.session;
-
-        if (!session) {
-          if (isMounted) {
-            setIsAuthenticated(false);
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (isMounted) setIsAuthenticated(true);
-
-        if (requireAdmin || requireSuperAdmin || requiredPermission) {
-          const userRole = await resolveUserRole(session);
-          let allowed = false;
-
-          if (requireSuperAdmin) {
-            allowed = userRole === 'super_admin';
-          } else if (requiredPermission) {
-            if (userRole === 'super_admin') {
-              allowed = true;
-            } else if (ADMIN_ROLES.includes(userRole)) {
-              allowed = true;
-            }
-          } else if (requireAdmin) {
-            allowed = ADMIN_ROLES.includes(userRole);
-          }
-
-          if (isMounted) {
-            setAuthorized(allowed);
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (isMounted) {
-          setAuthorized(true);
-          setLoading(false);
-        }
-      } catch (e) {
-        console.error('ProtectedRoute: Access verification error:', e);
-        if (isMounted) {
-          setAuthorized(false);
-          setIsAuthenticated(false);
-          setError('Authentication failed. Please log in again.');
-          setLoading(false);
-        }
-      } finally {
-        if (timeoutId) clearTimeout(timeoutId);
-      }
-    };
-
-    verifyAccess();
-
-    return () => {
-      isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [requireAdmin, requireSuperAdmin, requiredPermission, location.pathname]);
-
-  if (loading) {
+  if (authLoading || waitingForRole) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] bg-transparent">
         <Loader2 className="w-10 h-10 animate-spin text-[#003D82] mb-4" />
@@ -126,26 +80,34 @@ const ProtectedRoute = ({
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
-        <p className="text-red-500 font-medium mb-4">{error}</p>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-[#003D82] text-white rounded-md hover:bg-blue-800 transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
+  if (!user || !session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!authorized) {
+  if (!needsRoleCheck) {
+    return children;
+  }
+
+  let allowed = false;
+  if (requireSuperAdmin) {
+    allowed = userRole === 'super_admin';
+  } else if (requiredPermission) {
+    allowed =
+      userRole === 'super_admin'
+      || hasPermission(requiredPermission)
+      || ADMIN_ROLES.includes(userRole);
+  } else if (requireAdmin) {
+    allowed = ADMIN_ROLES.includes(userRole);
+  }
+
+  if (!allowed) {
+    console.warn('[ProtectedRoute] Access denied', {
+      userId: user.id,
+      userRole,
+      requireAdmin,
+      requireSuperAdmin,
+      requiredPermission,
+    });
     return <AccessDeniedPage />;
   }
 

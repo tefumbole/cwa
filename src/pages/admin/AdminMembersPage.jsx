@@ -19,8 +19,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from '@/context/AuthContext';
-import { isCurrentUserAdmin } from '@/services/whatsappAdminService';
 import AccessDeniedPage from '@/components/AccessDeniedPage';
+
+const ADMIN_ROLES = ['admin', 'super_admin', 'director', 'manager'];
 
 const AdminMembersPage = () => {
   const [members, setMembers] = useState([]);
@@ -30,43 +31,14 @@ const AdminMembersPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminCheckLoading, setAdminCheckLoading] = useState(true);
 
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, profile, loading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Check admin status on mount and when user changes
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (authLoading) return;
-      
-      setAdminCheckLoading(true);
-      try {
-        if (!user) {
-          setIsAdmin(false);
-          setAdminCheckLoading(false);
-          return;
-        }
-
-        const adminStatus = await isCurrentUserAdmin();
-        setIsAdmin(adminStatus);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-        toast({
-          title: "Permission Check Failed",
-          description: "Could not verify admin permissions.",
-          variant: "destructive"
-        });
-      } finally {
-        setAdminCheckLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [user, authLoading, toast]);
+  const userRole = String(role || profile?.role || user?.app_metadata?.role || '').toLowerCase();
+  const isAdmin = ADMIN_ROLES.includes(userRole);
+  const adminCheckLoading = authLoading;
 
   // Load members data only if user is admin
   useEffect(() => {
