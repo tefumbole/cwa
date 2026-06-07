@@ -21,7 +21,10 @@
     "migrate:hostinger": "bash tools/migrate-hostinger.sh",
     "vps:check": "bash tools/vps-check-ports.sh",
     "vps:deploy": "bash tools/deploy-alphabridge-vps.sh",
-    "api:start": "npm run start --prefix apps/api"
+    "api:start": "npm run start --prefix apps/api",
+    "version:bump": "node tools/bump-version.js",
+    "hooks:install": "bash tools/setup-git-hooks.sh",
+    "restore-point": "bash tools/create-restore-point.sh"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
