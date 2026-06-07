@@ -24,3 +24,45 @@ export function itemVisible(hasPermission, permission) {
   if (!permission) return true;
   return hasPermission(permission);
 }
+
+const ADMIN_ROUTE_RULES = [
+  ['/admin/dashboard', ['dashboard.view', 'menu.dashboard']],
+  ['/admin/users', ['users.view', 'users.create', 'users.edit', 'menu.users']],
+  ['/admin/courses', ['courses.view', 'courses.create', 'courses.edit', 'menu.courses']],
+  ['/admin/jobs', ['jobs.view', 'jobs.create', 'jobs.edit', 'menu.jobs']],
+  ['/admin/applications', ['applications.view', 'applications.create', 'menu.jobs']],
+  ['/admin/shareholders', ['shareholders.view', 'shareholders.create', 'menu.shareholders']],
+  ['/admin/members', ['members.view', 'members.create', 'menu.members']],
+  ['/admin/settings', ['system.settings.view', 'menu.system']],
+  ['/admin/system', ['system.settings.view', 'system.reports.view', 'menu.system']],
+  ['/admin/roles', ['roles.view', 'roles.create', 'menu.roles']],
+  ['/admin/events', ['events.view', 'events.create', 'menu.events']],
+  ['/admin/invitations', ['invitations.view', 'invitations.create', 'menu.invitations']],
+  ['/admin/announcements', ['announcements.compose.view', 'announcements.list.view', 'menu.announcements']],
+  ['/admin/timesheet', ['timesheets.view', 'timesheets.create', 'menu.timesheets']],
+  ['/admin/tasks', ['tasks.view', 'tasks.create', 'menu.tasks']],
+  ['/admin/letters', ['letters.send.view', 'letters.templates.view']],
+  ['/admin/communication', ['letters.send.view', 'announcements.compose.view']],
+];
+
+export function canAccessAdminRoute(pathname, hasPermission, permissions = []) {
+  if (!Array.isArray(permissions) || permissions.length === 0) return false;
+
+  const path = String(pathname || '').split('?')[0].replace(/\/$/, '') || '/admin/dashboard';
+
+  for (const [prefix, keys] of ADMIN_ROUTE_RULES) {
+    if (path === prefix || path.startsWith(`${prefix}/`)) {
+      return keys.some((key) => hasPermission(key));
+    }
+  }
+
+  return permissions.some((key) => key.startsWith('menu.') || key === 'dashboard.view');
+}
+
+export function hasAdminPanelAccess(hasPermission, permissions = []) {
+  return (
+    hasPermission('dashboard.view')
+    || hasPermission('menu.dashboard')
+    || permissions.some((key) => key.startsWith('menu.'))
+  );
+}

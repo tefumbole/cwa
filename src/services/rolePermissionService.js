@@ -1,4 +1,9 @@
-// Service for handling Role-Based Access Control using localStorage
+// Service for handling Role-Based Access Control
+
+import { supabase } from '@/lib/customSupabaseClient';
+import { findRoleNameForSlug } from '@/config/permissionCatalog';
+
+const useMysql = import.meta.env.VITE_DATA_BACKEND === 'mysql';
 
 const ROLES_KEY = 'ab_roles_v2';
 const DEFAULT_PERMISSIONS = [
@@ -112,18 +117,75 @@ export const updateRolePermissions = async (roleId, permissions) => {
 };
 
 export const getUserPermissions = async (userId) => {
-    const users = JSON.parse(localStorage.getItem('alpha_users') || '[]');
-    const user = users.find(u => u.id === userId);
-    
-    if (!user) {
-        if (userId === 'admin-master') return DEFAULT_PERMISSIONS;
-        return []; 
+  if (useMysql) {
+    return getUserPermissionsFromDb(userId);
+  }
+
+  const users = JSON.parse(localStorage.getItem('alpha_users') || '[]');
+  const user = users.find(u => u.id === userId);
+
+  if (!user) {
+    if (userId === 'admin-master') return DEFAULT_PERMISSIONS;
+    return [];
+  }
+
+  const roles = getRoles();
+  const role = roles.find(r => r.id === user.role_id);
+  return role ? role.permissions : [];
+};
+
+async function getUserPermissionsFromDb(userId) {
+  if (!userId) return [];
+
+  try {
+    const roleNames = new Set();
+
+    const { data: assignments, error: assignmentError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId);
+
+    if (assignmentError) throw assignmentError;
+
+    for (const row of assignments || []) {
+      if (row?.role) roleNames.add(String(row.role).trim());
     }
 
-    const roles = getRoles();
-    const role = roles.find(r => r.id === user.role_id);
-    return role ? role.permissions : [];
-};
+    if (!roleNames.size) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const { data: roles } = await supabase.from('roles').select('id, name');
+      const mapped = findRoleNameForSlug(profile?.role, roles || []);
+      if (mapped) roleNames.add(mapped);
+    }
+
+    if (!roleNames.size) return [];
+
+    const permissions = new Set();
+    for (const roleName of roleNames) {
+      const { data: rows, error } = await supabase
+        .from('role_permissions')
+        .select('permission')
+        .eq('role', roleName);
+
+      if (error) throw error;
+
+      for (const row of rows || []) {
+        const permission = typeof row === 'string' ? row : row?.permission;
+        if (permission) permissions.add(permission);
+      }
+    }
+
+    return [...permissions];
+  } catch (error) {
+    console.error('[rolePermissionService] getUserPermissionsFromDb:', error);
+    return [];
+  }
+}
 
 export const hasPermission = async (userId, permissionKey) => {
     const permissions = await getUserPermissions(userId);

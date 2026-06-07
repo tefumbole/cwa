@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/context/PermissionContext';
 import { MENU_PERMISSIONS, itemVisible } from '@/config/adminMenuPermissions';
+import { formatRoleLabel } from '@/services/roleService';
 import { 
   LayoutDashboard, 
   Users, 
@@ -59,42 +60,8 @@ const AdminLayout = () => {
   const tl = useSiteLabel();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-  const { hasPermission } = usePermission();
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const checkAdmin = async () => {
-      if (!user) {
-        if (isMounted) {
-          setIsAdmin(false);
-          setCheckingAdmin(false);
-        }
-        return;
-      }
-
-      try {
-        const userRole = String(profile?.role || user?.app_metadata?.role || user?.user_metadata?.role || '').toLowerCase();
-        const adminStatus = ['admin', 'super_admin', 'director', 'manager'].includes(userRole);
-        if (isMounted) {
-          setIsAdmin(adminStatus);
-        }
-      } catch (error) {
-        console.error("AdminLayout: Failed to check admin status", error);
-        if (isMounted) setIsAdmin(false);
-      } finally {
-        if (isMounted) setCheckingAdmin(false);
-      }
-    };
-    
-    checkAdmin();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [user, profile]);
+  const { hasPermission, hasStaffAccess, loading: permLoading } = usePermission();
+  const userRoleLabel = formatRoleLabel(profile?.role || user?.app_metadata?.role || user?.role || '');
 
   const handleLogout = async () => {
     try {
@@ -425,7 +392,7 @@ const AdminLayout = () => {
                 {profile?.full_name || user?.email || 'Administrator'}
               </p>
               <div className="text-[10px] px-1.5 py-0.5 rounded mt-1 inline-block bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                {checkingAdmin ? tl('menu', 'Checking...') : (isAdmin ? tl('menu', 'Administrator') : tl('menu', 'User'))}
+                {permLoading ? tl('menu', 'Checking...') : (hasStaffAccess ? userRoleLabel : tl('menu', 'User'))}
               </div>
             </div>
           </div>

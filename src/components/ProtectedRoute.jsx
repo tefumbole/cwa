@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import AccessDeniedPage from '@/components/AccessDeniedPage';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/context/PermissionContext';
+import { canAccessAdminRoute, hasAdminPanelAccess } from '@/config/adminMenuPermissions';
 
 const ADMIN_ROLES = ['admin', 'super_admin', 'director', 'manager'];
 
@@ -63,15 +64,19 @@ const ProtectedRoute = ({
     loading: authLoading,
     isProfileLoading,
   } = useAuth();
-  const { hasPermission } = usePermission();
+  const { hasPermission, permissions, loading: permLoading, hasStaffAccess } = usePermission();
   const location = useLocation();
 
   const needsRoleCheck = requireAdmin || requireSuperAdmin || requiredPermission;
   const fallbackRole = location.state?.verifiedRole;
   const userRole = resolveUserRole({ role, profile, user, session, fallbackRole });
+  const isBuiltinAdmin = ADMIN_ROLES.includes(userRole);
   const waitingForRole = Boolean(user && needsRoleCheck && !userRole && (authLoading || isProfileLoading));
+  const waitingForPermissions = Boolean(
+    user && needsRoleCheck && !isBuiltinAdmin && !requireSuperAdmin && permLoading
+  );
 
-  if (authLoading || waitingForRole) {
+  if (authLoading || waitingForRole || waitingForPermissions) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] bg-transparent">
         <Loader2 className="w-10 h-10 animate-spin text-[#003D82] mb-4" />
@@ -95,15 +100,20 @@ const ProtectedRoute = ({
     allowed =
       userRole === 'super_admin'
       || hasPermission(requiredPermission)
-      || ADMIN_ROLES.includes(userRole);
+      || isBuiltinAdmin;
   } else if (requireAdmin) {
-    allowed = ADMIN_ROLES.includes(userRole);
+    allowed = isBuiltinAdmin
+      || hasAdminPanelAccess(hasPermission, permissions)
+      || canAccessAdminRoute(location.pathname, hasPermission, permissions);
   }
 
   if (!allowed) {
     console.warn('[ProtectedRoute] Access denied', {
       userId: user.id,
       userRole,
+      permissionCount: permissions.length,
+      hasStaffAccess,
+      path: location.pathname,
       requireAdmin,
       requireSuperAdmin,
       requiredPermission,
