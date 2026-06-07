@@ -319,7 +319,7 @@ export async function sendDocumentBuffer(toPhone, text, fileBlob, fileName = 'do
   const textResult = await sendTextMessage(phone, text, 'document-intro');
   if (!textResult.success) return textResult;
 
-  await new Promise((r) => setTimeout(r, 3000));
+  await new Promise((r) => setTimeout(r, 6000));
 
   const buffer = fileBlob instanceof Blob ? await fileBlob.arrayBuffer() : fileBlob;
   const upload = await uploadBuffer(new Uint8Array(buffer), 'application/pdf', fileName);

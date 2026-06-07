@@ -6,6 +6,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  runQueuedWhatsAppSend,
+  getTextToDocumentDelayMs,
+} from './whatsappSendQueue.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadRoot = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
@@ -129,24 +133,26 @@ export async function sendTextMessage(toPhone, text, messageType = 'text') {
     return buildResult(false, toPhone, null, 'Invalid phone number format.');
   }
 
-  const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, {
-    json: { to, text: String(text ?? '') },
+  return runQueuedWhatsAppSend(`text:${messageType}`, async () => {
+    const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, {
+      json: { to, text: String(text ?? '') },
+    });
+
+    const body = response.json || { raw: response.body };
+
+    if (response.networkError) {
+      return buildResult(false, to, body, body?.message || 'Could not reach Wasender API');
+    }
+
+    if (response.ok && body?.success) {
+      console.log(`[WASENDER] ${messageType} sent to ${to}: ${body?.data?.msgId}`);
+      return buildResult(true, to, body, null);
+    }
+
+    const error = body?.message || body?.error || response.body || 'Send failed';
+    console.error('[WASENDER] Send failed:', error);
+    return buildResult(false, to, body, typeof error === 'string' ? error : 'Send failed');
   });
-
-  const body = response.json || { raw: response.body };
-
-  if (response.networkError) {
-    return buildResult(false, to, body, body?.message || 'Could not reach Wasender API');
-  }
-
-  if (response.ok && body?.success) {
-    console.log(`[WASENDER] ${messageType} sent to ${to}: ${body?.data?.msgId}`);
-    return buildResult(true, to, body, null);
-  }
-
-  const error = body?.message || body?.error || response.body || 'Send failed';
-  console.error('[WASENDER] Send failed:', error);
-  return buildResult(false, to, body, typeof error === 'string' ? error : 'Send failed');
 }
 
 export async function sendOtp(toPhone, otp, context = null) {
@@ -288,7 +294,9 @@ export async function sendTextThenDocumentBuffer(
   const textResult = await sendTextMessage(to, text, 'document-intro');
   if (!textResult.success) return textResult;
 
-  await sleep(3000);
+  const delayMs = getTextToDocumentDelayMs();
+  console.log(`[WASENDER] Waiting ${delayMs}ms before sending PDF to ${to}`);
+  await sleep(delayMs);
 
   const upload = await resolveDocumentPublicUrl(buffer, fileName, mimeType);
   if (!upload.success || !upload.public_url) {
@@ -320,14 +328,16 @@ export async function sendDocumentMessage(toPhone, documentUrl, text = null, fil
   if (text) payload.text = text;
   if (fileName) payload.fileName = fileName;
 
-  const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, { json: payload });
-  const body = response.json || {};
+  return runQueuedWhatsAppSend('document', async () => {
+    const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, { json: payload });
+    const body = response.json || {};
 
-  if (response.ok && body?.success) {
-    return buildResult(true, to, body, null);
-  }
+    if (response.ok && body?.success) {
+      return buildResult(true, to, body, null);
+    }
 
-  return buildResult(false, to, body, body?.message || 'Send failed');
+    return buildResult(false, to, body, body?.message || 'Send failed');
+  });
 }
 
 export async function sendImageMessage(toPhone, imageUrl, text = null) {
@@ -337,12 +347,14 @@ export async function sendImageMessage(toPhone, imageUrl, text = null) {
   const payload = { to, imageUrl };
   if (text) payload.text = text;
 
-  const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, { json: payload });
-  const body = response.json || {};
+  return runQueuedWhatsAppSend('image', async () => {
+    const response = await wasenderRequest('POST', `${getBaseUrl()}/send-message`, { json: payload });
+    const body = response.json || {};
 
-  if (response.ok && body?.success) {
-    return buildResult(true, to, body, null);
-  }
+    if (response.ok && body?.success) {
+      return buildResult(true, to, body, null);
+    }
 
-  return buildResult(false, to, body, body?.message || 'Send failed');
+    return buildResult(false, to, body, body?.message || 'Send failed');
+  });
 }
