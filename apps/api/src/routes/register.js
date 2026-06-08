@@ -30,7 +30,7 @@ router.post('/request', async (req, res) => {
       if (!invites.length) {
         return res.status(400).json({ success: false, error: 'Invalid task invite link.' });
       }
-      assignedRole = 'staff';
+      assignedRole = 'task_assignee';
     }
 
     const [existing] = await pool.query(

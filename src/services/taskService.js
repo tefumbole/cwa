@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/customSupabaseClient';
-import { getTemplateByType, replaceTemplateVariables } from './taskMessageTemplateService';
-import { sendTaskAssignmentNotification } from './taskNotificationService';
+import { sendTaskAssignmentNotification, sendTaskAcceptedNotifications, sendTaskCompletedNotifications, sendTaskReviewNotification, sendAdminTaskAcceptedNotification, sendAdminTaskCompletedNotification } from './taskNotificationService';
+import { sendWhatsAppMessage } from './wasenderapiService';
 import { DEFAULT_TASK_NOTIFICATION_TEMPLATE } from '@/utils/taskPersonalization';
 
 function newId() {
@@ -240,6 +240,29 @@ export const createTaskWithAssignments = async (taskData, assigneeIds, options =
     console.error('Error in createTaskWithAssignments:', error);
     return { success: false, error: error.message };
   }
+};
+
+export const createBatchTasksWithAssignments = async (tasksList, assigneeIds, sharedOptions = {}) => {
+  const created = [];
+  const errors = [];
+
+  for (const taskData of tasksList) {
+    const res = await createTaskWithAssignments(taskData, assigneeIds, sharedOptions);
+    if (res.success) created.push(res.data);
+    else errors.push(res.error || 'Unknown error');
+  }
+
+  if (!created.length) {
+    return { success: false, error: errors[0] || 'No tasks were created', count: 0 };
+  }
+
+  return {
+    success: errors.length === 0,
+    count: created.length,
+    failed: errors.length,
+    error: errors.length ? errors[0] : null,
+    data: created,
+  };
 };
 
 export const createTask = async (taskData, assigneeIds, options) => {
@@ -510,6 +533,24 @@ export const acceptTaskAssignment = async (assignmentId) => {
       await supabase.from('tasks').update({ status: 'In Progress' }).eq('id', task.id);
     }
 
+    await sendTaskAcceptedNotifications(assignmentId).catch((err) => console.error('Accept notification failed', err));
+
+    if (import.meta.env.VITE_DATA_BACKEND !== 'mysql') {
+      const profileMap = await fetchProfilesMap([assignment.user_id, task.created_by].filter(Boolean));
+      const assignee = profileMap[assignment.user_id];
+      const creator = profileMap[task.created_by];
+      if (creator?.phone) {
+        await sendAdminTaskAcceptedNotification(creator.phone, assignee?.full_name || assignee?.name || 'Assignee', task.title);
+      }
+      if (assignee?.phone) {
+        const loginLink = `${window.location.origin}/my-tasks`;
+        await sendWhatsAppMessage(
+          assignee.phone,
+          `Task Accepted ✅\n\nHello ${assignee.full_name || assignee.name},\n\nYou accepted: *${task.title}*\n\nYour task realization is currently at *0%*.\n\nUpdate your progress here:\n${loginLink}`
+        );
+      }
+    }
+
     return { success: true, data: { ...assignment, tasks: task } };
   } catch (error) {
     console.error('Error accepting task:', error);
@@ -637,9 +678,74 @@ export const updateTaskProgress = async (assignmentId, taskId, progress, status,
     }
 
     await evaluateTaskOverallStatus(taskId);
+
+    if (status === 'Completed' || progress === 100) {
+      await sendTaskCompletedNotifications(assignmentId).catch((err) => console.error('Complete notification failed', err));
+
+      if (import.meta.env.VITE_DATA_BACKEND !== 'mysql') {
+        const { data: assignment } = await supabase.from('task_assignments').select('user_id, task_id').eq('id', assignmentId).single();
+        const { data: taskRow } = await supabase.from('tasks').select('title, created_by').eq('id', taskId).single();
+        if (assignment && taskRow) {
+          const profileMap = await fetchProfilesMap([assignment.user_id, taskRow.created_by]);
+          const assignee = profileMap[assignment.user_id];
+          const creator = profileMap[taskRow.created_by];
+          if (creator?.phone && assignee) {
+            await sendAdminTaskCompletedNotification(creator.phone, assignee.full_name || assignee.name, taskRow.title);
+          }
+        }
+      }
+    }
+
     return { success: true };
   } catch (error) {
     console.error('Error updating progress:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const adminReviewAssignment = async (assignmentId, taskId, progress, comment, adminName) => {
+  try {
+    const now = new Date().toISOString();
+    const status = progress >= 100 ? 'Completed' : 'In Progress';
+    const updates = {
+      progress,
+      status,
+      last_update_at: now,
+    };
+    if (progress >= 100) {
+      updates.completed_at = now;
+    } else if (progress < 100) {
+      updates.completed_at = null;
+    }
+
+    const { error: assignError } = await supabase
+      .from('task_assignments')
+      .update(updates)
+      .eq('id', assignmentId);
+    if (assignError) throw assignError;
+
+    const { error: updateError } = await supabase
+      .from('task_updates')
+      .insert([{
+        id: newId(),
+        assignment_id: assignmentId,
+        progress,
+        comment: comment?.trim() ? `[Admin Review] ${comment.trim()}` : `[Admin Review] Progress set to ${progress}%`,
+      }]);
+    if (updateError) throw updateError;
+
+    await evaluateTaskOverallStatus(taskId);
+
+    await sendTaskReviewNotification({
+      assignmentId,
+      progress,
+      comment,
+      adminName,
+    }).catch((err) => console.error('Review notification failed', err));
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error in adminReviewAssignment:', error);
     return { success: false, error: error.message };
   }
 };
@@ -660,6 +766,8 @@ export const completeTaskAssignment = async (assignmentId, taskId) => {
     if (error) throw error;
 
     await evaluateTaskOverallStatus(taskId);
+    await sendTaskCompletedNotifications(assignmentId).catch((err) => console.error('Complete notification failed', err));
+
     return { success: true };
   } catch (error) {
     console.error('Error completing task:', error);
@@ -783,39 +891,35 @@ export const resendTaskNotification = async (taskId, assigneeId) => {
     }
 };
 
-const sendTaskNotifications = async (task, assigneeIds, templateType) => {
+const sendTaskNotifications = async (task, assigneeIds, templateType, options = {}) => {
     try {
-        const { data: templateRes } = await getTemplateByType(templateType);
-        if (!templateRes || !templateRes.is_active) return;
-        
-        const template = templateRes;
-        
-        const { data: assignees } = await supabase
-            .from('profiles')
-            .select('id, full_name, phone, email')
-            .in('id', assigneeIds);
-            
-        const { data: sender } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', task.created_by)
-            .single();
+        const { data: assignments } = await supabase
+            .from('task_assignments')
+            .select('id, user_id, invite_token')
+            .eq('task_id', task.id)
+            .in('user_id', assigneeIds);
 
-        const assignedBy = sender?.full_name || 'Admin';
+        const profileMap = await fetchProfilesMap(assigneeIds);
+        const docLinks = options.documentLinks || '';
 
-        for (const user of assignees) {
-            const variables = {
-                task_title: task.title,
+        for (const assignment of assignments || []) {
+            const profile = profileMap[assignment.user_id];
+            if (!profile) continue;
+
+            await sendTaskAssignmentNotification({
+                assigneePhone: profile.phone,
+                assigneeName: profile.full_name || profile.name || profile.email,
+                assigneeEmail: profile.email,
+                taskTitle: task.title,
+                taskDescription: task.description,
+                deadline: task.deadline,
                 priority: task.priority,
-                deadline: new Date(task.deadline).toLocaleDateString(),
-                assigned_by: assignedBy,
-                login_link: 'https://www.alpha-bridge.net/login'
-            };
-            
-            const messageBody = replaceTemplateVariables(template.body, variables);
-            const messageSubject = replaceTemplateVariables(template.subject, variables);
-            
-            console.log(`Sending Notification to ${user.full_name} (${user.phone}):\nSubject: ${messageSubject}\nBody: ${messageBody}`);
+                startDate: task.start_date,
+                inviteToken: assignment.invite_token,
+                messageTemplate: task.notification_template,
+                documentLinks: docLinks,
+                assignmentId: assignment.id,
+            });
         }
     } catch(e) {
         console.error("Failed to send task notifications", e);

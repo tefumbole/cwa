@@ -25,7 +25,7 @@ function Header() {
   const navigate = useNavigate();
   const { user, otpVerified, logout, profile, isProfileLoading, role } = useAuth();
 
-  const isStaffRole = ['staff', 'employee', 'teacher'].includes(String(role || profile?.role || '').toLowerCase());
+  const isStaffRole = ['staff', 'employee', 'teacher', 'task_assignee'].includes(String(role || profile?.role || '').toLowerCase());
 
   // Check admin status when user changes
   useEffect(() => {

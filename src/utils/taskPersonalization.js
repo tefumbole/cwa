@@ -2,13 +2,15 @@ export const TASK_PLACEHOLDERS = [
   '{name}',
   '{email}',
   '{phone}',
+  '{subject}',
   '{task_title}',
+  '{description}',
+  '{task_message}',
   '{deadline}',
   '{priority}',
   '{start_date}',
   '{login_link}',
   '{document_links}',
-  '{task_message}',
 ];
 
 export function getAppBaseUrl() {
@@ -31,15 +33,16 @@ export function personalizeTaskContent(template, variables = {}) {
   return result;
 }
 
-export const DEFAULT_TASK_NOTIFICATION_TEMPLATE = `Hello {name},
+export const DEFAULT_TASK_NOTIFICATION_TEMPLATE = `Dear {name},
 
-You have been assigned a new task:
-*{task_title}*
+You have been assigned a task: *{subject}*
 
-{task_message}
+{description}
 
+Start date: {start_date}
 Deadline: {deadline}
-Priority: {priority}
 
-Open your task dashboard:
-{login_link}`;
+Open the link below to sign in and accept your task:
+{login_link}
+
+{document_links}`;

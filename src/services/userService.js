@@ -176,6 +176,93 @@ export async function getUserByUsername(username) {
 }
 
 /**
+ * Search users for task assignment (debounced picker, like Announcements).
+ */
+export async function searchUsersForTaskAssignment(query = '', category = 'all') {
+  if (useMysql) {
+    try {
+      const params = new URLSearchParams({
+        q: query.trim(),
+        category: category || 'all',
+      });
+      const { data } = await mysqlUsersApi(`/tasks/assignees/search?${params.toString()}`);
+      return { success: true, data: data || [] };
+    } catch (error) {
+      console.error('[USER SERVICE] Error searching assignees:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  try {
+    const { searchRecipients } = await import('./announcementService');
+    const q = query.trim();
+    let rows = [];
+
+    if (category === 'all') {
+      const [staff, customers] = await Promise.all([
+        searchRecipients('users', q),
+        searchRecipients('customers', q),
+      ]);
+      rows = [...staff, ...customers];
+    } else if (category === 'staff' || category === 'users') {
+      rows = await searchRecipients('users', q);
+    } else {
+      rows = await searchRecipients('customers', q);
+    }
+
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, phone, role')
+      .order('full_name', { ascending: true });
+
+    if (profiles?.length) {
+      const profileRows = profiles
+        .filter((p) => {
+          if (!q) return true;
+          const needle = q.toLowerCase();
+          return [p.full_name, p.email, p.phone].some((v) => (v || '').toLowerCase().includes(needle));
+        })
+        .map((p) => ({
+          id: p.id,
+          name: p.full_name,
+          full_name: p.full_name,
+          email: p.email || '',
+          phone: p.phone || '',
+          role: p.role || '',
+          type: 'staff',
+        }));
+      const seen = new Set(rows.map((r) => r.id || r.recipient_id));
+      profileRows.forEach((p) => {
+        if (!seen.has(p.id)) rows.push(p);
+      });
+    }
+
+    const mapped = rows.map((r) => ({
+      id: r.id || r.recipient_id,
+      name: r.name || r.full_name || r.email,
+      full_name: r.full_name || r.name || r.email,
+      email: r.email || '',
+      phone: r.phone || '',
+      role: r.role || r.recipient_type || '',
+      type: r.type || r.recipient_type || 'user',
+    }));
+
+    const deduped = [];
+    const ids = new Set();
+    mapped.forEach((row) => {
+      if (!row.id || ids.has(row.id)) return;
+      ids.add(row.id);
+      deduped.push(row);
+    });
+
+    return { success: true, data: deduped.slice(0, 50) };
+  } catch (error) {
+    console.error('[USER SERVICE] Error searching assignees:', error);
+    return { success: false, error: error.message, data: [] };
+  }
+}
+
+/**
  * Get all users for assignment (task assignment, etc.)
  * @returns {Promise<Array>} Array of users with essential fields
  */
@@ -439,6 +526,7 @@ export default {
   getUserByEmail,
   getUserByUsername,
   getAllUsersForAssignment,
+  searchUsersForTaskAssignment,
   createUser,
   updateUser,
   deleteUser,

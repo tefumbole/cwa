@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import ScrollToTop from '@/components/ScrollToTop';
 import MainLayout from '@/layouts/MainLayout';
+import TaskAssigneeLayout from '@/layouts/TaskAssigneeLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { debugEnv } from '@/utils/debug';
 import { autoStartWorker } from '@/services/queueWorkerService';
@@ -388,24 +389,20 @@ const AppContent = () => {
           path="/user/tasks"
           element={
             <ProtectedRoute>
-              <MainLayout>
-                <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-                  <MyTasksPage />
-                </div>
-              </MainLayout>
+              <TaskAssigneeLayout>
+                <MyTasksPage />
+              </TaskAssigneeLayout>
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/user/tasks/pending-acceptances"
           element={
             <ProtectedRoute>
-              <MainLayout>
-                <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-                  <PendingAcceptancesPage />
-                </div>
-              </MainLayout>
+              <TaskAssigneeLayout>
+                <PendingAcceptancesPage />
+              </TaskAssigneeLayout>
             </ProtectedRoute>
           }
         />

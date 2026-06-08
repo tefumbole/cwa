@@ -93,7 +93,17 @@ router.get('/', async (req, res) => {
     const params = [];
 
     if (forAssignment) {
-      sql += ` AND u.role NOT IN ('inactive', 'disabled')`;
+      const [profileRows] = await pool.query(
+        `SELECT p.id, p.email, p.username, p.full_name AS name, p.full_name, p.phone, p.role,
+                COALESCE(p.status, 'active') AS status, p.created_at, p.updated_at
+         FROM profiles p
+         WHERE COALESCE(p.status, 'active') = 'active'
+         ORDER BY p.full_name ASC, p.email ASC`
+      );
+
+      if (profileRows.length) {
+        return res.json({ data: profileRows.map(serializeUser), error: null });
+      }
     }
     if (roleFilter) {
       sql += ' AND LOWER(u.role) = LOWER(?)';

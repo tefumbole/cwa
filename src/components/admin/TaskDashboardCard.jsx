@@ -3,8 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
-import { ChevronDown, ChevronUp, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, AlertCircle, CheckCircle, Clock, Loader2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { adminReviewAssignment } from '@/services/taskService';
 
 export const getStatusColor = (status) => {
   switch (status) {
@@ -33,12 +37,71 @@ export const getPriorityColor = (priority) => {
   }
 };
 
-const TaskDashboardCard = ({ task }) => {
+const AssignmentReviewPanel = ({ assignment, taskId, onReviewed }) => {
+  const [comment, setComment] = useState('');
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+  const { user, profile } = useAuth();
+  const adminName = profile?.full_name || user?.email || 'Admin';
+
+  const submitReview = async (progress) => {
+    if (!comment.trim() && progress < 100) {
+      toast({ title: 'Comment required', description: 'Add feedback when sending the task back for revision.', variant: 'destructive' });
+      return;
+    }
+
+    setSaving(true);
+    const res = await adminReviewAssignment(assignment.id, taskId, progress, comment, adminName);
+    if (res.success) {
+      toast({
+        title: progress >= 100 ? 'Task marked completed' : `Sent back at ${progress}%`,
+        description: 'The assignee has been notified on WhatsApp.',
+      });
+      setComment('');
+      onReviewed?.();
+    } else {
+      toast({ title: 'Review failed', description: res.error, variant: 'destructive' });
+    }
+    setSaving(false);
+  };
+
+  if (assignment.status === 'Pending' || assignment.status === 'Declined') {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 rounded border border-amber-100 bg-amber-50/60 p-3 space-y-2">
+      <p className="text-xs font-semibold text-amber-800 flex items-center gap-1">
+        <MessageSquare className="w-3 h-3" /> Admin Review
+      </p>
+      <Textarea
+        rows={2}
+        placeholder="Comments for the assignee..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        className="bg-white text-sm"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="outline" disabled={saving} onClick={() => submitReview(60)}>
+          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set 60%'}
+        </Button>
+        <Button type="button" size="sm" variant="outline" disabled={saving} onClick={() => submitReview(80)}>
+          Set 80%
+        </Button>
+        <Button type="button" size="sm" className="bg-green-600 hover:bg-green-700 text-white" disabled={saving} onClick={() => submitReview(100)}>
+          Mark Completed
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const TaskDashboardCard = ({ task, onTaskUpdated }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <Card className={`overflow-hidden transition-all duration-200 ${expanded ? 'shadow-md ring-1 ring-blue-100' : 'hover:shadow-md'}`}>
-      <div 
+      <div
         className="p-4 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
         onClick={() => setExpanded(!expanded)}
       >
@@ -63,7 +126,7 @@ const TaskDashboardCard = ({ task }) => {
             </div>
             <Progress value={task.overallProgress} className="h-2" />
           </div>
-          
+
           <Badge className={getStatusColor(task.status)}>
             {getStatusIcon(task.status)}
             {task.status}
@@ -98,6 +161,11 @@ const TaskDashboardCard = ({ task }) => {
                       <Progress value={assignment.progress} className="h-1.5 flex-1" />
                       <span className="text-xs text-gray-500 w-8 text-right">{assignment.progress}%</span>
                     </div>
+                    <AssignmentReviewPanel
+                      assignment={assignment}
+                      taskId={task.id}
+                      onReviewed={onTaskUpdated}
+                    />
                   </div>
                 ))}
               </div>

@@ -14,7 +14,7 @@ const TaskInvitePage = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState(null);
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState('register');
   const [step, setStep] = useState('form');
   const [pendingId, setPendingId] = useState(null);
   const [otp, setOtp] = useState('');
@@ -31,12 +31,15 @@ const TaskInvitePage = () => {
           email: data.invite?.assignee_email || '',
           phone: data.invite?.assignee_phone || '',
         }));
+        if (data.loggedIn) {
+          navigate(`/user/tasks/pending-acceptances?invite=${token}`, { replace: true });
+        }
       })
       .catch((err) => {
         toast({ title: 'Invalid link', description: err.message, variant: 'destructive' });
       })
       .finally(() => setLoading(false));
-  }, [token, toast]);
+  }, [token, toast, navigate]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -58,7 +61,7 @@ const TaskInvitePage = () => {
     setBusy(true);
     try {
       await verifyRegistration({ pendingId, otp });
-      toast({ title: 'Account created', description: 'Sign in to view your assigned task.' });
+      toast({ title: 'Account created', description: 'Sign in to view and accept your pending task.' });
       navigate(`/login?redirect=/user/tasks/pending-acceptances&invite=${token}`);
     } catch (err) {
       toast({ title: 'Verification failed', description: err.message, variant: 'destructive' });
@@ -98,7 +101,19 @@ const TaskInvitePage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-blue-900">
+            After signup or login you will only see your <strong>Pending Tasks</strong> screen where you can accept this assignment.
+          </div>
+
           <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={mode === 'register' ? 'default' : 'outline'}
+              className={mode === 'register' ? 'bg-[#003D82]' : ''}
+              onClick={() => setMode('register')}
+            >
+              <UserPlus className="w-4 h-4 mr-2" /> Sign Up
+            </Button>
             <Button
               type="button"
               variant={mode === 'login' ? 'default' : 'outline'}
@@ -107,20 +122,12 @@ const TaskInvitePage = () => {
             >
               <LogIn className="w-4 h-4 mr-2" /> I have an account
             </Button>
-            <Button
-              type="button"
-              variant={mode === 'register' ? 'default' : 'outline'}
-              className={mode === 'register' ? 'bg-[#003D82]' : ''}
-              onClick={() => setMode('register')}
-            >
-              <UserPlus className="w-4 h-4 mr-2" /> Create account
-            </Button>
           </div>
 
           {mode === 'login' ? (
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                Sign in with your existing Alpha Bridge account to open your task dashboard and accept this assignment.
+                Sign in with your Alpha Bridge account to open your pending tasks and accept this assignment.
               </p>
               <Button asChild className="w-full bg-[#003D82]">
                 <Link to={`/login?redirect=/user/tasks/pending-acceptances&invite=${token}`}>
@@ -131,7 +138,7 @@ const TaskInvitePage = () => {
           ) : step === 'form' ? (
             <form onSubmit={handleRegister} className="space-y-4">
               <p className="text-sm text-gray-600">
-                Create a staff account (OTP confirmation via WhatsApp). You will get access to My Tasks after verification.
+                Create your account. We will send a WhatsApp OTP to confirm your number.
               </p>
               <div>
                 <Label>Full Name</Label>
@@ -170,7 +177,7 @@ const TaskInvitePage = () => {
 
           <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800 flex gap-2">
             <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
-            <span>Staff accounts can access <strong>My Tasks</strong> and <strong>Pending Acceptances</strong> from the main menu after login.</span>
+            <span>Your task portal shows <strong>Pending Tasks</strong> and <strong>My Tasks</strong> only.</span>
           </div>
         </CardContent>
       </Card>

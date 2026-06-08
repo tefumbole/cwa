@@ -55,7 +55,9 @@ const TaskDetailsModal = ({ isOpen, onClose, task, onTaskUpdated }) => {
 
   const handleUpdate = async () => {
     setSaving(true);
-    const res = await updateTaskProgress(task.assignment_id, task.id, progress[0] ?? progress, comment, files);
+    const progressVal = typeof progress === 'number' ? progress : progress[0];
+    const status = progressVal >= 100 ? 'Completed' : 'In Progress';
+    const res = await updateTaskProgress(task.assignment_id, task.id, progressVal, status, comment || null, files);
     
     if (res.success) {
       toast({ title: "Progress updated successfully" });

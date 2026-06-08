@@ -90,6 +90,15 @@ const ProtectedRoute = ({
   }
 
   if (!needsRoleCheck) {
+    if (
+      userRole === 'task_assignee'
+      && !location.pathname.startsWith('/user/tasks')
+      && !location.pathname.startsWith('/task-invite')
+      && location.pathname !== '/login'
+      && location.pathname !== '/otp-verification'
+    ) {
+      return <Navigate to="/user/tasks/pending-acceptances" replace />;
+    }
     return children;
   }
 

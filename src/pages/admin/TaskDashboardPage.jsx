@@ -141,7 +141,7 @@ const TaskDashboardPage = () => {
       ) : (
         <div className="space-y-4">
           {tasks.map(task => (
-            <TaskDashboardCard key={task.id} task={task} />
+            <TaskDashboardCard key={task.id} task={task} onTaskUpdated={loadTasks} />
           ))}
         </div>
       )}

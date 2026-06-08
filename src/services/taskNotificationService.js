@@ -20,18 +20,22 @@ function getToken() {
   }
 }
 
-async function notifyViaApi(assignmentId, messageTemplate, documentLinks) {
+async function notifyViaApi(path, body) {
   const token = getToken();
-  const res = await fetch(`${API_BASE}/tasks/notify-assignment`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ assignmentId, messageTemplate, documentLinks }),
+    body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => ({}));
   return { success: Boolean(json.success), error: json.error };
+}
+
+async function notifyAssignmentViaApi(assignmentId, messageTemplate, documentLinks) {
+  return notifyViaApi('/tasks/notify-assignment', { assignmentId, messageTemplate, documentLinks });
 }
 
 export async function sendTaskAssignmentNotification({
@@ -49,7 +53,7 @@ export async function sendTaskAssignmentNotification({
   assignmentId,
 }) {
   if (useMysql && assignmentId) {
-    return notifyViaApi(assignmentId, messageTemplate, documentLinks);
+    return notifyAssignmentViaApi(assignmentId, messageTemplate, documentLinks);
   }
 
   if (!assigneePhone) return { success: false, error: 'No phone number provided' };
@@ -60,7 +64,13 @@ export async function sendTaskAssignmentNotification({
     name: assigneeName || assigneeEmail || 'Team Member',
     email: assigneeEmail || '',
     phone: assigneePhone || '',
+    subject: taskTitle,
     task_title: taskTitle,
+    description: personalizeTaskContent(taskDescription || '', {
+      name: assigneeName || '',
+      email: assigneeEmail || '',
+      phone: assigneePhone || '',
+    }),
     task_message: personalizeTaskContent(taskDescription || '', {
       name: assigneeName || '',
       email: assigneeEmail || '',
@@ -99,6 +109,28 @@ export const sendAdminTaskCompletedNotification = async (adminPhone, assigneeNam
 
   return sendWhatsAppMessage(adminPhone, message);
 };
+
+export async function sendTaskAcceptedNotifications(assignmentId) {
+  if (useMysql && assignmentId) {
+    return notifyViaApi('/tasks/notify-accepted', { assignmentId });
+  }
+  return { success: true };
+}
+
+export async function sendTaskCompletedNotifications(assignmentId) {
+  if (useMysql && assignmentId) {
+    return notifyViaApi('/tasks/notify-completed', { assignmentId });
+  }
+  return { success: true };
+}
+
+export async function sendTaskReviewNotification({ assignmentId, progress, comment, adminName }) {
+  if (useMysql && assignmentId) {
+    return notifyViaApi('/tasks/notify-review', { assignmentId, progress, comment, adminName });
+  }
+
+  return { success: true };
+}
 
 export async function processScheduledTaskNotifications() {
   if (!useMysql) return { success: true, processed: 0 };

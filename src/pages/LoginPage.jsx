@@ -68,7 +68,7 @@ const LoginPage = () => {
     if (overridePath) return overridePath;
     const adminRoles = ['admin', 'super_admin', 'director', 'manager'];
     if (adminRoles.includes(userRole)) return '/admin/dashboard';
-    if (['staff', 'employee', 'teacher'].includes(userRole)) return '/user/tasks/pending-acceptances';
+    if (['staff', 'employee', 'teacher', 'task_assignee'].includes(userRole)) return '/user/tasks/pending-acceptances';
     if (userRole === 'student') return '/student/dashboard';
     if (userRole === 'shareholder') return '/shareholder/dashboard';
     if (userRole === 'applicant') return '/applicant-dashboard';
