@@ -15,8 +15,8 @@ You have been assigned a task: *{subject}*
 {description}
 
 Priority: *{priority}*
-Start date: {start_date}
-Deadline: {deadline}
+Start date: {start_date}{start_time}
+Deadline: {deadline}{deadline_time}
 
 Open the link below to sign in and accept your task:
 {login_link}`;
@@ -46,8 +46,8 @@ function requireTaskManager(req, res, next) {
 
 async function loadAssignmentContext(pool, assignmentId) {
   const [rows] = await pool.query(
-    `SELECT ta.*, t.id AS task_id, t.title, t.description, t.deadline, t.priority, t.start_date,
-            t.created_by, t.notification_template,
+    `SELECT ta.*, t.id AS task_id, t.title, t.description, t.deadline, t.deadline_time,
+            t.priority, t.start_date, t.start_time, t.created_by, t.notification_template,
             COALESCE(u.name, p.full_name) AS assignee_name,
             COALESCE(u.email, p.email) AS assignee_email,
             COALESCE(u.phone, p.phone) AS assignee_phone,
@@ -64,6 +64,16 @@ async function loadAssignmentContext(pool, assignmentId) {
     [assignmentId]
   );
   return rows[0] || null;
+}
+
+function formatScheduleVars(row) {
+  const fmtTime = (t) => (t ? ` at ${String(t).slice(0, 5)}` : '');
+  return {
+    start_date: row.start_date ? new Date(row.start_date).toLocaleDateString() : '',
+    start_time: fmtTime(row.start_time),
+    deadline: row.deadline ? new Date(row.deadline).toLocaleDateString() : '',
+    deadline_time: fmtTime(row.deadline_time),
+  };
 }
 
 async function searchAssignees(pool, query, category = 'all') {
@@ -220,6 +230,7 @@ router.post('/notify-assignment', requireAuth, requireAdmin, async (req, res) =>
       phone: row.assignee_phone,
     });
 
+    const scheduleVars = formatScheduleVars(row);
     const text = personalize(template, {
       name: row.assignee_name || row.assignee_email,
       email: row.assignee_email || '',
@@ -228,9 +239,11 @@ router.post('/notify-assignment', requireAuth, requireAdmin, async (req, res) =>
       task_title: row.title,
       description: descriptionText,
       task_message: descriptionText,
-      deadline: row.deadline ? new Date(row.deadline).toLocaleDateString() : '',
+      deadline: scheduleVars.deadline,
+      deadline_time: scheduleVars.deadline_time,
       priority: row.priority || 'Medium',
-      start_date: row.start_date ? new Date(row.start_date).toLocaleDateString() : '',
+      start_date: scheduleVars.start_date,
+      start_time: scheduleVars.start_time,
       login_link: loginLink,
       document_links: docLinks,
     });
@@ -290,31 +303,45 @@ router.post('/process-scheduled', requireAuth, requireAdmin, async (_req, res) =
       }
 
       const [docs] = await pool.query(
-        `SELECT file_url FROM task_attachments WHERE task_id = ? AND attachment_type = 'source'`,
+        `SELECT file_name, file_url FROM task_attachments WHERE task_id = ? AND attachment_type = 'source'`,
         [row.task_id]
       );
-      const documentLinks = docs.map((d) => d.file_url).filter(Boolean).join('\n');
       const loginLink = `${APP_BASE}/task-invite/${row.invite_token}`;
       const template = row.notification_template || DEFAULT_TEMPLATE;
+      const descriptionText = personalize(row.description || '', {
+        name: row.name,
+        email: row.email,
+        phone: row.phone,
+      });
 
+      const scheduleVars = formatScheduleVars(row);
       const text = personalize(template, {
         name: row.name || row.email,
         email: row.email || '',
         phone: row.phone || '',
+        subject: row.title,
         task_title: row.title,
-        deadline: row.deadline ? new Date(row.deadline).toLocaleDateString() : '',
-        priority: row.priority || '',
-        start_date: row.start_date ? new Date(row.start_date).toLocaleDateString() : '',
+        description: descriptionText,
+        task_message: descriptionText,
+        deadline: scheduleVars.deadline,
+        deadline_time: scheduleVars.deadline_time,
+        priority: row.priority || 'Medium',
+        start_date: scheduleVars.start_date,
+        start_time: scheduleVars.start_time,
         login_link: loginLink,
-        document_links: documentLinks,
-        task_message: personalize(row.description || '', {
-          name: row.name,
-          email: row.email,
-          phone: row.phone,
-        }),
+        document_links: '',
       });
 
-      const result = await sendTextMessage(phone, text);
+      const textResult = await sendTextMessage(phone, text);
+      let result = textResult;
+      if (textResult.success) {
+        for (const doc of docs || []) {
+          if (!doc.file_url) continue;
+          result = await sendDocumentMessage(phone, doc.file_url, null, doc.file_name || 'task-document.pdf');
+          if (!result.success) break;
+        }
+      }
+
       if (result.success) {
         await pool.query(
           `UPDATE task_notification_queue SET status = 'sent', sent_at = NOW() WHERE id = ?`,

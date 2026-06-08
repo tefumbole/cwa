@@ -62,7 +62,7 @@ export function parseScheduleTimestamp(value, offsetOverride = null) {
   return Number.isNaN(t) ? NaN : t;
 }
 
-function normalizeScheduleTime(value, offsetOverride = null) {
+export function normalizeScheduleTime(value, offsetOverride = null) {
   const ts = parseScheduleTimestamp(value, offsetOverride);
   if (Number.isNaN(ts)) return String(value || '').trim();
   return new Date(ts).toISOString();

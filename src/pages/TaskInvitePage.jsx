@@ -14,7 +14,7 @@ const TaskInvitePage = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState(null);
-  const [mode, setMode] = useState('register');
+  const [mode, setMode] = useState('login');
   const [step, setStep] = useState('form');
   const [pendingId, setPendingId] = useState(null);
   const [otp, setOtp] = useState('');
@@ -108,19 +108,19 @@ const TaskInvitePage = () => {
           <div className="flex gap-2">
             <Button
               type="button"
-              variant={mode === 'register' ? 'default' : 'outline'}
-              className={mode === 'register' ? 'bg-[#003D82]' : ''}
-              onClick={() => setMode('register')}
-            >
-              <UserPlus className="w-4 h-4 mr-2" /> Sign Up
-            </Button>
-            <Button
-              type="button"
               variant={mode === 'login' ? 'default' : 'outline'}
               className={mode === 'login' ? 'bg-[#003D82]' : ''}
               onClick={() => setMode('login')}
             >
               <LogIn className="w-4 h-4 mr-2" /> I have an account
+            </Button>
+            <Button
+              type="button"
+              variant={mode === 'register' ? 'default' : 'outline'}
+              className={mode === 'register' ? 'bg-[#003D82]' : ''}
+              onClick={() => setMode('register')}
+            >
+              <UserPlus className="w-4 h-4 mr-2" /> Sign Up
             </Button>
           </div>
 

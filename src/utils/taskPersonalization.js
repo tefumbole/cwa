@@ -40,8 +40,8 @@ You have been assigned a task: *{subject}*
 {description}
 
 Priority: *{priority}*
-Start date: {start_date}
-Deadline: {deadline}
+Start date: {start_date}{start_time}
+Deadline: {deadline}{deadline_time}
 
 Open the link below to sign in and accept your task:
 {login_link}`;

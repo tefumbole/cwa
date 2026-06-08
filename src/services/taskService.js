@@ -159,6 +159,8 @@ async function notifyAssignees(task, assignmentRows, profileMap, options) {
       deadline: task.deadline,
       priority: task.priority,
       startDate: task.start_date,
+      startTime: task.start_time,
+      deadlineTime: task.deadline_time,
       inviteToken: assignment.invite_token,
       messageTemplate: template,
       documentLinks: docLinks,
@@ -183,9 +185,12 @@ export const createTaskWithAssignments = async (taskData, assigneeIds, options =
       title: taskData.title,
       description: taskData.description,
       priority: taskData.priority,
+      color: taskData.color || null,
       category_id: taskData.category_id || null,
       start_date: taskData.start_date || null,
+      start_time: taskData.start_time || null,
       deadline: taskData.deadline,
+      deadline_time: taskData.deadline_time || null,
       created_by: user.id,
       status: isScheduled ? 'Scheduled' : 'Pending',
       notification_template: notificationTemplate,
@@ -249,21 +254,30 @@ export const createTaskWithAssignments = async (taskData, assigneeIds, options =
   }
 };
 
-export const createBatchTasksWithAssignments = async (tasksList, assigneeIds, sharedOptions = {}) => {
+export const createBatchTasksWithAssignments = async (tasksList, sharedOptions = {}) => {
   const created = [];
   const errors = [];
 
   for (let i = 0; i < tasksList.length; i += 1) {
     const taskEntry = tasksList[i];
-    const { sourceFiles, ...taskData } = taskEntry;
-    const res = await createTaskWithAssignments(taskData, assigneeIds, {
+    const {
+      sourceFiles,
+      assigneeIds,
+      scheduleLater,
+      schedules,
+      ...taskData
+    } = taskEntry;
+
+    const res = await createTaskWithAssignments(taskData, assigneeIds || [], {
       ...sharedOptions,
       sourceFiles: sourceFiles || [],
+      scheduleLater: Boolean(scheduleLater),
+      schedules: schedules || [],
     });
     if (res.success) created.push(res.data);
     else errors.push(res.error || 'Unknown error');
 
-    if (i < tasksList.length - 1 && !sharedOptions.scheduleLater) {
+    if (i < tasksList.length - 1 && !scheduleLater) {
       await new Promise((resolve) => setTimeout(resolve, WHATSAPP_SEND_INTERVAL_MS));
     }
   }
