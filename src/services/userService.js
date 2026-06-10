@@ -318,14 +318,11 @@ export async function createUser(userData) {
 
   if (useMysql) {
     try {
-      const { data, tempPassword } = await mysqlUsersApi('/users', {
+      const json = await mysqlUsersApi('/users', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
-      if (tempPassword) {
-        console.log('[USER SERVICE] Temporary password generated for', userData.email);
-      }
-      return data;
+      return { ...(json.data || {}), existing: Boolean(json.existing) };
     } catch (error) {
       console.error('[USER SERVICE] Error creating user:', error);
       throw error;

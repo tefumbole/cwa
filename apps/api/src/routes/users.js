@@ -113,7 +113,31 @@ router.get('/', async (req, res) => {
     sql += ' ORDER BY u.name ASC, u.email ASC';
 
     const [rows] = await pool.query(sql, params);
-    res.json({ data: rows.map(serializeUser), error: null });
+
+    let profileSql = `SELECT p.id, p.email, p.username, p.full_name AS name, p.full_name, p.phone, p.role,
+                             COALESCE(p.status, 'active') AS status, p.created_at, p.updated_at
+                      FROM profiles p
+                      WHERE COALESCE(p.status, 'active') = 'active'`;
+    const profileParams = [];
+    if (roleFilter) {
+      profileSql += ' AND LOWER(p.role) = LOWER(?)';
+      profileParams.push(roleFilter);
+    }
+    profileSql += ' ORDER BY p.full_name ASC, p.email ASC';
+    const [profileRows] = await pool.query(profileSql, profileParams);
+
+    const byId = new Map();
+    profileRows.forEach((row) => byId.set(row.id, serializeUser(row)));
+    rows.forEach((row) => {
+      if (!byId.has(row.id)) {
+        byId.set(row.id, serializeUser({ ...row, full_name: row.name }));
+      }
+    });
+
+    const data = [...byId.values()].sort((a, b) =>
+      (a.full_name || a.name || '').localeCompare(b.full_name || b.name || '')
+    );
+    res.json({ data, error: null });
   } catch (err) {
     console.error('[users/list]', err);
     res.status(500).json({ data: null, error: { message: err.message } });
@@ -123,9 +147,56 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { email, username, full_name, phone, role, password } = req.body || {};
-    if (!email || !full_name) {
-      return res.status(400).json({ data: null, error: { message: 'Email and full name required' } });
+    if (!full_name?.trim()) {
+      return res.status(400).json({ data: null, error: { message: 'Full name is required' } });
     }
+
+    const pool = getPool();
+    const userRole = role || 'user';
+    let formattedPhone = null;
+    if (phone) {
+      const { formatPhoneNumber } = await import('../services/wasenderWhatsAppService.js');
+      formattedPhone = formatPhoneNumber(phone);
+      if (!formattedPhone) {
+        return res.status(400).json({ data: null, error: { message: 'Invalid phone number' } });
+      }
+    }
+
+    // Phone-only customer creation (e.g. from task assignee picker): auto-generate email.
+    let effectiveEmail = email?.trim() || null;
+    if (!effectiveEmail && formattedPhone) {
+      const digits = formattedPhone.replace(/\D/g, '');
+      effectiveEmail = `c${digits}@customers.alpha-bridge.net`;
+    }
+    if (!effectiveEmail) {
+      return res.status(400).json({ data: null, error: { message: 'Email or phone is required' } });
+    }
+
+    if (formattedPhone) {
+      const [existingPhone] = await pool.query(
+        'SELECT id, email, username, name, phone, role, status, created_at, updated_at FROM users WHERE phone = ? LIMIT 1',
+        [formattedPhone]
+      );
+      if (existingPhone[0]) {
+        const row = existingPhone[0];
+        await syncProfile(pool, {
+          id: row.id,
+          email: row.email,
+          full_name: row.name,
+          name: row.name,
+          phone: row.phone,
+          role: row.role,
+          status: row.status || 'active',
+          username: row.username,
+        });
+        return res.status(200).json({
+          data: serializeUser({ ...row, full_name: row.name }),
+          error: null,
+          existing: true,
+        });
+      }
+    }
+
     // Customers and other OTP-only contacts are created without a password.
     // When no password is supplied, generate a temporary one (they sign in via WhatsApp OTP / reset).
     const effectivePassword = password && String(password).length
@@ -135,10 +206,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ data: null, error: { message: 'Password must be at least 8 characters' } });
     }
 
-    const pool = getPool();
     const [dup] = await pool.query(
       'SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1',
-      [email.trim()]
+      [effectiveEmail]
     );
     if (dup.length) {
       return res.status(409).json({ data: null, error: { message: 'User with this email already exists' } });
@@ -160,21 +230,20 @@ router.post('/', async (req, res) => {
 
     const id = randomUUID();
     const hash = await bcrypt.hash(effectivePassword, 10);
-    const userRole = role || 'user';
 
     await pool.query(
       `INSERT INTO users (id, email, username, password_hash, name, role, status, phone)
        VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
-      [id, email.trim(), normalizedUsername, hash, full_name, userRole, phone || null]
+      [id, effectiveEmail, normalizedUsername, hash, full_name, userRole, formattedPhone]
     );
 
     const userRow = {
       id,
-      email: email.trim(),
+      email: effectiveEmail,
       username: normalizedUsername,
       full_name,
       name: full_name,
-      phone: phone || null,
+      phone: formattedPhone,
       role: userRole,
       status: 'active',
     };

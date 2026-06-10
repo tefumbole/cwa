@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { getScheduledTasks } from '@/services/taskService';
+import { getScheduledTasks, sendScheduledTaskNow } from '@/services/taskService';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { getPriorityColor, getStatusColor } from '@/components/admin/TaskDashboa
 const ScheduledTasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sendingId, setSendingId] = useState(null);
   const { toast } = useToast();
 
   const loadTasks = async () => {
@@ -25,6 +26,22 @@ const ScheduledTasksPage = () => {
   useEffect(() => {
     loadTasks();
   }, []);
+
+  const handleSendNow = async (taskId, title) => {
+    if (!window.confirm(`Send "${title}" to all assignees now? Remaining scheduled sends will be cancelled.`)) return;
+    setSendingId(taskId);
+    const res = await sendScheduledTaskNow(taskId);
+    setSendingId(null);
+    if (res.success) {
+      toast({
+        title: 'Task sent',
+        description: `WhatsApp sent to ${res.sent} assignee(s). Task is now active.`,
+      });
+      loadTasks();
+    } else {
+      toast({ title: 'Send failed', description: res.error || 'Could not send task', variant: 'destructive' });
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -57,9 +74,23 @@ const ScheduledTasksPage = () => {
                     <h3 className="text-lg font-bold text-gray-900">{task.title}</h3>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{task.description}</p>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap items-start">
                     <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                     <Badge className={getStatusColor(task.status || 'Scheduled')}>{task.status || 'Scheduled'}</Badge>
+                    <Button
+                      size="sm"
+                      className="bg-[#003D82] hover:bg-[#002a5a] ml-auto"
+                      disabled={sendingId === task.id || !(task.task_assignments?.length)}
+                      onClick={() => handleSendNow(task.id, task.title)}
+                    >
+                      {sendingId === task.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-1" /> Send Now
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardHeader>

@@ -134,6 +134,36 @@ async function searchAssignees(pool, query, category = 'all') {
     users.forEach(add);
   }
 
+  if (category === 'all' || category === 'customers') {
+    const custFilter = q
+      ? ` AND (LOWER(u.name) LIKE LOWER(?) OR LOWER(u.email) LIKE LOWER(?) OR u.phone LIKE ?)`
+      : '';
+    const custParams = q ? [like, like, like] : [];
+    const [customerUsers] = await pool.query(
+      `SELECT u.id, u.name AS full_name, u.name, u.email, u.phone, u.role, 'customer' AS type
+       FROM users u
+       WHERE u.status = 'active' AND LOWER(u.role) = 'customer'${custFilter}
+       ORDER BY u.name ASC
+       LIMIT 50`,
+      custParams
+    );
+    customerUsers.forEach(add);
+
+    const custProfileFilter = q
+      ? ` AND (LOWER(p.full_name) LIKE LOWER(?) OR LOWER(p.email) LIKE LOWER(?) OR p.phone LIKE ?)`
+      : '';
+    const custProfileParams = q ? [like, like, like] : [];
+    const [customerProfiles] = await pool.query(
+      `SELECT p.id, p.full_name, p.email, p.phone, p.role, 'customer' AS type
+       FROM profiles p
+       WHERE COALESCE(p.status, 'active') = 'active' AND LOWER(p.role) = 'customer'${custProfileFilter}
+       ORDER BY p.full_name ASC
+       LIMIT 50`,
+      custProfileParams
+    );
+    customerProfiles.forEach((r) => add({ ...r, name: r.full_name }));
+  }
+
   if (category === 'all' || category === 'customers' || category === 'shareholders') {
     const shFilter = q
       ? ` AND (LOWER(s.full_name) LIKE LOWER(?) OR LOWER(s.name) LIKE LOWER(?) OR LOWER(s.email) LIKE LOWER(?) OR s.full_phone_number LIKE ? OR s.phone_number LIKE ? OR s.phone LIKE ?)`
@@ -212,6 +242,65 @@ router.get('/invite/:token', optionalAuth, async (req, res) => {
   }
 });
 
+async function notifyAssignmentById(pool, assignmentId, messageTemplate, documentLinks) {
+  const row = await loadAssignmentContext(pool, assignmentId);
+  if (!row) {
+    return { success: false, error: 'Assignment not found' };
+  }
+
+  const phone = formatPhoneNumber(row.assignee_phone);
+  if (!phone) {
+    return { success: false, error: 'Assignee has no valid phone number' };
+  }
+
+  const template = messageTemplate || row.notification_template || DEFAULT_TEMPLATE;
+  const loginLink = `${APP_BASE}/task-invite/${row.invite_token}`;
+  const docLinks = documentLinks || '';
+  const descriptionText = personalize(row.description || '', {
+    name: row.assignee_name,
+    email: row.assignee_email,
+    phone: row.assignee_phone,
+  });
+
+  const scheduleVars = formatScheduleVars(row);
+  const text = personalize(template, {
+    name: row.assignee_name || row.assignee_email,
+    email: row.assignee_email || '',
+    phone: row.assignee_phone || '',
+    subject: row.title,
+    task_title: row.title,
+    description: descriptionText,
+    task_message: descriptionText,
+    deadline: scheduleVars.deadline,
+    deadline_time: scheduleVars.deadline_time,
+    priority: row.priority || 'Medium',
+    start_date: scheduleVars.start_date,
+    start_time: scheduleVars.start_time,
+    login_link: loginLink,
+    document_links: docLinks,
+  });
+
+  const [docs] = await pool.query(
+    `SELECT file_name, file_url FROM task_attachments WHERE task_id = ? AND attachment_type = 'source'`,
+    [row.task_id]
+  );
+
+  const textResult = await sendTextMessage(phone, text);
+  if (!textResult.success) {
+    return { success: false, error: textResult.error || 'Failed to send message' };
+  }
+
+  for (const doc of docs || []) {
+    if (!doc.file_url) continue;
+    const docResult = await sendDocumentMessage(phone, doc.file_url, null, doc.file_name || 'task-document.pdf');
+    if (!docResult.success) {
+      return { success: false, error: docResult.error || 'Message sent but PDF delivery failed' };
+    }
+  }
+
+  return { success: true, error: null };
+}
+
 router.post('/notify-assignment', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { assignmentId, messageTemplate, documentLinks } = req.body || {};
@@ -220,64 +309,69 @@ router.post('/notify-assignment', requireAuth, requireAdmin, async (req, res) =>
     }
 
     const pool = getPool();
-    const row = await loadAssignmentContext(pool, assignmentId);
-    if (!row) {
-      return res.status(404).json({ success: false, error: 'Assignment not found' });
+    const result = await notifyAssignmentById(pool, assignmentId, messageTemplate, documentLinks);
+    res.json(result);
+  } catch (err) {
+    console.error('[tasks/notify-assignment]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/send-now', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { taskId } = req.body || {};
+    if (!taskId) {
+      return res.status(400).json({ success: false, error: 'taskId required' });
     }
 
-    const phone = formatPhoneNumber(row.assignee_phone);
-    if (!phone) {
-      return res.status(400).json({ success: false, error: 'Assignee has no valid phone number' });
+    const pool = getPool();
+    const [tasks] = await pool.query('SELECT id, notification_template FROM tasks WHERE id = ? LIMIT 1', [taskId]);
+    if (!tasks.length) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
     }
 
-    const template = messageTemplate || row.notification_template || DEFAULT_TEMPLATE;
-    const loginLink = `${APP_BASE}/task-invite/${row.invite_token}`;
-    const docLinks = documentLinks || '';
-    const descriptionText = personalize(row.description || '', {
-      name: row.assignee_name,
-      email: row.assignee_email,
-      phone: row.assignee_phone,
-    });
-
-    const scheduleVars = formatScheduleVars(row);
-    const text = personalize(template, {
-      name: row.assignee_name || row.assignee_email,
-      email: row.assignee_email || '',
-      phone: row.assignee_phone || '',
-      subject: row.title,
-      task_title: row.title,
-      description: descriptionText,
-      task_message: descriptionText,
-      deadline: scheduleVars.deadline,
-      deadline_time: scheduleVars.deadline_time,
-      priority: row.priority || 'Medium',
-      start_date: scheduleVars.start_date,
-      start_time: scheduleVars.start_time,
-      login_link: loginLink,
-      document_links: docLinks,
-    });
-
-    const [docs] = await pool.query(
-      `SELECT file_name, file_url FROM task_attachments WHERE task_id = ? AND attachment_type = 'source'`,
-      [row.task_id]
+    const [assignments] = await pool.query(
+      'SELECT id FROM task_assignments WHERE task_id = ?',
+      [taskId]
     );
 
-    const textResult = await sendTextMessage(phone, text);
-    if (!textResult.success) {
-      return res.json({ success: false, error: textResult.error || 'Failed to send message' });
+    if (!assignments.length) {
+      return res.status(400).json({ success: false, error: 'No assignees on this task' });
     }
 
-    for (const doc of docs || []) {
-      if (!doc.file_url) continue;
-      const docResult = await sendDocumentMessage(phone, doc.file_url, null, doc.file_name || 'task-document.pdf');
-      if (!docResult.success) {
-        return res.json({ success: false, error: docResult.error || 'Message sent but PDF delivery failed' });
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (let i = 0; i < assignments.length; i += 1) {
+      if (i > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+      }
+      const result = await notifyAssignmentById(pool, assignments[i].id, tasks[0].notification_template, '');
+      if (result.success) sent += 1;
+      else {
+        failed += 1;
+        errors.push(result.error || 'Send failed');
       }
     }
 
-    res.json({ success: true, error: null });
+    await pool.query(
+      `UPDATE tasks SET status = 'Pending', is_scheduled = 0 WHERE id = ?`,
+      [taskId]
+    );
+    await pool.query(
+      `UPDATE task_notification_queue SET status = 'cancelled', last_error = 'Sent manually (send-now)' WHERE task_id = ? AND status = 'pending'`,
+      [taskId]
+    );
+
+    res.json({
+      success: sent > 0,
+      sent,
+      failed,
+      error: errors[0] || null,
+    });
   } catch (err) {
-    console.error('[tasks/notify-assignment]', err);
+    console.error('[tasks/send-now]', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

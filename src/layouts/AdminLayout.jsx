@@ -126,7 +126,7 @@ const AdminLayout = () => {
           icon: Users,
           permission: MENU_PERMISSIONS.users,
           submenu: [
-            { label: 'User List', path: '/admin/users' },
+            { label: 'All Users', path: '/admin/users' },
             { label: 'Add Customer', path: '/admin/users?action=customer', icon: UserPlus },
             { label: 'Customer List', path: '/admin/users?filter=customer' },
             { label: 'Add Student', path: '/admin/students?action=new', icon: UserPlus },

@@ -13,38 +13,22 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { createUser } from '@/services/userService';
 import { useToast } from '@/components/ui/use-toast';
 
-function generateTempPassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#';
-  let pwd = '';
-  for (let i = 0; i < 12; i += 1) {
-    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return pwd;
-}
-
 const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     full_name: '',
-    email: '',
     phone: '',
-    password: generateTempPassword(),
   });
 
   const resetForm = () => {
-    setForm({
-      full_name: '',
-      email: '',
-      phone: '',
-      password: generateTempPassword(),
-    });
+    setForm({ full_name: '', phone: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.full_name.trim() || !form.email.trim() || !form.phone.trim()) {
-      toast({ title: 'Required fields', description: 'Name, email, and phone are required.', variant: 'destructive' });
+    if (!form.full_name.trim() || !form.phone.trim()) {
+      toast({ title: 'Required fields', description: 'Name and WhatsApp phone are required.', variant: 'destructive' });
       return;
     }
 
@@ -52,32 +36,30 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
     try {
       const created = await createUser({
         full_name: form.full_name.trim(),
-        email: form.email.trim(),
         phone: form.phone.trim(),
-        password: form.password,
-        role: 'task_assignee',
+        role: 'customer',
       });
 
       const assignee = {
         id: created.id,
         name: created.full_name || created.name || form.full_name,
         full_name: created.full_name || created.name || form.full_name,
-        email: created.email || form.email,
+        email: created.email || '',
         phone: created.phone || form.phone,
-        role: created.role || 'task_assignee',
-        type: 'task_assignee',
+        role: created.role || 'customer',
+        type: 'customer',
       };
 
       toast({
-        title: 'User created',
-        description: `${assignee.name} was added. They will receive the task link on WhatsApp.`,
+        title: created.existing ? 'Customer found' : 'Customer added',
+        description: `${assignee.name} will receive the task link on WhatsApp and can sign up at alpha-bridge.net/signup.`,
       });
 
       onCreated?.(assignee);
       resetForm();
       onOpenChange(false);
     } catch (err) {
-      toast({ title: 'Could not create user', description: err.message, variant: 'destructive' });
+      toast({ title: 'Could not add person', description: err.message, variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -88,10 +70,10 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-[#003D82]">
-            <UserPlus className="w-5 h-5" /> Create New Assignee
+            <UserPlus className="w-5 h-5" /> Add New Person
           </DialogTitle>
           <DialogDescription>
-            Add someone who does not have an account yet. They will sign up via the task link if needed.
+            Enter name and phone only. They are saved as a <strong>customer</strong>, appear in All Users, and get a WhatsApp task link to sign up.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,31 +87,22 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
             />
           </div>
           <div>
-            <Label>Email *</Label>
-            <Input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="name@example.com"
-            />
-          </div>
-          <div>
             <Label>WhatsApp Phone *</Label>
             <Input
               required
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="+237..."
+              placeholder="+250..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              No username or password needed. They will confirm via a WhatsApp OTP when they open the task link.
+              No email or password needed. They sign up via the task link or{' '}
+              <strong>alpha-bridge.net/signup</strong> using this phone number.
             </p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={busy} className="bg-[#003D82] hover:bg-[#002a5a]">
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create & Add'}
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add & Assign'}
             </Button>
           </div>
         </form>

@@ -1005,6 +1005,40 @@ export const checkAndUpdateOverdueTasks = async () => {
     }
 };
 
+export const sendScheduledTaskNow = async (taskId) => {
+  try {
+    const token = (() => {
+      try {
+        const raw = localStorage.getItem('alpha_supabase_auth');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.access_token || parsed?.currentSession?.access_token || null;
+      } catch {
+        return null;
+      }
+    })();
+    const API_BASE = import.meta.env.VITE_API_URL || '/api';
+    const res = await fetch(`${API_BASE}/tasks/send-now`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ taskId }),
+    });
+    const json = await res.json().catch(() => ({}));
+    return {
+      success: Boolean(json.success),
+      sent: json.sent || 0,
+      failed: json.failed || 0,
+      error: json.error || null,
+    };
+  } catch (error) {
+    console.error('Error sending scheduled task:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 export const resendTaskNotification = async (taskId, assigneeId) => {
     try {
         const { data: task, error } = await supabase.from('tasks').select('*').eq('id', taskId).single();
