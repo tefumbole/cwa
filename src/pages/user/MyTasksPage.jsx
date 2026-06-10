@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Calendar, CheckCircle, Clock, AlertCircle, ArrowRight, User, Save, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { isTaskOverdue } from '@/utils/taskDeadline';
 import TaskDetailsModal from '@/components/user/TaskDetailsModal';
 import TaskBulkActionsBar from '@/components/user/TaskBulkActionsBar';
 import { Slider } from '@/components/ui/slider';
@@ -329,8 +330,8 @@ const MyTasksPage = () => {
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="flex items-center">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          <span className={new Date(task.deadline) < new Date() && !isCompleted ? 'text-red-500 font-medium' : ''}>
-                              Due: {format(new Date(task.deadline), 'MMM dd, yyyy')}
+                          <span className={isTaskOverdue(task.deadline, task.deadline_time) && !isCompleted ? 'text-red-500 font-medium' : ''}>
+                              Due: {format(new Date(task.deadline), 'MMM dd, yyyy')}{task.deadline_time ? ` ${String(task.deadline_time).slice(0, 5)}` : ''}
                           </span>
                       </span>
                       {task.last_update_at && (

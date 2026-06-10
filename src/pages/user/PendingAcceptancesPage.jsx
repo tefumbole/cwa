@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Calendar, Clock, AlertCircle, User, Check, X, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { isTaskOverdue } from '@/utils/taskDeadline';
 import TaskDetailsModal from '@/components/user/TaskDetailsModal';
 import TaskBulkActionsBar from '@/components/user/TaskBulkActionsBar';
 
@@ -146,7 +147,7 @@ const PendingAcceptancesPage = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tasks.map((task) => {
-            const isOverdue = new Date(task.deadline) < new Date();
+            const isOverdue = isTaskOverdue(task.deadline, task.deadline_time);
 
             return (
               <Card key={task.assignment_id} className="flex flex-col border-t-4 border-t-gray-300">

@@ -301,6 +301,70 @@ async function notifyAssignmentById(pool, assignmentId, messageTemplate, documen
   return { success: true, error: null };
 }
 
+/** SQL expression: deadline date + optional deadline_time (end of day if time omitted). */
+function taskDueDatetimeSql(alias = 't') {
+  return `CASE
+    WHEN ${alias}.deadline_time IS NOT NULL AND TRIM(${alias}.deadline_time) != ''
+    THEN STR_TO_DATE(CONCAT(DATE(${alias}.deadline), ' ', SUBSTRING(${alias}.deadline_time, 1, 5), ':00'), '%Y-%m-%d %H:%i:%s')
+    ELSE STR_TO_DATE(CONCAT(DATE(${alias}.deadline), ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+  END`;
+}
+
+router.post('/sync-overdue', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const pool = getPool();
+    const dueExpr = taskDueDatetimeSql('t');
+
+    const [markResult] = await pool.query(
+      `UPDATE tasks t
+       SET status = 'Overdue'
+       WHERE t.status NOT IN ('Completed', 'Overdue', 'Scheduled')
+         AND t.deadline IS NOT NULL
+         AND ${dueExpr} < NOW()`
+    );
+
+    await pool.query(
+      `UPDATE tasks t
+       SET status = IF(
+         EXISTS (
+           SELECT 1 FROM task_assignments ta
+           WHERE ta.task_id = t.id AND ta.status IN ('In Progress', 'Accepted')
+         ),
+         'In Progress',
+         'Pending'
+       )
+       WHERE t.status = 'Overdue'
+         AND t.deadline IS NOT NULL
+         AND ${dueExpr} >= NOW()`
+    );
+
+    await pool.query(
+      `UPDATE task_assignments ta
+       INNER JOIN tasks t ON t.id = ta.task_id
+       SET ta.status = 'Overdue'
+       WHERE t.status = 'Overdue'
+         AND ta.status NOT IN ('Completed', 'Overdue', 'Declined')`
+    );
+
+    await pool.query(
+      `UPDATE task_assignments ta
+       INNER JOIN tasks t ON t.id = ta.task_id
+       SET ta.status = IF(ta.accepted_at IS NOT NULL, 'In Progress', 'Pending')
+       WHERE ta.status = 'Overdue'
+         AND t.status != 'Overdue'
+         AND ta.status NOT IN ('Completed', 'Declined')`
+    );
+
+    res.json({
+      success: true,
+      markedOverdue: markResult.affectedRows || 0,
+    });
+  } catch (err) {
+    console.error('[tasks/sync-overdue]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.post('/notify-assignment', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { assignmentId, messageTemplate, documentLinks } = req.body || {};

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { adminReviewAssignment } from '@/services/taskService';
+import { getEffectiveTaskStatus } from '@/utils/taskDeadline';
 
 export const getStatusColor = (status) => {
   switch (status) {
@@ -98,6 +99,7 @@ const AssignmentReviewPanel = ({ assignment, taskId, onReviewed }) => {
 
 const TaskDashboardCard = ({ task, onTaskUpdated }) => {
   const [expanded, setExpanded] = useState(false);
+  const displayStatus = getEffectiveTaskStatus(task);
 
   return (
     <Card className={`overflow-hidden transition-all duration-200 ${expanded ? 'shadow-md ring-1 ring-blue-100' : 'hover:shadow-md'}`}>
@@ -113,7 +115,7 @@ const TaskDashboardCard = ({ task, onTaskUpdated }) => {
             </Badge>
           </div>
           <div className="flex items-center text-xs text-gray-500 gap-4">
-             <span className="flex items-center"><Calendar className="w-3 h-3 mr-1"/> Due: {task.deadline ? format(new Date(task.deadline), 'MMM dd, yyyy') : 'No Date'}</span>
+             <span className="flex items-center"><Calendar className="w-3 h-3 mr-1"/> Due: {task.deadline ? format(new Date(task.deadline), 'MMM dd, yyyy') : 'No Date'}{task.deadline_time ? ` ${String(task.deadline_time).slice(0, 5)}` : ''}</span>
              <span>Assignees: {task.assignments_count}</span>
           </div>
         </div>
@@ -127,9 +129,9 @@ const TaskDashboardCard = ({ task, onTaskUpdated }) => {
             <Progress value={task.overallProgress} className="h-2" />
           </div>
 
-          <Badge className={getStatusColor(task.status)}>
-            {getStatusIcon(task.status)}
-            {task.status}
+          <Badge className={getStatusColor(displayStatus)}>
+            {getStatusIcon(displayStatus)}
+            {displayStatus}
           </Badge>
 
           <Button variant="ghost" size="sm" className="p-1 h-8 w-8 rounded-full">

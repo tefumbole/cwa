@@ -2,6 +2,10 @@ import { supabase } from '@/lib/customSupabaseClient';
 import { sendTaskAssignmentNotification, sendTaskAcceptedNotifications, sendTaskCompletedNotifications, sendTaskReviewNotification, sendAdminTaskAcceptedNotification, sendAdminTaskCompletedNotification } from './taskNotificationService';
 import { sendWhatsAppMessage } from './wasenderapiService';
 import { DEFAULT_TASK_NOTIFICATION_TEMPLATE } from '@/utils/taskPersonalization';
+import { getEffectiveTaskStatus, isTaskOverdue } from '@/utils/taskDeadline';
+
+const useMysql = import.meta.env.VITE_DATA_BACKEND === 'mysql';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function newId() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -950,7 +954,7 @@ export const uploadTaskAttachment = async (file) => {
 
 export const getTaskStats = async () => {
     try {
-        const { data, error } = await supabase.from('tasks').select('status, priority');
+        const { data, error } = await supabase.from('tasks').select('status, priority, deadline, deadline_time');
         if (error) throw error;
 
         const stats = {
@@ -963,10 +967,11 @@ export const getTaskStats = async () => {
         };
 
         data.forEach(t => {
-            if (t.status === 'Pending') stats.pending++;
-            if (t.status === 'In Progress') stats.inProgress++;
-            if (t.status === 'Completed') stats.completed++;
-            if (t.status === 'Overdue') stats.overdue++;
+            const status = getEffectiveTaskStatus(t);
+            if (status === 'Pending') stats.pending++;
+            if (status === 'In Progress') stats.inProgress++;
+            if (status === 'Completed') stats.completed++;
+            if (status === 'Overdue') stats.overdue++;
             if (t.priority === 'High' || t.priority === 'Critical') stats.highPriority++;
         });
 
@@ -978,27 +983,80 @@ export const getTaskStats = async () => {
 
 export const checkAndUpdateOverdueTasks = async () => {
     try {
-        const now = new Date().toISOString();
-        const { data: overdueTasks, error: fetchError } = await supabase
+        if (useMysql) {
+            const token = (() => {
+                try {
+                    const raw = localStorage.getItem('alpha_supabase_auth');
+                    if (!raw) return null;
+                    const parsed = JSON.parse(raw);
+                    return parsed?.access_token || parsed?.currentSession?.access_token || null;
+                } catch {
+                    return null;
+                }
+            })();
+            const res = await fetch(`${API_BASE}/tasks/sync-overdue`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            });
+            const json = await res.json().catch(() => ({}));
+            return {
+                success: Boolean(json.success),
+                updatedCount: json.markedOverdue || 0,
+                error: json.error || null,
+            };
+        }
+
+        const now = new Date();
+        const { data: tasks, error: fetchError } = await supabase
             .from('tasks')
-            .select('id')
-            .lt('deadline', now)
-            .not('status', 'in', '("Completed","Overdue")');
+            .select('id, deadline, deadline_time, status')
+            .not('status', 'in', '("Completed","Scheduled")');
 
         if (fetchError) throw fetchError;
 
-        if (overdueTasks && overdueTasks.length > 0) {
-            const taskIds = overdueTasks.map(t => t.id);
+        const toMark = (tasks || []).filter(
+            (t) => t.status !== 'Overdue' && isTaskOverdue(t.deadline, t.deadline_time, now)
+        );
+        const toRevert = (tasks || []).filter(
+            (t) => t.status === 'Overdue' && !isTaskOverdue(t.deadline, t.deadline_time, now)
+        );
+
+        if (toMark.length) {
+            const taskIds = toMark.map((t) => t.id);
             await supabase.from('tasks').update({ status: 'Overdue' }).in('id', taskIds);
             await supabase
                 .from('task_assignments')
                 .update({ status: 'Overdue' })
                 .in('task_id', taskIds)
                 .neq('status', 'Completed');
-                
-            return { success: true, updatedCount: taskIds.length };
         }
-        return { success: true, updatedCount: 0 };
+
+        if (toRevert.length) {
+            for (const task of toRevert) {
+                const { data: assignments } = await supabase
+                    .from('task_assignments')
+                    .select('status, accepted_at')
+                    .eq('task_id', task.id);
+                const hasProgress = (assignments || []).some((a) =>
+                    ['In Progress', 'Accepted'].includes(a.status)
+                );
+                await supabase
+                    .from('tasks')
+                    .update({ status: hasProgress ? 'In Progress' : 'Pending' })
+                    .eq('id', task.id);
+            }
+            const revertIds = toRevert.map((t) => t.id);
+            await supabase
+                .from('task_assignments')
+                .update({ status: 'Pending' })
+                .in('task_id', revertIds)
+                .eq('status', 'Overdue');
+        }
+
+        return { success: true, updatedCount: toMark.length };
     } catch (e) {
         console.error("Failed to check overdue tasks", e);
         return { success: false, error: e.message };

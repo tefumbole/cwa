@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { getTasks, deleteTask, resendTaskNotification } from '@/services/taskService';
+import { getTasks, deleteTask, resendTaskNotification, checkAndUpdateOverdueTasks } from '@/services/taskService';
 import { getTaskCategories } from '@/services/taskCategoryService';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import EditTaskModal from '@/components/admin/EditTaskModal';
 import { getPriorityColor, getStatusColor } from '@/components/admin/TaskDashboardCard';
+import { getEffectiveTaskStatus } from '@/utils/taskDeadline';
 
 const TASK_TABS = [
   { id: 'uncompleted', label: 'Uncompleted Tasks' },
@@ -19,9 +20,9 @@ const TASK_TABS = [
 ];
 
 const tabForTask = (task) => {
-  const status = String(task.status || '').toLowerCase();
-  if (status === 'completed') return 'completed';
-  if (status === 'overdue') return 'overdue';
+  const status = getEffectiveTaskStatus(task);
+  if (status === 'Completed') return 'completed';
+  if (status === 'Overdue') return 'overdue';
   return 'uncompleted';
 };
 
@@ -53,6 +54,7 @@ const AdminTaskListPage = () => {
 
   const loadTasks = async () => {
     setLoading(true);
+    await checkAndUpdateOverdueTasks();
     const res = await getTasks(filters);
     if (res.success) {
       setTasks(res.data);
@@ -174,7 +176,9 @@ const AdminTaskListPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visibleTasks.map(task => (
+              {visibleTasks.map(task => {
+                const displayStatus = getEffectiveTaskStatus(task);
+                return (
                 <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>
@@ -185,8 +189,15 @@ const AdminTaskListPage = () => {
                     ) : '-'}
                   </TableCell>
                   <TableCell><Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge></TableCell>
-                  <TableCell><Badge className={getStatusColor(task.status)}>{task.status}</Badge></TableCell>
-                  <TableCell>{task.deadline ? format(new Date(task.deadline), 'MMM dd, yyyy') : '-'}</TableCell>
+                  <TableCell><Badge className={getStatusColor(displayStatus)}>{displayStatus}</Badge></TableCell>
+                  <TableCell>
+                    {task.deadline ? (
+                      <>
+                        {format(new Date(task.deadline), 'MMM dd, yyyy')}
+                        {task.deadline_time ? ` ${String(task.deadline_time).slice(0, 5)}` : ''}
+                      </>
+                    ) : '-'}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1 min-w-[200px]">
                       {task.task_assignments?.map(a => {
@@ -219,7 +230,8 @@ const AdminTaskListPage = () => {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}
