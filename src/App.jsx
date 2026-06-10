@@ -43,6 +43,7 @@ import ApplicationConfirmationPage from '@/pages/ApplicationConfirmationPage';
 
 // Authentication & Portals
 import LoginPage from '@/pages/LoginPage';
+import CustomerSignupPage from '@/pages/CustomerSignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import OTPVerificationScreen from '@/pages/OTPVerificationScreen';
 import StudentDashboard from '@/pages/StudentDashboard';
@@ -346,6 +347,7 @@ const AppContent = () => {
         <Route path="/task-invite/:token" element={<TaskInvitePage />} />
 
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<CustomerSignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/otp-verification" element={<OTPVerificationScreen />} />
 

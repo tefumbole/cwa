@@ -9,7 +9,7 @@ const router = Router();
 
 router.post('/request', async (req, res) => {
   try {
-    const { email, password, full_name, phone, role, inviteToken } = req.body || {};
+    const { email, password, full_name, phone, role, inviteToken, signupType } = req.body || {};
     if (!email || !password || !full_name || !phone) {
       return res.status(400).json({ success: false, error: 'Email, password, full name, and phone are required.' });
     }
@@ -20,6 +20,7 @@ router.post('/request', async (req, res) => {
     }
 
     const pool = getPool();
+    const isCustomerSignup = signupType === 'customer' || role === 'customer';
     let assignedRole = role || 'user';
 
     if (inviteToken) {
@@ -31,6 +32,8 @@ router.post('/request', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Invalid task invite link.' });
       }
       assignedRole = 'task_assignee';
+    } else if (isCustomerSignup) {
+      assignedRole = 'customer';
     }
 
     const [existingByPhone] = await pool.query(
@@ -45,8 +48,8 @@ router.post('/request', async (req, res) => {
     const existingPhone = existingByPhone[0] || null;
     const existingEmail = existingByEmail[0] || null;
 
-    // Task-invite signup: allow customers (or same phone) to complete signup and replace their record.
-    const allowReplace = Boolean(inviteToken && existingPhone);
+    // Task-invite or public customer signup: allow replacing an existing record with the same phone.
+    const allowReplace = Boolean((inviteToken || isCustomerSignup) && existingPhone);
 
     if (existingEmail && existingEmail.phone !== formattedPhone && !allowReplace) {
       return res.status(409).json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
@@ -81,7 +84,12 @@ router.post('/request', async (req, res) => {
       ]
     );
 
-    const sendResult = await sendOtp(formattedPhone, otpCode, 'Confirm your Alpha Bridge staff account.');
+    const otpLabel = isCustomerSignup
+      ? 'Confirm your Alpha Bridge customer account.'
+      : inviteToken
+        ? 'Confirm your task assignment account.'
+        : 'Confirm your Alpha Bridge account.';
+    const sendResult = await sendOtp(formattedPhone, otpCode, otpLabel);
     if (!sendResult.success) {
       return res.status(502).json({ success: false, error: sendResult.error || 'Failed to send WhatsApp OTP' });
     }

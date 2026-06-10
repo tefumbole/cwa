@@ -416,7 +416,18 @@ const LoginPage = () => {
               <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-11 text-[#003D82] border-gray-300 hover:bg-gray-50"
+                  className="w-full h-11 text-[#003D82] border-[#003D82]/30 hover:bg-blue-50 font-medium"
+                  onClick={() => navigate('/signup')}
+                  disabled={isLoading}
+              >
+                  <User className="w-4 h-4 mr-2" />
+                  Create Customer Account
+              </Button>
+
+              <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-11 text-[#003D82] border-gray-300 hover:bg-gray-50 mt-3"
                   onClick={() => navigate('/login-otp')}
                   disabled={isLoading}
               >
@@ -428,9 +439,10 @@ const LoginPage = () => {
             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                 <p className="text-sm text-gray-600">
                     Don't have an account?{' '}
-                    <Link to="/registration" className="text-[#003D82] font-bold hover:underline">
-                        Register Now
+                    <Link to="/signup" className="text-[#003D82] font-bold hover:underline">
+                        Sign Up
                     </Link>
+                    {' '}to view tasks assigned to you.
                 </p>
                 <div className="mt-4 flex justify-center gap-4 text-xs text-gray-400">
                     <Link to="/" className="hover:text-gray-600">Home</Link>
