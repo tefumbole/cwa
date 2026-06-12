@@ -16,6 +16,8 @@ import registerRoutes from './routes/register.js';
 import tasksRoutes from './routes/tasks.js';
 import whatsappRoutes from './routes/whatsapp.js';
 import systemRoutes from './routes/system.js';
+import hrRoutes from './routes/hr.js';
+import hrLettersRoutes from './routes/hr-letters.js';
 import { APP_VERSION } from './constants/appVersion.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -60,6 +62,8 @@ app.use('/data', dataRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/whatsapp', whatsappRoutes);
 app.use('/system', systemRoutes);
+app.use('/hr', hrRoutes);
+app.use('/hr/letters', hrLettersRoutes);
 
 app.use((err, _req, res, next) => {
   if (err?.code === 'LIMIT_FILE_SIZE') {

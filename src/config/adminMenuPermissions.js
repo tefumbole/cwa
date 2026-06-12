@@ -16,6 +16,7 @@ export const MENU_PERMISSIONS = {
   announcements: 'menu.announcements',
   timesheets: 'menu.timesheets',
   operations: 'menu.operations',
+  hr: 'menu.hr',
   system: 'menu.system',
   roles: 'menu.roles',
 };
@@ -41,6 +42,8 @@ const ADMIN_ROUTE_RULES = [
   ['/admin/announcements', ['announcements.compose.view', 'announcements.list.view', 'menu.announcements']],
   ['/admin/timesheet', ['timesheets.view', 'timesheets.create', 'menu.timesheets']],
   ['/admin/tasks', ['tasks.view', 'tasks.create', 'menu.tasks']],
+  ['/admin/hr', ['view_hr', 'hr.staff.view', 'menu.hr']],
+  ['/admin/hr/letters', ['view_hr', 'hr.letters.view', 'menu.hr']],
   ['/admin/letters', ['letters.send.view', 'letters.templates.view']],
   ['/admin/communication', ['letters.send.view', 'announcements.compose.view']],
 ];

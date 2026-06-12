@@ -8,6 +8,8 @@ import { applySchemaPatches, CREATE_STATEMENTS } from './patch-schema.js';
 import { seedSystemSettings } from './seed-system-settings.js';
 import { seedTrainingCourses } from './seed-training-courses.js';
 import { seedRbac } from './seed-rbac.js';
+import { seedHr } from './seed-hr.js';
+import { seedHrLetters } from './seed-hr-letters.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -41,6 +43,10 @@ try {
   await seedTrainingCourses(pool);
   console.log('\nSeeding RBAC roles & permissions...');
   await seedRbac(pool);
+  console.log('\nSeeding HR defaults...');
+  await seedHr(pool);
+  console.log('\nSeeding HR letter templates...');
+  await seedHrLetters(pool);
   console.log('\nMigration complete.');
 } catch (error) {
   if (error.code === 'ER_ACCESS_DENIED_ERROR') {

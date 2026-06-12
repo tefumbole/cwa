@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/context/PermissionContext';
 import { MENU_PERMISSIONS, itemVisible } from '@/config/adminMenuPermissions';
 import { formatRoleLabel } from '@/services/roleService';
+import HrTopNav from '@/components/hr/HrTopNav';
+import HrLettersTopNav from '@/components/hr/HrLettersTopNav';
 import { 
   LayoutDashboard, 
   Users, 
@@ -45,7 +47,8 @@ import {
   Utensils,
   ClipboardCheck,
   Trash2,
-  UserPlus
+  UserPlus,
+  Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -227,6 +230,41 @@ const AdminLayout = () => {
         },
         { label: 'Payments', path: '/admin/payments', icon: CreditCard, permission: MENU_PERMISSIONS.operations }, 
       ]
+    },
+    {
+      label: 'HR & Payroll',
+      items: [
+        {
+          label: 'Human Resources',
+          icon: Wallet,
+          permission: MENU_PERMISSIONS.hr,
+          submenu: [
+            { label: 'Staff Management', path: '/admin/hr/staff' },
+            { label: 'Staff Categories', path: '/admin/hr/categories' },
+            { label: 'Job / Event Payroll', path: '/admin/hr/jobs' },
+            { label: 'Monthly Payroll', path: '/admin/hr/monthly-payroll' },
+            { label: 'Allowances', path: '/admin/hr/allowances' },
+            { label: 'Deductions', path: '/admin/hr/deductions' },
+            { label: 'Advance Payments', path: '/admin/hr/advances' },
+            { label: 'Payslips', path: '/admin/hr/payslips' },
+            { label: 'Payroll Approvals', path: '/admin/hr/approvals' },
+            { label: 'Finance Status', path: '/admin/hr/finance' },
+            { label: 'Reports', path: '/admin/hr/reports' },
+          ],
+        },
+        {
+          label: 'HR Letters',
+          icon: FileText,
+          permission: MENU_PERMISSIONS.hr,
+          submenu: [
+            { label: 'Leave of Absence', path: '/admin/hr/letters/leave' },
+            { label: 'Permission', path: '/admin/hr/letters/permission' },
+            { label: 'Employment Letter', path: '/admin/hr/letters/employment' },
+            { label: 'Attestation of Work', path: '/admin/hr/letters/attestation' },
+            { label: 'Templates', path: '/admin/hr/letters/templates' },
+          ],
+        },
+      ],
     },
     {
       label: 'System',
@@ -425,6 +463,11 @@ const AdminLayout = () => {
           <LanguageSwitcher variant="admin" />
         </div>
         {activeSection && (
+          activeSection.label === 'Human Resources' ? (
+            <HrTopNav />
+          ) : activeSection.label === 'HR Letters' ? (
+            <HrLettersTopNav />
+          ) : (
           <div className="mb-6 -mx-1 overflow-x-auto scrollbar-thin">
             <nav className="flex gap-1 border-b border-gray-200 min-w-max pb-px">
               {activeSection.submenu.map((sub) => {
@@ -447,6 +490,7 @@ const AdminLayout = () => {
               })}
             </nav>
           </div>
+          )
         )}
         <div className="max-w-7xl mx-auto pb-10 print:p-0 print:m-0 print:max-w-none print:w-full print:bg-white">
           <Outlet />

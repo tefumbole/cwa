@@ -203,6 +203,270 @@ export const CREATE_STATEMENTS = [
     INDEX idx_feedback_course (course_id),
     INDEX idx_feedback_reg (registration_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_staff_categories (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    description TEXT DEFAULT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_position_rates (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    position VARCHAR(120) NOT NULL UNIQUE,
+    daily_rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_staff_profiles (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    user_id CHAR(36) DEFAULT NULL,
+    staff_code VARCHAR(40) NOT NULL UNIQUE,
+    first_name VARCHAR(120) NOT NULL,
+    last_name VARCHAR(120) NOT NULL,
+    email VARCHAR(255) DEFAULT NULL,
+    phone VARCHAR(40) DEFAULT NULL,
+    category_id CHAR(36) NOT NULL,
+    position VARCHAR(120) DEFAULT NULL,
+    department VARCHAR(120) DEFAULT NULL,
+    payment_type ENUM('monthly','daily') NOT NULL DEFAULT 'daily',
+    daily_rate DECIMAL(12,2) DEFAULT NULL,
+    monthly_salary DECIMAL(12,2) DEFAULT NULL,
+    contract_start DATE DEFAULT NULL,
+    contract_end DATE DEFAULT NULL,
+    hire_date DATE DEFAULT NULL,
+    bank_name VARCHAR(120) DEFAULT NULL,
+    bank_account VARCHAR(80) DEFAULT NULL,
+    status ENUM('active','inactive','terminated') NOT NULL DEFAULT 'active',
+    notes TEXT DEFAULT NULL,
+    created_by CHAR(36) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_staff_user (user_id),
+    INDEX idx_hr_staff_category (category_id),
+    INDEX idx_hr_staff_status (status)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_allowance_types (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    default_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_deduction_types (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    default_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_jobs (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    client_name VARCHAR(255) DEFAULT NULL,
+    location VARCHAR(255) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    start_date DATE DEFAULT NULL,
+    end_date DATE DEFAULT NULL,
+    status ENUM('draft','active','completed','cancelled') NOT NULL DEFAULT 'draft',
+    created_by CHAR(36) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_jobs_status (status)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_job_staff (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    job_id CHAR(36) NOT NULL,
+    staff_profile_id CHAR(36) NOT NULL,
+    daily_rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+    days_worked DECIMAL(6,2) NOT NULL DEFAULT 0,
+    day_status ENUM('full','partial') NOT NULL DEFAULT 'full',
+    partial_fraction DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    notes TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_hr_job_staff (job_id, staff_profile_id),
+    INDEX idx_hr_job_staff_job (job_id),
+    INDEX idx_hr_job_staff_staff (staff_profile_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payroll_runs (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    run_type ENUM('job','monthly') NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    job_id CHAR(36) DEFAULT NULL,
+    period_start DATE DEFAULT NULL,
+    period_end DATE DEFAULT NULL,
+    status ENUM('draft','review','approved','finance','partially_paid','paid','rejected') NOT NULL DEFAULT 'draft',
+    total_gross DECIMAL(14,2) NOT NULL DEFAULT 0,
+    total_net DECIMAL(14,2) NOT NULL DEFAULT 0,
+    notes TEXT DEFAULT NULL,
+    created_by CHAR(36) DEFAULT NULL,
+    reviewed_by CHAR(36) DEFAULT NULL,
+    approved_by CHAR(36) DEFAULT NULL,
+    forwarded_to_finance_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_payroll_runs_type (run_type),
+    INDEX idx_hr_payroll_runs_status (status),
+    INDEX idx_hr_payroll_runs_job (job_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payroll_items (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_run_id CHAR(36) NOT NULL,
+    staff_profile_id CHAR(36) NOT NULL,
+    basic_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    daily_rate DECIMAL(12,2) DEFAULT NULL,
+    days_worked DECIMAL(6,2) DEFAULT NULL,
+    hours_expected DECIMAL(8,2) DEFAULT NULL,
+    hours_actual DECIMAL(8,2) DEFAULT NULL,
+    overtime_hours DECIMAL(8,2) DEFAULT NULL,
+    gross_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_allowances DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_deductions DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_advances DECIMAL(12,2) NOT NULL DEFAULT 0,
+    net_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_status ENUM('pending','approved_for_payment','partially_paid','paid','rejected') NOT NULL DEFAULT 'pending',
+    notes TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_payroll_items_run (payroll_run_id),
+    INDEX idx_hr_payroll_items_staff (staff_profile_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payroll_allowances (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_item_id CHAR(36) NOT NULL,
+    allowance_type_id CHAR(36) DEFAULT NULL,
+    label VARCHAR(120) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_payroll_allowances_item (payroll_item_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payroll_deductions (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_item_id CHAR(36) NOT NULL,
+    deduction_type_id CHAR(36) DEFAULT NULL,
+    label VARCHAR(120) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_payroll_deductions_item (payroll_item_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_advance_payments (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    staff_profile_id CHAR(36) NOT NULL,
+    job_id CHAR(36) DEFAULT NULL,
+    payroll_item_id CHAR(36) DEFAULT NULL,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    paid_date DATE NOT NULL,
+    reason TEXT DEFAULT NULL,
+    approved_by CHAR(36) DEFAULT NULL,
+    balance_remaining DECIMAL(12,2) NOT NULL DEFAULT 0,
+    status ENUM('open','applied','closed') NOT NULL DEFAULT 'open',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_advances_staff (staff_profile_id),
+    INDEX idx_hr_advances_job (job_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payslips (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_item_id CHAR(36) NOT NULL UNIQUE,
+    verification_code VARCHAR(32) NOT NULL UNIQUE,
+    pdf_path VARCHAR(500) DEFAULT NULL,
+    sent_email_at DATETIME DEFAULT NULL,
+    sent_whatsapp_at DATETIME DEFAULT NULL,
+    generated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_payslips_item (payroll_item_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_payroll_approvals (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_run_id CHAR(36) NOT NULL,
+    stage ENUM('draft','review','approved','finance','paid','rejected') NOT NULL,
+    action_by CHAR(36) DEFAULT NULL,
+    notes TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_payroll_approvals_run (payroll_run_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_finance_payments (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    payroll_run_id CHAR(36) DEFAULT NULL,
+    payroll_item_id CHAR(36) DEFAULT NULL,
+    amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    status ENUM('pending','approved_for_payment','partially_paid','paid','rejected') NOT NULL DEFAULT 'pending',
+    paid_at DATETIME DEFAULT NULL,
+    paid_by CHAR(36) DEFAULT NULL,
+    notes TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_finance_run (payroll_run_id),
+    INDEX idx_hr_finance_item (payroll_item_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_timesheet_entries (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    staff_profile_id CHAR(36) NOT NULL,
+    job_id CHAR(36) DEFAULT NULL,
+    entry_date DATE NOT NULL,
+    hours_worked DECIMAL(6,2) NOT NULL DEFAULT 0,
+    day_fraction DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    status ENUM('draft','submitted','confirmed') NOT NULL DEFAULT 'draft',
+    notes TEXT DEFAULT NULL,
+    confirmed_by CHAR(36) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_hr_timesheet (staff_profile_id, entry_date, job_id),
+    INDEX idx_hr_timesheet_staff (staff_profile_id),
+    INDEX idx_hr_timesheet_job (job_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_letter_templates (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    letter_type ENUM('leave_of_absence','permission','employment_letter','attestation_of_work') NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    body TEXT NOT NULL,
+    is_default TINYINT(1) NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_hr_letter_templates_type (letter_type)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  `CREATE TABLE IF NOT EXISTS hr_letters (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    template_id CHAR(36) DEFAULT NULL,
+    staff_profile_id CHAR(36) NOT NULL,
+    letter_type ENUM('leave_of_absence','permission','employment_letter','attestation_of_work') NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    body TEXT NOT NULL,
+    reference_code VARCHAR(32) NOT NULL UNIQUE,
+    status ENUM('draft','sent','failed') NOT NULL DEFAULT 'draft',
+    sent_whatsapp_at DATETIME DEFAULT NULL,
+    sent_email_at DATETIME DEFAULT NULL,
+    created_by CHAR(36) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_letters_staff (staff_profile_id),
+    INDEX idx_hr_letters_type (letter_type)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 ];
 
 export const DATA_PATCHES = [];

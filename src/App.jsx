@@ -32,6 +32,7 @@ import ShareholderConfirmationPage from '@/components/ShareholderConfirmationPag
 import AdminShareHolderListPage from '@/pages/AdminShareHolderListPage';
 import ShareholdersAgreementPage from '@/pages/ShareholdersAgreementPage';
 import SignedAgreementVerifyPage from '@/pages/SignedAgreementVerifyPage';
+import PayslipVerifyPage from '@/pages/PayslipVerifyPage';
 import SharePurchasePortal from '@/pages/SharePurchasePortal';
 import QRScannerPage from '@/pages/QRScannerPage';
 import StudentProgressPage from '@/pages/StudentProgressPage';
@@ -144,6 +145,28 @@ import AdminTaskListPage from '@/pages/admin/AdminTaskListPage';
 import ScheduledTasksPage from '@/pages/admin/ScheduledTasksPage';
 import CreateTaskPage from '@/pages/admin/CreateTaskPage';
 import TaskSettingsPage from '@/pages/admin/TaskSettingsPage';
+
+// --- HR & PAYROLL ---
+import HrStaffPage from '@/pages/admin/hr/HrStaffPage';
+import HrStaffCategoriesPage from '@/pages/admin/hr/HrStaffCategoriesPage';
+import HrJobsPage from '@/pages/admin/hr/HrJobsPage';
+import HrJobDetailPage from '@/pages/admin/hr/HrJobDetailPage';
+import HrMonthlyPayrollPage from '@/pages/admin/hr/HrMonthlyPayrollPage';
+import HrAllowancesPage from '@/pages/admin/hr/HrAllowancesPage';
+import HrDeductionsPage from '@/pages/admin/hr/HrDeductionsPage';
+import HrAdvancesPage from '@/pages/admin/hr/HrAdvancesPage';
+import HrPayslipsPage from '@/pages/admin/hr/HrPayslipsPage';
+import HrApprovalsPage from '@/pages/admin/hr/HrApprovalsPage';
+import HrFinancePage from '@/pages/admin/hr/HrFinancePage';
+import HrReportsPage from '@/pages/admin/hr/HrReportsPage';
+import HrPayrollDetailPage from '@/pages/admin/hr/HrPayrollDetailPage';
+import {
+  HrLeaveLetterPage,
+  HrPermissionLetterPage,
+  HrEmploymentLetterPage,
+  HrAttestationLetterPage,
+} from '@/pages/admin/hr/HrLetterComposePage';
+import HrLetterTemplatesPage from '@/pages/admin/hr/HrLetterTemplatesPage';
 
 // --- NEW DIGITAL EVENTS IMPORTS ---
 import EventManagerPage from '@/pages/admin/events/EventManagerPage';
@@ -312,6 +335,7 @@ const AppContent = () => {
           <Route path="shares" element={<SharesPage />} />
           <Route path="shareholders-agreement" element={<ShareholdersAgreementPage />} />
           <Route path="verify/agreement/:shareholderId" element={<SignedAgreementVerifyPage />} />
+          <Route path="verify/payslip/:code" element={<PayslipVerifyPage />} />
           <Route path="share-purchase" element={<SharePurchasePortal />} />
           <Route 
             path="shareholder-confirmation/:referenceNumber" 
@@ -567,6 +591,26 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+
+          {/* HR & Payroll */}
+          <Route path="hr/staff" element={<ProtectedRoute requireAdmin={true}><HrStaffPage /></ProtectedRoute>} />
+          <Route path="hr/categories" element={<ProtectedRoute requireAdmin={true}><HrStaffCategoriesPage /></ProtectedRoute>} />
+          <Route path="hr/jobs" element={<ProtectedRoute requireAdmin={true}><HrJobsPage /></ProtectedRoute>} />
+          <Route path="hr/jobs/:id" element={<ProtectedRoute requireAdmin={true}><HrJobDetailPage /></ProtectedRoute>} />
+          <Route path="hr/monthly-payroll" element={<ProtectedRoute requireAdmin={true}><HrMonthlyPayrollPage /></ProtectedRoute>} />
+          <Route path="hr/allowances" element={<ProtectedRoute requireAdmin={true}><HrAllowancesPage /></ProtectedRoute>} />
+          <Route path="hr/deductions" element={<ProtectedRoute requireAdmin={true}><HrDeductionsPage /></ProtectedRoute>} />
+          <Route path="hr/advances" element={<ProtectedRoute requireAdmin={true}><HrAdvancesPage /></ProtectedRoute>} />
+          <Route path="hr/payslips" element={<ProtectedRoute requireAdmin={true}><HrPayslipsPage /></ProtectedRoute>} />
+          <Route path="hr/approvals" element={<ProtectedRoute requireAdmin={true}><HrApprovalsPage /></ProtectedRoute>} />
+          <Route path="hr/finance" element={<ProtectedRoute requireAdmin={true}><HrFinancePage /></ProtectedRoute>} />
+          <Route path="hr/reports" element={<ProtectedRoute requireAdmin={true}><HrReportsPage /></ProtectedRoute>} />
+          <Route path="hr/payroll/:id" element={<ProtectedRoute requireAdmin={true}><HrPayrollDetailPage /></ProtectedRoute>} />
+          <Route path="hr/letters/leave" element={<ProtectedRoute requireAdmin={true}><HrLeaveLetterPage /></ProtectedRoute>} />
+          <Route path="hr/letters/permission" element={<ProtectedRoute requireAdmin={true}><HrPermissionLetterPage /></ProtectedRoute>} />
+          <Route path="hr/letters/employment" element={<ProtectedRoute requireAdmin={true}><HrEmploymentLetterPage /></ProtectedRoute>} />
+          <Route path="hr/letters/attestation" element={<ProtectedRoute requireAdmin={true}><HrAttestationLetterPage /></ProtectedRoute>} />
+          <Route path="hr/letters/templates" element={<ProtectedRoute requireAdmin={true}><HrLetterTemplatesPage /></ProtectedRoute>} />
 
           <Route
             path="users"
