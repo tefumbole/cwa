@@ -116,49 +116,79 @@ function HomePage() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 md:py-0">
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-        backgroundImage: 'url(https://horizons-cdn.hostinger.com/81ef3422-3855-479e-bfe8-28a4ceb0df39/dd5d2c583a8b091d7529cd8c4e5ff3ea.png)',
-        backgroundPosition: 'center',
-        backgroundSize: 'cover'
-      }}>
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#003D82]/90 via-[#003D82]/30 to-transparent"></div>
-        </div>
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://horizons-cdn.hostinger.com/81ef3422-3855-479e-bfe8-28a4ceb0df39/dd5d2c583a8b091d7529cd8c4e5ff3ea.png)',
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+          }}
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 12, ease: 'easeOut' }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-t from-[#003D82]/90 via-[#003D82]/30 to-transparent"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.2 }}
+          />
+        </motion.div>
+
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 rounded-full bg-[#D4AF37]/40"
+            style={{ left: `${10 + i * 15}%`, top: `${20 + (i % 3) * 25}%` }}
+            animate={{ y: [0, -20, 0], opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
         
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full mt-20 md:mt-0">
-          <motion.div initial={{
-          opacity: 0,
-          y: 30
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.8
-        }} className="mb-8 flex flex-col items-center">
-             <BrandLogo
-               alt="Alpha Bridge"
-               className="h-24 md:h-32 w-auto object-contain mb-6"
-               variant="onDark"
-             />
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            className="mb-8 flex flex-col items-center"
+          >
+             <motion.div
+               initial={{ scale: 0.85, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               transition={{ duration: 0.8, delay: 0.2 }}
+             >
+               <BrandLogo
+                 alt="Alpha Bridge"
+                 className="h-24 md:h-32 w-auto object-contain mb-6 drop-shadow-2xl"
+                 variant="onDark"
+               />
+             </motion.div>
 
-             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight">
-               {th('hero_title_line1', 'Your Technology Bridge to')} <span className="text-[#D4AF37]">{th('hero_title_highlight', 'Kigali')}</span>
-             </h1>
-             <p className="text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto drop-shadow-md">
+             <motion.h1
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.7, delay: 0.35 }}
+               className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight"
+             >
+               {th('hero_title_line1', 'Your Technology Bridge to')} <motion.span className="text-[#D4AF37] inline-block" animate={{ scale: [1, 1.03, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>{th('hero_title_highlight', 'Kigali')}</motion.span>
+             </motion.h1>
+             <motion.p
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               transition={{ duration: 0.8, delay: 0.55 }}
+               className="text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto drop-shadow-md"
+             >
                 {th('hero_subtitle', 'Professional IT Consultancy, Enterprise Networking, and Audio-Visual Production, Cloud, AI and Cyber')}
-             </p>
+             </motion.p>
           </motion.div>
           
-          <motion.div initial={{
-          opacity: 0,
-          y: 30
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.8,
-          delay: 0.4
-        }} className="w-full flex flex-col sm:flex-row items-center justify-center gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.75 }}
+            className="w-full flex flex-col sm:flex-row items-center justify-center gap-6"
+          >
             
             <Link to="/contact">
                 <Button className="bg-[#D4AF37] hover:bg-[#b5952f] text-[#003D82] h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] w-full sm:w-auto rounded-full hover:scale-105 transition-transform">

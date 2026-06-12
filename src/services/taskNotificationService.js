@@ -146,3 +146,14 @@ export async function processScheduledTaskNotifications() {
   });
   return res.json().catch(() => ({ success: false }));
 }
+
+export async function processTaskReminders() {
+  if (!useMysql) return { success: true, processed: 0 };
+
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/tasks/process-reminders`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  return res.json().catch(() => ({ success: false }));
+}

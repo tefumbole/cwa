@@ -60,8 +60,11 @@ const emptyTaskRow = (index = 0) => ({
   sendMode: 'now',
   scheduleTimes: [''],
   assignees: [],
+  ccUsers: [],
   assigneeTab: 'all',
   searchQuery: '',
+  ccSearchQuery: '',
+  reminderTimes: [''],
 });
 
 const CreateTaskPage = () => {
@@ -89,7 +92,14 @@ const CreateTaskPage = () => {
         const parsed = JSON.parse(draft);
         setTaskRows(
           parsed.taskRows?.length
-            ? parsed.taskRows.map((r, i) => ({ ...emptyTaskRow(i), ...r, pdfFile: null, assignees: r.assignees || [] }))
+            ? parsed.taskRows.map((r, i) => ({
+                ...emptyTaskRow(i),
+                ...r,
+                pdfFile: null,
+                assignees: r.assignees || [],
+                ccUsers: r.ccUsers || [],
+                reminderTimes: r.reminderTimes?.length ? r.reminderTimes : [''],
+              }))
             : [emptyTaskRow(0)]
         );
       } catch {
@@ -108,7 +118,10 @@ const CreateTaskPage = () => {
     return () => clearTimeout(timer);
   }, [taskRows]);
 
+  const assigneeFetchKey = taskRows.map((r) => `${r.assigneeTab}|${r.searchQuery}`).join(';;');
+
   useEffect(() => {
+    let cancelled = false;
     const timer = setTimeout(async () => {
       const entries = await Promise.all(
         taskRows.map((row, index) =>
@@ -118,12 +131,32 @@ const CreateTaskPage = () => {
           }))
         )
       );
-      const cache = {};
-      entries.forEach(({ index, data }) => { cache[index] = data; });
-      setAssigneeSearchCache(cache);
+      if (cancelled) return;
+      setAssigneeSearchCache((prev) => {
+        const next = { ...prev };
+        entries.forEach(({ index, data }) => { next[index] = data; });
+        return next;
+      });
     }, 300);
-    return () => clearTimeout(timer);
-  }, [taskRows]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [assigneeFetchKey, taskRows.length]);
+
+  useEffect(() => {
+    if (taskRows.length === 0) return;
+    searchUsersForTaskAssignment('', 'all').then((res) => {
+      if (!res.success) return;
+      setAssigneeSearchCache((prev) => {
+        const next = { ...prev };
+        for (let i = 0; i < taskRows.length; i += 1) {
+          if (!next[i]?.length) next[i] = res.data || [];
+        }
+        return next;
+      });
+    });
+  }, [taskRows.length]);
 
   const updateTaskRow = (index, field, value) => {
     setTaskRows((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
@@ -239,6 +272,8 @@ const CreateTaskPage = () => {
         deadline: row.deadline,
         deadline_time: row.deadline_time || null,
         assigneeIds: row.assignees.map((u) => u.id),
+        ccUserIds: (row.ccUsers || []).map((u) => u.id),
+        reminderTimes: (row.reminderTimes || []).filter((t) => String(t).trim()).map((t) => normalizeScheduleTime(t, tzOffset)),
         sourceFiles: row.pdfFile ? [row.pdfFile] : [],
         scheduleLater,
         schedules,
@@ -436,6 +471,78 @@ const CreateTaskPage = () => {
                       {row.assignees.length === 0 && (
                         <p className="text-xs text-red-500 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> Pick at least one assignee.</p>
                       )}
+                    </div>
+
+                    <div className="border-t pt-3 space-y-3">
+                      <Label className="text-sm font-semibold">CC (Carbon Copy)</Label>
+                      <p className="text-xs text-gray-500">Teachers or supervisors who should follow progress (not assignees).</p>
+                      <div className="relative">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <Input
+                          className="pl-8 h-9 text-sm"
+                          placeholder="Search CC recipients..."
+                          value={row.ccSearchQuery || ''}
+                          onChange={(e) => updateTaskRow(index, 'ccSearchQuery', e.target.value)}
+                        />
+                      </div>
+                      <div className="max-h-28 overflow-auto rounded-lg border">
+                        {(assigneeSearchCache[index] || [])
+                          .filter((u) => {
+                            const q = (row.ccSearchQuery || '').toLowerCase();
+                            if (q && ![u.name, u.full_name, u.email, u.phone].some((v) => (v || '').toLowerCase().includes(q))) return false;
+                            return !row.assignees.find((a) => a.id === u.id) && !row.ccUsers.find((c) => c.id === u.id);
+                          })
+                          .slice(0, 20)
+                          .map((user) => (
+                            <button
+                              key={`cc-${user.id}`}
+                              type="button"
+                              onClick={() => updateTaskRow(index, 'ccUsers', [...row.ccUsers, user])}
+                              className="block w-full border-b px-3 py-2 text-left text-sm hover:bg-slate-50 last:border-0"
+                            >
+                              {user.name || user.full_name}
+                            </button>
+                          ))}
+                      </div>
+                      {row.ccUsers?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {row.ccUsers.map((user) => (
+                            <Badge key={user.id} variant="outline" className="text-xs gap-1">
+                              CC: {user.name || user.full_name}
+                              <button type="button" onClick={() => updateTaskRow(index, 'ccUsers', row.ccUsers.filter((c) => c.id !== user.id))}>
+                                <X className="w-3 h-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t pt-3 space-y-2">
+                      <Label className="text-sm font-semibold flex items-center gap-1"><Clock className="w-4 h-4" /> Reminders</Label>
+                      <p className="text-xs text-gray-500">Multiple reminders before deadline — message shows time remaining.</p>
+                      {(row.reminderTimes || ['']).map((timeVal, ri) => (
+                        <div key={ri} className="flex gap-2 items-center">
+                          <Input
+                            type="datetime-local"
+                            value={timeVal}
+                            onChange={(e) => {
+                              const next = [...(row.reminderTimes || [''])];
+                              next[ri] = e.target.value;
+                              updateTaskRow(index, 'reminderTimes', next);
+                            }}
+                            className="max-w-xs"
+                          />
+                          {(row.reminderTimes || []).length > 1 && (
+                            <Button type="button" variant="ghost" size="icon" className="h-9 w-9 text-red-500" onClick={() => updateTaskRow(index, 'reminderTimes', (row.reminderTimes || []).filter((_, i) => i !== ri))}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => updateTaskRow(index, 'reminderTimes', [...(row.reminderTimes || ['']), ''])}>
+                        <Plus className="w-3 h-3 mr-1" /> Add reminder
+                      </Button>
                     </div>
 
                     <div className="border-t pt-3 space-y-2">

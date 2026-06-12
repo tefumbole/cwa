@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { fetchTaskInvite, requestRegistration, verifyRegistration } from '@/services/registerService';
-import { Loader2, CheckCircle, LogIn, UserPlus } from 'lucide-react';
+import { respondToTaskInvite } from '@/services/taskService';
+import { Loader2, CheckCircle, LogIn, UserPlus, XCircle } from 'lucide-react';
 
 const TaskInvitePage = () => {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const action = searchParams.get('action');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState(null);
   const [mode, setMode] = useState('login');
@@ -23,7 +28,7 @@ const TaskInvitePage = () => {
 
   useEffect(() => {
     fetchTaskInvite(token)
-      .then((data) => {
+      .then(async (data) => {
         setInvite(data.invite);
         setForm((prev) => ({
           ...prev,
@@ -32,6 +37,17 @@ const TaskInvitePage = () => {
           phone: data.invite?.assignee_phone || '',
         }));
         if (data.loggedIn) {
+          if (action === 'accept' || action === 'decline') {
+            const res = await respondToTaskInvite(token, action);
+            if (res.success) {
+              toast({
+                title: action === 'accept' ? 'Task accepted' : 'Task declined',
+                description: res.taskTitle || 'Your response was recorded.',
+              });
+              navigate('/user/tasks/my-tasks', { replace: true });
+              return;
+            }
+          }
           navigate(`/user/tasks/pending-acceptances?invite=${token}`, { replace: true });
         }
       })
@@ -39,7 +55,7 @@ const TaskInvitePage = () => {
         toast({ title: 'Invalid link', description: err.message, variant: 'destructive' });
       })
       .finally(() => setLoading(false));
-  }, [token, toast, navigate]);
+  }, [token, toast, navigate, action]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -102,8 +118,40 @@ const TaskInvitePage = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-blue-900">
-            After signup or login you will only see your <strong>Pending Tasks</strong> screen where you can accept this assignment.
+            After signup or login you can accept or reject this task. WhatsApp links with Accept/Reject go directly here when you are signed in.
           </div>
+
+          {user && (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                onClick={async () => {
+                  const res = await respondToTaskInvite(token, 'accept');
+                  if (res.success) {
+                    toast({ title: 'Task accepted' });
+                    navigate('/user/tasks/my-tasks');
+                  } else toast({ title: 'Failed', description: res.error, variant: 'destructive' });
+                }}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" /> Accept Task
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 text-red-600 border-red-200"
+                onClick={async () => {
+                  const res = await respondToTaskInvite(token, 'decline');
+                  if (res.success) {
+                    toast({ title: 'Task declined' });
+                    navigate('/user/tasks/my-tasks');
+                  } else toast({ title: 'Failed', description: res.error, variant: 'destructive' });
+                }}
+              >
+                <XCircle className="w-4 h-4 mr-2" /> Reject Task
+              </Button>
+            </div>
+          )}
 
           <div className="flex gap-2">
             <Button

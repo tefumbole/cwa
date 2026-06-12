@@ -96,12 +96,12 @@ const AdminLayout = () => {
           permission: MENU_PERMISSIONS.tasks,
           submenu: [
             { label: 'Task Dashboard', path: '/admin/tasks/dashboard', icon: LayoutDashboard },
+            { label: 'Create Task', path: '/admin/tasks/create', icon: PlusCircle },
             { label: 'All Tasks', path: '/admin/tasks', icon: ListTodo },
             { label: 'Scheduled', path: '/admin/tasks/scheduled', icon: CalendarClock },
-            { label: 'Create Task', path: '/admin/tasks/create', icon: PlusCircle },
-            { label: 'Task Settings', path: '/admin/tasks/settings', icon: Settings },
             { label: 'My Tasks', path: '/admin/tasks/my-tasks', icon: CheckCircle },
-            { label: 'Pending Acceptances', path: '/admin/tasks/pending-acceptances', icon: Inbox }
+            { label: 'Pending Acceptances', path: '/admin/tasks/pending-acceptances', icon: Inbox },
+            { label: 'Task Settings', path: '/admin/tasks/settings', icon: Settings },
           ]
         },
         { 

@@ -100,6 +100,14 @@ export const CREATE_STATEMENTS = [
     INDEX idx_task_notif_sched (scheduled_at, status),
     INDEX idx_task_notif_assignment (assignment_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS task_cc (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    task_id CHAR(36) NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_task_cc (task_id, user_id),
+    INDEX idx_task_cc_task (task_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS application_status_history (
     id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
     application_id CHAR(36) NOT NULL,

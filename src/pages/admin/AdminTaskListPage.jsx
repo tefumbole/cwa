@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { getTasks, deleteTask, resendTaskNotification, checkAndUpdateOverdueTasks } from '@/services/taskService';
 import { getTaskCategories } from '@/services/taskCategoryService';
@@ -30,8 +31,9 @@ const AdminTaskListPage = () => {
   const [tasks, setTasks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({ status: 'All', priority: 'All', category: 'All' });
-  const [activeTab, setActiveTab] = useState('uncompleted');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'uncompleted');
   const [remindingId, setRemindingId] = useState(null);
 
   const [editTask, setEditTask] = useState(null);
@@ -42,6 +44,13 @@ const AdminTaskListPage = () => {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const status = searchParams.get('status');
+    if (tab && TASK_TABS.some((t) => t.id === tab)) setActiveTab(tab);
+    if (status) setFilters((prev) => ({ ...prev, status }));
+  }, [searchParams]);
 
   useEffect(() => {
     loadTasks();

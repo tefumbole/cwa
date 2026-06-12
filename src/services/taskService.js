@@ -7,6 +7,28 @@ import { getEffectiveTaskStatus, isTaskOverdue } from '@/utils/taskDeadline';
 const useMysql = import.meta.env.VITE_DATA_BACKEND === 'mysql';
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+async function mysqlTaskApi(path, options = {}) {
+  const token = (() => {
+    try {
+      const raw = localStorage.getItem('alpha_supabase_auth');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed?.access_token || parsed?.currentSession?.access_token || null;
+    } catch {
+      return null;
+    }
+  })();
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  return res.json().catch(() => ({}));
+}
+
 function newId() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -240,6 +262,33 @@ export const createTaskWithAssignments = async (taskData, assigneeIds, options =
 
       assignmentRows = assignments;
 
+      if (options.ccUserIds?.length) {
+        const ccRows = options.ccUserIds.map((userId) => ({
+          id: newId(),
+          task_id: task.id,
+          user_id: userId,
+        }));
+        await supabase.from('task_cc').insert(ccRows).catch(() => null);
+        if (useMysql) {
+          await mysqlTaskApi('/tasks/notify-cc', {
+            method: 'POST',
+            body: JSON.stringify({ taskId: task.id, ccUserIds: options.ccUserIds, assigneeIds }),
+          }).catch(() => null);
+        }
+      }
+
+      if (options.reminderTimes?.length) {
+        const reminderRows = options.reminderTimes.filter(Boolean).map((reminderTime) => ({
+          id: newId(),
+          task_id: task.id,
+          reminder_time: reminderTime,
+          is_sent: 0,
+        }));
+        if (reminderRows.length) {
+          await supabase.from('task_reminders').insert(reminderRows).catch(() => null);
+        }
+      }
+
       if (isScheduled) {
         await queueTaskNotifications(task.id, assignmentRows, scheduleTimes);
       } else {
@@ -267,6 +316,8 @@ export const createBatchTasksWithAssignments = async (tasksList, sharedOptions =
     const {
       sourceFiles,
       assigneeIds,
+      ccUserIds,
+      reminderTimes,
       scheduleLater,
       schedules,
       ...taskData
@@ -275,6 +326,8 @@ export const createBatchTasksWithAssignments = async (tasksList, sharedOptions =
     const res = await createTaskWithAssignments(taskData, assigneeIds || [], {
       ...sharedOptions,
       sourceFiles: sourceFiles || [],
+      ccUserIds: ccUserIds || [],
+      reminderTimes: reminderTimes || [],
       scheduleLater: Boolean(scheduleLater),
       schedules: schedules || [],
     });
@@ -619,10 +672,12 @@ export const getScheduledTasks = async () => {
       queueByTask[q.task_id].push(q);
     });
 
-    const data = hydrated.map((task) => ({
-      ...task,
-      pending_notifications: queueByTask[task.id] || [],
-    }));
+    const data = hydrated
+      .map((task) => ({
+        ...task,
+        pending_notifications: queueByTask[task.id] || [],
+      }))
+      .filter((task) => (task.pending_notifications?.length || 0) > 0);
 
     return { success: true, data };
   } catch (error) {
@@ -724,6 +779,33 @@ export const declineTaskAssignment = async (assignmentId) => {
 
 export const bulkRemoveMyTaskAssignments = async (assignmentIds = []) => {
   try {
+    if (useMysql) {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem('alpha_supabase_auth');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return parsed?.access_token || parsed?.currentSession?.access_token || null;
+        } catch {
+          return null;
+        }
+      })();
+      const res = await fetch(`${API_BASE}/tasks/remove-my-assignments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ assignmentIds }),
+      });
+      const json = await res.json().catch(() => ({}));
+      return {
+        success: Boolean(json.success),
+        count: json.removed || 0,
+        error: json.error || null,
+      };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
     if (!assignmentIds.length) throw new Error('No tasks selected');
@@ -808,6 +890,13 @@ export const updateTaskProgress = async (assignmentId, taskId, progress, status,
     }
 
     await evaluateTaskOverallStatus(taskId);
+
+    if (useMysql) {
+      await mysqlTaskApi('/tasks/notify-progress', {
+        method: 'POST',
+        body: JSON.stringify({ assignmentId, progress, status, comment }),
+      }).catch(() => null);
+    }
 
     if (status === 'Completed' || progress === 100) {
       await sendTaskCompletedNotifications(assignmentId).catch((err) => console.error('Complete notification failed', err));
@@ -1065,26 +1154,10 @@ export const checkAndUpdateOverdueTasks = async () => {
 
 export const sendScheduledTaskNow = async (taskId) => {
   try {
-    const token = (() => {
-      try {
-        const raw = localStorage.getItem('alpha_supabase_auth');
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return parsed?.access_token || parsed?.currentSession?.access_token || null;
-      } catch {
-        return null;
-      }
-    })();
-    const API_BASE = import.meta.env.VITE_API_URL || '/api';
-    const res = await fetch(`${API_BASE}/tasks/send-now`, {
+    const json = await mysqlTaskApi('/tasks/send-now', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: JSON.stringify({ taskId }),
     });
-    const json = await res.json().catch(() => ({}));
     return {
       success: Boolean(json.success),
       sent: json.sent || 0,
@@ -1093,6 +1166,35 @@ export const sendScheduledTaskNow = async (taskId) => {
     };
   } catch (error) {
     console.error('Error sending scheduled task:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const adminUpdateTask = async (taskId, payload) => {
+  try {
+    const json = await mysqlTaskApi('/tasks/admin-update', {
+      method: 'POST',
+      body: JSON.stringify({ taskId, ...payload }),
+    });
+    return {
+      success: Boolean(json.success),
+      added: json.added || 0,
+      removed: json.removed || 0,
+      error: json.error || null,
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+export const respondToTaskInvite = async (token, action) => {
+  try {
+    const json = await mysqlTaskApi('/tasks/respond-invite', {
+      method: 'POST',
+      body: JSON.stringify({ token, action }),
+    });
+    return { success: Boolean(json.success), error: json.error || null, taskTitle: json.taskTitle };
+  } catch (error) {
     return { success: false, error: error.message };
   }
 };
