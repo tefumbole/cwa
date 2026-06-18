@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { getAllMembers } from '@/services/membersService';
 import { Loader2, AlertCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getFlagByCountry } from '@/utils/countryFlags';
 
 // Public Member Section - Privacy Enforced (No Email/Phone)
 
@@ -126,8 +127,11 @@ const MembersSection = () => {
 
                 {/* Text Content */}
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#D4AF37] transition-colors">
-                    {member.name}
+                  <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#D4AF37] transition-colors flex items-center justify-center gap-2">
+                    <span>{member.name}</span>
+                    {getFlagByCountry(member.country) && (
+                      <span className="text-xl" title={member.country}>{getFlagByCountry(member.country)}</span>
+                    )}
                   </h3>
                   <p className="text-[#D4AF37] font-semibold tracking-wider uppercase text-sm mb-4">
                     {member.title}

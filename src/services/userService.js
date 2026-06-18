@@ -263,6 +263,24 @@ export async function searchUsersForTaskAssignment(query = '', category = 'all')
 }
 
 /**
+ * Fetch EVERY assignee in a category (no 50-row cap) for the "Select everyone" action.
+ */
+export async function getAllAssigneesForTask(category = 'all') {
+  if (useMysql) {
+    try {
+      const params = new URLSearchParams({ category: category || 'all' });
+      const { data } = await mysqlUsersApi(`/tasks/assignees/all?${params.toString()}`);
+      return { success: true, data: data || [] };
+    } catch (error) {
+      console.error('[USER SERVICE] Error fetching all assignees:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+  // Supabase fallback: reuse the search (returns the full active list when query is empty).
+  return searchUsersForTaskAssignment('', category);
+}
+
+/**
  * Get all users for assignment (task assignment, etc.)
  * @returns {Promise<Array>} Array of users with essential fields
  */
@@ -524,6 +542,7 @@ export default {
   getUserByUsername,
   getAllUsersForAssignment,
   searchUsersForTaskAssignment,
+  getAllAssigneesForTask,
   createUser,
   updateUser,
   deleteUser,

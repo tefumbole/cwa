@@ -6,6 +6,7 @@ dist/
 apps/api/.env
 data/export/
 data/import/
+backups/
 apps/api/uploads/
 .DS_Store
 *.log

@@ -30,7 +30,8 @@ export const createMember = async (memberData) => {
       description: memberData.description || '',
       email: memberData.email || null,
       phone: memberData.phone || null,
-      photo_url: memberData.photo_url || null, 
+      photo_url: memberData.photo_url || null,
+      country: memberData.country || null,
     };
 
     const { data, error } = await supabase

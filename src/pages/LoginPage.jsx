@@ -49,7 +49,16 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectOverride = searchParams.get('redirect');
+  const prefillUser = searchParams.get('u');
+  const isGuestPrefill = searchParams.get('guest') === '1';
   const { toast } = useToast();
+
+  // Pre-fill the temporary guest credentials when arriving from a task invite link.
+  useEffect(() => {
+    if (prefillUser && !identifier) setIdentifier(prefillUser);
+    if (isGuestPrefill && !password) setPassword('system');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillUser, isGuestPrefill]);
 
   // Task 1: Implement validateUserSession (wrapping validateSessionAndProfile)
   const validateUserSession = async () => {
@@ -64,7 +73,13 @@ const LoginPage = () => {
   };
 
   // Helper to determine destination based on role
-  const getRedirectDestination = (userRole, overridePath) => {
+  const getRedirectDestination = (userRole, overridePath, profileData) => {
+    // First-login guests must set their own username/password/email/address before anything else.
+    if (profileData?.must_change_credentials) {
+      return overridePath
+        ? `/complete-profile?redirect=${encodeURIComponent(overridePath)}`
+        : '/complete-profile';
+    }
     if (overridePath) return overridePath;
     const adminRoles = ['admin', 'super_admin', 'director', 'manager'];
     if (adminRoles.includes(userRole)) return '/admin/dashboard';
@@ -92,7 +107,7 @@ const LoginPage = () => {
         if (isValid && profile) {
            console.log(`[LoginPage] Active session confirmed. Redirecting... Profile Role: ${profile.role}`);
            
-           const destination = getRedirectDestination(profile.role, redirectOverride);
+           const destination = getRedirectDestination(profile.role, redirectOverride, profile);
            console.log(`[LoginPage] Redirect Decision -> Role: ${profile.role}, Destination: ${destination}, UserId: ${profile.id}, Timestamp: ${new Date().toISOString()}`);
            
            toast({
@@ -157,7 +172,7 @@ const LoginPage = () => {
         
         if (preCheck.isValid && preCheck.profile) {
            console.log("[LoginPage] Pre-validation caught an active session. Aborting new login and redirecting.");
-           const dest = getRedirectDestination(preCheck.profile.role, redirectOverride);
+           const dest = getRedirectDestination(preCheck.profile.role, redirectOverride, preCheck.profile);
            navigate(dest, { replace: true });
            return;
         }
@@ -189,7 +204,7 @@ const LoginPage = () => {
                 description: 'Welcome back.',
                 className: 'bg-green-600 text-white',
             });
-            navigate(getRedirectDestination(userRole, redirectOverride), { replace: true });
+            navigate(getRedirectDestination(userRole, redirectOverride, profileData), { replace: true });
             return;
         }
 

@@ -7,6 +7,8 @@ import {
   acceptTaskAssignment,
   declineTaskAssignment,
   bulkDeclineTaskAssignments,
+  adminDeleteAssignments,
+  getTaskDetails,
 } from '@/services/taskService';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +19,7 @@ import { format } from 'date-fns';
 import { isTaskOverdue } from '@/utils/taskDeadline';
 import TaskDetailsModal from '@/components/user/TaskDetailsModal';
 import TaskBulkActionsBar from '@/components/user/TaskBulkActionsBar';
+import EditTaskModal from '@/components/admin/EditTaskModal';
 
 export const getPriorityColor = (priority) => {
   switch (priority) {
@@ -37,6 +40,8 @@ const PendingAcceptancesPage = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const { toast } = useToast();
 
   const loadTasks = async () => {
@@ -56,7 +61,18 @@ const PendingAcceptancesPage = () => {
     loadTasks();
   }, []);
 
-  const openTask = (task) => {
+  const openTask = async (task) => {
+    if (isAdminView) {
+      // Load full task (with assignees) so admin can edit and resend.
+      const res = await getTaskDetails(task.task_id);
+      if (res.success) {
+        setEditTask(res.data);
+        setIsEditOpen(true);
+      } else {
+        toast({ title: 'Could not open task', description: res.error, variant: 'destructive' });
+      }
+      return;
+    }
     setSelectedTask(task);
     setIsModalOpen(true);
   };
@@ -75,12 +91,18 @@ const PendingAcceptancesPage = () => {
 
   const handleBulkDelete = async (ids = selectedIds) => {
     if (!ids.length) return;
-    if (!window.confirm(`Decline ${ids.length} selected task assignment(s)?`)) return;
+    const verb = isAdminView ? 'Delete' : 'Decline';
+    if (!window.confirm(`${verb} ${ids.length} selected task assignment(s)?`)) return;
 
     setBulkDeleting(true);
-    const res = await bulkDeclineTaskAssignments(ids);
+    const res = isAdminView
+      ? await adminDeleteAssignments(ids)
+      : await bulkDeclineTaskAssignments(ids);
     if (res.success) {
-      toast({ title: 'Tasks declined', description: `${res.count} assignment(s) removed from pending.` });
+      toast({
+        title: isAdminView ? 'Tasks deleted' : 'Tasks declined',
+        description: `${res.count} assignment(s) removed from pending.`,
+      });
       setSelectedIds([]);
       loadTasks();
     } else {
@@ -122,7 +144,7 @@ const PendingAcceptancesPage = () => {
         </p>
       </div>
 
-      {!loading && tasks.length > 0 && !isAdminView && (
+      {!loading && tasks.length > 0 && (
         <TaskBulkActionsBar
           totalCount={tasks.length}
           selectedIds={selectedIds}
@@ -130,7 +152,7 @@ const PendingAcceptancesPage = () => {
           onClearSelection={() => setSelectedIds([])}
           onDeleteSelected={() => handleBulkDelete()}
           deleting={bulkDeleting}
-          deleteLabel="Decline Selected"
+          deleteLabel={isAdminView ? 'Delete Selected' : 'Decline Selected'}
         />
       )}
 
@@ -177,30 +199,28 @@ const PendingAcceptancesPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {!isAdminView && (
-                        <>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-[#003D82]"
-                            onClick={() => openTask(task)}
-                            title="View and edit task"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700"
-                            onClick={() => handleBulkDelete([task.assignment_id])}
-                            title="Decline task"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
+                      <>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-[#003D82]"
+                          onClick={() => openTask(task)}
+                          title={isAdminView ? 'Edit & resend task' : 'View and edit task'}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500 hover:text-red-700"
+                          onClick={() => handleBulkDelete([task.assignment_id])}
+                          title={isAdminView ? 'Delete task' : 'Decline task'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </>
                       <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200 flex items-center">
                         <Clock className="w-3 h-3 mr-1" /> Pending
                       </Badge>
@@ -268,6 +288,13 @@ const PendingAcceptancesPage = () => {
         onClose={() => setIsModalOpen(false)}
         task={selectedTask}
         onTaskUpdated={loadTasks}
+      />
+
+      <EditTaskModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        task={editTask}
+        onSave={loadTasks}
       />
     </div>
   );

@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { fetchTaskInvite, requestRegistration, verifyRegistration } from '@/services/registerService';
+import { fetchTaskInvite } from '@/services/registerService';
 import { respondToTaskInvite } from '@/services/taskService';
-import { Loader2, CheckCircle, LogIn, UserPlus, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 const TaskInvitePage = () => {
   const { token } = useParams();
@@ -19,30 +17,21 @@ const TaskInvitePage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState(null);
-  const [mode, setMode] = useState('login');
-  const [step, setStep] = useState('form');
-  const [pendingId, setPendingId] = useState(null);
-  const [otp, setOtp] = useState('');
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' });
 
   useEffect(() => {
     fetchTaskInvite(token)
       .then(async (data) => {
         setInvite(data.invite);
-        setForm((prev) => ({
-          ...prev,
-          full_name: data.invite?.assignee_name || '',
-          email: data.invite?.assignee_email || '',
-          phone: data.invite?.assignee_phone || '',
-        }));
         if (data.loggedIn) {
           if (action === 'accept' || action === 'decline') {
             const res = await respondToTaskInvite(token, action);
             if (res.success) {
               toast({
                 title: action === 'accept' ? 'Task accepted' : 'Task declined',
-                description: res.taskTitle || 'Your response was recorded.',
+                description: res.alreadyAccepted
+                  ? 'You had already accepted this task.'
+                  : res.taskTitle || 'Your response was recorded.',
               });
               navigate('/user/tasks/my-tasks', { replace: true });
               return;
@@ -57,32 +46,31 @@ const TaskInvitePage = () => {
       .finally(() => setLoading(false));
   }, [token, toast, navigate, action]);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      const result = await requestRegistration({ ...form, inviteToken: token });
-      setPendingId(result.pendingId);
-      setStep('otp');
-      toast({ title: 'OTP Sent', description: `Code sent to ${result.maskedPhone}` });
-    } catch (err) {
-      toast({ title: 'Registration failed', description: err.message, variant: 'destructive' });
-    } finally {
-      setBusy(false);
+  // Build a login URL that pre-fills the temporary credentials and returns here to accept.
+  const buildLoginUrl = (respondAction) => {
+    const username = (invite?.assignee_phone || '').replace(/\D/g, '');
+    const redirect = `/task-invite/${token}?action=${respondAction}`;
+    const params = new URLSearchParams({ redirect });
+    if (username) {
+      params.set('u', username);
+      params.set('guest', '1');
     }
+    return `/login?${params.toString()}`;
   };
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  const respondNow = async (respondAction) => {
+    if (!user) {
+      navigate(buildLoginUrl(respondAction));
+      return;
+    }
     setBusy(true);
-    try {
-      await verifyRegistration({ pendingId, otp });
-      toast({ title: 'Account created', description: 'Sign in to view and accept your pending task.' });
-      navigate(`/login?redirect=/user/tasks/pending-acceptances&invite=${token}`);
-    } catch (err) {
-      toast({ title: 'Verification failed', description: err.message, variant: 'destructive' });
-    } finally {
-      setBusy(false);
+    const res = await respondToTaskInvite(token, respondAction);
+    setBusy(false);
+    if (res.success) {
+      toast({ title: respondAction === 'accept' ? 'Task accepted' : 'Task declined' });
+      navigate('/user/tasks/my-tasks');
+    } else {
+      toast({ title: 'Failed', description: res.error, variant: 'destructive' });
     }
   };
 
@@ -118,110 +106,29 @@ const TaskInvitePage = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-blue-900">
-            After signup or login you can accept or reject this task. WhatsApp links with Accept/Reject go directly here when you are signed in.
+            Tap <strong>Accept Task</strong> below. We’ll take you to a quick sign-in (your username and temporary
+            password are filled in for you), then your task is confirmed.
           </div>
-
-          {user && (
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                onClick={async () => {
-                  const res = await respondToTaskInvite(token, 'accept');
-                  if (res.success) {
-                    toast({ title: 'Task accepted' });
-                    navigate('/user/tasks/my-tasks');
-                  } else toast({ title: 'Failed', description: res.error, variant: 'destructive' });
-                }}
-              >
-                <CheckCircle className="w-4 h-4 mr-2" /> Accept Task
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 text-red-600 border-red-200"
-                onClick={async () => {
-                  const res = await respondToTaskInvite(token, 'decline');
-                  if (res.success) {
-                    toast({ title: 'Task declined' });
-                    navigate('/user/tasks/my-tasks');
-                  } else toast({ title: 'Failed', description: res.error, variant: 'destructive' });
-                }}
-              >
-                <XCircle className="w-4 h-4 mr-2" /> Reject Task
-              </Button>
-            </div>
-          )}
 
           <div className="flex gap-2">
             <Button
               type="button"
-              variant={mode === 'login' ? 'default' : 'outline'}
-              className={mode === 'login' ? 'bg-[#003D82]' : ''}
-              onClick={() => setMode('login')}
+              className="flex-1 bg-green-600 hover:bg-green-700"
+              disabled={busy}
+              onClick={() => respondNow('accept')}
             >
-              <LogIn className="w-4 h-4 mr-2" /> I have an account
+              <CheckCircle className="w-4 h-4 mr-2" /> Accept Task
             </Button>
             <Button
               type="button"
-              variant={mode === 'register' ? 'default' : 'outline'}
-              className={mode === 'register' ? 'bg-[#003D82]' : ''}
-              onClick={() => setMode('register')}
+              variant="outline"
+              className="flex-1 text-red-600 border-red-200"
+              disabled={busy}
+              onClick={() => respondNow('decline')}
             >
-              <UserPlus className="w-4 h-4 mr-2" /> Sign Up
+              <XCircle className="w-4 h-4 mr-2" /> Reject Task
             </Button>
           </div>
-
-          {mode === 'login' ? (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Sign in with your Alpha Bridge account to open your pending tasks and accept this assignment.
-              </p>
-              <Button asChild className="w-full bg-[#003D82]">
-                <Link to={`/login?redirect=/user/tasks/pending-acceptances&invite=${token}`}>
-                  Continue to Sign In
-                </Link>
-              </Button>
-            </div>
-          ) : step === 'form' ? (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Set your password to access the task portal. If you were added as a customer already, use the same phone number — your account will be updated, not blocked.
-              </p>
-              <div>
-                <Label>Full Name</Label>
-                <Input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              </div>
-              <div>
-                <Label>WhatsApp Phone</Label>
-                <Input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+237..." />
-              </div>
-              <div>
-                <Label>Password</Label>
-                <Input type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-              </div>
-              <Button type="submit" disabled={busy} className="w-full bg-[#003D82]">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP & Continue'}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerify} className="space-y-4">
-              <p className="text-sm text-gray-600">Enter the 6-digit code sent to your WhatsApp.</p>
-              <Input
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="123456"
-                className="text-center text-2xl tracking-widest"
-              />
-              <Button type="submit" disabled={busy || otp.length !== 6} className="w-full bg-[#003D82]">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Create Account'}
-              </Button>
-            </form>
-          )}
 
           <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800 flex gap-2">
             <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />

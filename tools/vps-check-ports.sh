@@ -38,4 +38,17 @@ curl -s -o /dev/null -w "Site localhost → HTTP %{http_code}\n" -H "Host: alpha
 test -f /var/www/alphabridge/dist/index.html && echo "dist/index.html exists" || echo "MISSING dist/index.html — run npm run build"
 
 echo ""
+echo "========== DOMAIN ROUTING (IPv4 + IPv6 SNI on localhost) =========="
+for host in alpha-bridge.net manukeza.com newvisiontraveltours.com okusoma.com; do
+  for flag in -4 -6; do
+    title=$(curl -sk $flag --resolve "${host}:443:127.0.0.1" "https://${host}/" 2>/dev/null | grep -o '<title>[^<]*</title>' | head -1 || echo "(no title)")
+    echo "$flag $host → $title"
+  done
+done
+
+echo ""
+echo "========== NGINX IPv6 LISTENERS (each HTTPS site needs [::]:443) =========="
+grep -rh 'listen \[::\]:443' /etc/nginx/sites-enabled/ 2>/dev/null | wc -l | xargs echo "sites with IPv6 HTTPS:"
+
+echo ""
 echo "Done."

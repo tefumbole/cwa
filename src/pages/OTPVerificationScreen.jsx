@@ -58,6 +58,10 @@ const OTPVerificationScreen = () => {
         case 'applicant':
             destination = '/applicant-dashboard';
             break;
+        case 'task_assignee':
+        case 'customer':
+            destination = '/user/tasks/pending-acceptances';
+            break;
         default:
             destination = '/';
     }
@@ -119,7 +123,10 @@ const OTPVerificationScreen = () => {
     // we now determine the route.
     console.log(`[OTP Verification] Auth Context Updated for user: ${profileData.id}, role: ${profileData.role}`);
     
-    const destination = redirectBasedOnRole(profileData.role);
+    // First-login guests must set their own credentials/profile before continuing.
+    const destination = profileData.must_change_credentials
+      ? '/complete-profile'
+      : redirectBasedOnRole(profileData.role);
     
     // Detailed log for redirect decision
     console.log(`[OTP Verification] Redirect Decision -> Role: ${profileData.role}, Destination: ${destination}, UserId: ${profileData.id}, Timestamp: ${new Date().toISOString()}`);

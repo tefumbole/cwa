@@ -24,7 +24,7 @@ You have been assigned a new task:
 ▪️ *Deadline:* {deadline}{deadline_time}
 
 {description}
-
+{login_credentials}
 👉 Open this link to *Accept* or *Reject* your task:
 {login_link}
 
@@ -36,6 +36,21 @@ function personalize(template, vars) {
     result = result.replace(new RegExp(`\\{${key}\\}`, 'gi'), value ?? '');
   }
   return result;
+}
+
+/**
+ * For freshly-created guest assignees, build a credentials block telling them
+ * their temporary username (phone) and password ("system"). Returns '' for
+ * users who already have their own account.
+ */
+function buildCredentialsBlock(row) {
+  if (!row?.assignee_must_change) return '';
+  const username = row.assignee_username || (row.assignee_phone || '').replace(/\D/g, '');
+  return `\n🔐 *A temporary login has been created for you:*
+▪️ *Username:* ${username}
+▪️ *Password:* system
+
+_Please log in and set your own username, password, email and address._\n`;
 }
 
 function requireAdmin(req, res, next) {
@@ -60,6 +75,9 @@ async function loadAssignmentContext(pool, assignmentId) {
             COALESCE(u.name, p.full_name) AS assignee_name,
             COALESCE(u.email, p.email) AS assignee_email,
             COALESCE(u.phone, p.phone) AS assignee_phone,
+            COALESCE(u.address, p.address) AS assignee_address,
+            u.username AS assignee_username,
+            COALESCE(u.must_change_credentials, p.must_change_credentials, 0) AS assignee_must_change,
             COALESCE(cu.name, cp.full_name) AS creator_name,
             COALESCE(cu.phone, cp.phone) AS creator_phone
      FROM task_assignments ta
@@ -85,9 +103,10 @@ function formatScheduleVars(row) {
   };
 }
 
-async function searchAssignees(pool, query, category = 'all') {
+async function searchAssignees(pool, query, category = 'all', perSource = 50) {
   const q = String(query || '').trim();
   const like = `%${q}%`;
+  const cap = Number.isFinite(Number(perSource)) ? Math.max(1, Number(perSource)) : 50;
   const map = new Map();
 
   const add = (row) => {
@@ -114,7 +133,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM profiles p
        WHERE COALESCE(p.status, 'active') = 'active'${profileFilter}
        ORDER BY p.full_name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       profileParams
     );
     profiles.forEach((r) => add({ ...r, name: r.full_name }));
@@ -128,7 +147,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM users u
        WHERE u.status = 'active'${userFilter}
        ORDER BY u.name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       userParams
     );
     users.forEach(add);
@@ -144,7 +163,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM users u
        WHERE u.status = 'active' AND LOWER(u.role) = 'customer'${custFilter}
        ORDER BY u.name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       custParams
     );
     customerUsers.forEach(add);
@@ -158,7 +177,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM profiles p
        WHERE COALESCE(p.status, 'active') = 'active' AND LOWER(p.role) = 'customer'${custProfileFilter}
        ORDER BY p.full_name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       custProfileParams
     );
     customerProfiles.forEach((r) => add({ ...r, name: r.full_name }));
@@ -180,7 +199,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM shareholders s
        WHERE COALESCE(s.user_id, s.id) IS NOT NULL${shFilter}
        ORDER BY s.full_name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       shParams
     );
     shareholders.forEach(add);
@@ -196,7 +215,7 @@ async function searchAssignees(pool, query, category = 'all') {
        FROM students s
        WHERE 1=1${stFilter}
        ORDER BY s.name ASC
-       LIMIT 50`,
+       LIMIT ${cap}`,
       stParams
     );
     students.forEach(add);
@@ -204,7 +223,7 @@ async function searchAssignees(pool, query, category = 'all') {
 
   return [...map.values()]
     .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-    .slice(0, 50);
+    .slice(0, cap);
 }
 
 router.get('/assignees/search', requireAuth, requireTaskManager, async (req, res) => {
@@ -214,6 +233,18 @@ router.get('/assignees/search', requireAuth, requireTaskManager, async (req, res
     res.json({ data, error: null });
   } catch (err) {
     console.error('[tasks/assignees/search]', err);
+    res.status(500).json({ data: [], error: err.message });
+  }
+});
+
+// Returns the complete assignee list for a category (used by "Select everyone").
+router.get('/assignees/all', requireAuth, requireTaskManager, async (req, res) => {
+  try {
+    const pool = getPool();
+    const data = await searchAssignees(pool, '', req.query.category || 'all', 100000);
+    res.json({ data, error: null });
+  } catch (err) {
+    console.error('[tasks/assignees/all]', err);
     res.status(500).json({ data: [], error: err.message });
   }
 });
@@ -260,6 +291,7 @@ async function notifyAssignmentById(pool, assignmentId, messageTemplate, documen
     name: row.assignee_name,
     email: row.assignee_email,
     phone: row.assignee_phone,
+    address: row.assignee_address,
   });
 
   const scheduleVars = formatScheduleVars(row);
@@ -267,6 +299,7 @@ async function notifyAssignmentById(pool, assignmentId, messageTemplate, documen
     name: row.assignee_name || row.assignee_email,
     email: row.assignee_email || '',
     phone: row.assignee_phone || '',
+    address: row.assignee_address || '',
     subject: row.title,
     task_title: row.title,
     description: descriptionText,
@@ -277,6 +310,7 @@ async function notifyAssignmentById(pool, assignmentId, messageTemplate, documen
     start_date: scheduleVars.start_date,
     start_time: scheduleVars.start_time,
     login_link: loginLink,
+    login_credentials: buildCredentialsBlock(row),
     document_links: docLinks,
   });
 
@@ -449,7 +483,8 @@ router.post('/process-scheduled', requireAuth, requireAdmin, async (_req, res) =
     const pool = getPool();
     const [due] = await pool.query(
       `SELECT q.*, t.title, t.description, t.deadline, t.priority, t.start_date, t.notification_template,
-              u.name, u.email, u.phone, ta.invite_token
+              u.name, u.email, u.phone, u.address, u.username AS assignee_username,
+              COALESCE(u.must_change_credentials, 0) AS assignee_must_change, ta.invite_token
        FROM task_notification_queue q
        JOIN tasks t ON t.id = q.task_id
        JOIN task_assignments ta ON ta.id = q.assignment_id
@@ -484,6 +519,7 @@ router.post('/process-scheduled', requireAuth, requireAdmin, async (_req, res) =
         name: row.name,
         email: row.email,
         phone: row.phone,
+        address: row.address,
       });
 
       const scheduleVars = formatScheduleVars(row);
@@ -491,6 +527,7 @@ router.post('/process-scheduled', requireAuth, requireAdmin, async (_req, res) =
         name: row.name || row.email,
         email: row.email || '',
         phone: row.phone || '',
+        address: row.address || '',
         subject: row.title,
         task_title: row.title,
         description: descriptionText,
@@ -501,6 +538,11 @@ router.post('/process-scheduled', requireAuth, requireAdmin, async (_req, res) =
         start_date: scheduleVars.start_date,
         start_time: scheduleVars.start_time,
         login_link: loginLink,
+        login_credentials: buildCredentialsBlock({
+          assignee_must_change: row.assignee_must_change,
+          assignee_username: row.assignee_username,
+          assignee_phone: row.phone,
+        }),
         document_links: '',
       });
 
@@ -837,6 +879,11 @@ router.post('/respond-invite', requireAuth, async (req, res) => {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     if (action === 'accept') {
+      // Idempotent: if the assignee already accepted, don't update or re-send the confirmation.
+      const alreadyAccepted = String(assignment.status || '').toLowerCase() === 'accepted';
+      if (alreadyAccepted) {
+        return res.json({ success: true, action, taskTitle: assignment.title, alreadyAccepted: true });
+      }
       await pool.query(
         `UPDATE task_assignments SET status = 'Accepted', accepted_at = ?, last_update_at = ? WHERE id = ?`,
         [now, now, assignment.id]

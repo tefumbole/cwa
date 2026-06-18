@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { createBatchTasksWithAssignments } from '@/services/taskService';
-import { searchUsersForTaskAssignment } from '@/services/userService';
+import { searchUsersForTaskAssignment, getAllAssigneesForTask } from '@/services/userService';
 import { getAnnouncementSettings } from '@/services/announcementSettingsService';
 import { normalizeScheduleTime } from '@/services/announcementService';
 import QuickAssigneeDialog from '@/components/admin/QuickAssigneeDialog';
@@ -27,7 +27,7 @@ import {
   Clock,
   Palette,
 } from 'lucide-react';
-import { DEFAULT_TASK_NOTIFICATION_TEMPLATE } from '@/utils/taskPersonalization';
+import { DEFAULT_TASK_NOTIFICATION_TEMPLATE, TASK_DESCRIPTION_PLACEHOLDERS } from '@/utils/taskPersonalization';
 
 const DRAFT_KEY = 'task_draft_new_v4';
 const PRIORITIES = ['Low', 'Medium', 'High', 'Emergency'];
@@ -42,7 +42,7 @@ const TASK_COLORS = [
 ];
 
 const ASSIGNEE_TABS = [
-  { id: 'all', label: 'All', selectAllLabel: 'Select all' },
+  { id: 'all', label: 'All Members', selectAllLabel: 'Select everyone' },
   { id: 'staff', label: 'Staff', selectAllLabel: 'Select all staff' },
   { id: 'customers', label: 'Customers', selectAllLabel: 'Select all customers' },
 ];
@@ -198,6 +198,17 @@ const CreateTaskPage = () => {
     setTaskRows((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
   };
 
+  const insertDescriptionPlaceholder = (index, token) => {
+    setTaskRows((prev) =>
+      prev.map((row, i) => {
+        if (i !== index) return row;
+        const desc = row.description || '';
+        const needsSpace = desc && !/\s$/.test(desc);
+        return { ...row, description: `${desc}${needsSpace ? ' ' : ''}${token} ` };
+      })
+    );
+  };
+
   const addTaskRow = () => setTaskRows((prev) => [...prev, emptyTaskRow(prev.length)]);
 
   const removeTaskRow = (index) => {
@@ -225,7 +236,7 @@ const CreateTaskPage = () => {
     const row = taskRows[taskIndex];
     setSelectingAllFor(taskIndex);
     try {
-      const res = await searchUsersForTaskAssignment('', row.assigneeTab || 'all');
+      const res = await getAllAssigneesForTask(row.assigneeTab || 'all');
       const rows = res.success ? res.data || [] : [];
       if (!rows.length) {
         toast({ title: 'No users found', variant: 'destructive' });
@@ -250,7 +261,7 @@ const CreateTaskPage = () => {
     const row = taskRows[taskIndex];
     setSelectingAllCcFor(taskIndex);
     try {
-      const res = await searchUsersForTaskAssignment('', row.ccTab || 'all');
+      const res = await getAllAssigneesForTask(row.ccTab || 'all');
       const rows = res.success ? res.data || [] : [];
       if (!rows.length) {
         toast({ title: 'No users found', variant: 'destructive' });
@@ -408,6 +419,20 @@ const CreateTaskPage = () => {
                         <div className="space-y-2">
                           <Label>Description</Label>
                           <Textarea rows={3} value={row.description} onChange={(e) => updateTaskRow(index, 'description', e.target.value)} />
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-gray-400">Insert:</span>
+                            {TASK_DESCRIPTION_PLACEHOLDERS.map((ph) => (
+                              <button
+                                key={ph.token}
+                                type="button"
+                                onClick={() => insertDescriptionPlaceholder(index, ph.token)}
+                                className="rounded-full border border-[#003D82]/30 bg-blue-50 px-2 py-0.5 text-xs font-medium text-[#003D82] hover:bg-blue-100"
+                                title={`Insert ${ph.token}`}
+                              >
+                                {ph.token}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       <div className="space-y-2">

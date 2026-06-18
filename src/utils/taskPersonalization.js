@@ -2,6 +2,7 @@ export const TASK_PLACEHOLDERS = [
   '{name}',
   '{email}',
   '{phone}',
+  '{address}',
   '{subject}',
   '{task_title}',
   '{description}',
@@ -10,7 +11,16 @@ export const TASK_PLACEHOLDERS = [
   '{priority}',
   '{start_date}',
   '{login_link}',
+  '{login_credentials}',
   '{document_links}',
+];
+
+// Placeholders offered as quick-insert chips in the task description editor.
+export const TASK_DESCRIPTION_PLACEHOLDERS = [
+  { token: '{Name}', label: 'Name' },
+  { token: '{Phone}', label: 'Phone' },
+  { token: '{Email}', label: 'Email' },
+  { token: '{Address}', label: 'Address' },
 ];
 
 export function getAppBaseUrl() {
@@ -46,7 +56,7 @@ You have been assigned a new task:
 ▪️ *Deadline:* {deadline}{deadline_time}
 
 {description}
-
+{login_credentials}
 👉 Open this link to *Accept* or *Reject* your task:
 {login_link}
 

@@ -71,6 +71,13 @@ export const SCHEMA_PATCHES = [
   'ALTER TABLE registrations ADD COLUMN status VARCHAR(50) DEFAULT \'pending\'',
   'ALTER TABLE registrations ADD COLUMN payment_id VARCHAR(255) NULL',
   'ALTER TABLE registrations ADD COLUMN payment_date DATETIME NULL',
+  // Task guest onboarding + forced first-login profile completion
+  'ALTER TABLE users ADD COLUMN address TEXT NULL',
+  'ALTER TABLE users ADD COLUMN must_change_credentials TINYINT(1) NOT NULL DEFAULT 0',
+  'ALTER TABLE profiles ADD COLUMN address TEXT NULL',
+  'ALTER TABLE profiles ADD COLUMN must_change_credentials TINYINT(1) NOT NULL DEFAULT 0',
+  // Team member country flag
+  'ALTER TABLE members ADD COLUMN country VARCHAR(100) NULL',
 ];
 
 export const CREATE_STATEMENTS = [

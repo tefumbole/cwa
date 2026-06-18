@@ -37,7 +37,7 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
       const created = await createUser({
         full_name: form.full_name.trim(),
         phone: form.phone.trim(),
-        role: 'customer',
+        asTaskGuest: true,
       });
 
       const assignee = {
@@ -46,13 +46,15 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
         full_name: created.full_name || created.name || form.full_name,
         email: created.email || '',
         phone: created.phone || form.phone,
-        role: created.role || 'customer',
+        role: created.role || 'task_assignee',
         type: 'customer',
       };
 
       toast({
-        title: created.existing ? 'Customer found' : 'Customer added',
-        description: `${assignee.name} will receive the task link on WhatsApp and can sign up at alpha-bridge.net/signup.`,
+        title: created.existing ? 'Person found' : 'Guest account created',
+        description: created.existing
+          ? `${assignee.name} already has an account and will receive the task link on WhatsApp.`
+          : `${assignee.name} gets a guest login — username: ${created.username || assignee.phone}, password: system.`,
       });
 
       onCreated?.(assignee);
@@ -73,7 +75,9 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
             <UserPlus className="w-5 h-5" /> Add New Person
           </DialogTitle>
           <DialogDescription>
-            Enter name and phone only. They are saved as a <strong>customer</strong>, appear in All Users, and get a WhatsApp task link to sign up.
+            Enter name and phone only. A <strong>guest account</strong> is created automatically — username is their
+            phone number and the temporary password is <strong>system</strong>. They’ll be asked to set their own
+            username, password, email and address on first login.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,8 +99,8 @@ const QuickAssigneeDialog = ({ open, onOpenChange, onCreated }) => {
               placeholder="+250..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              No email or password needed. They sign up via the task link or{' '}
-              <strong>alpha-bridge.net/signup</strong> using this phone number.
+              No email or password needed now. They log in with this phone number and the temporary
+              password <strong>system</strong>, then set their own details.
             </p>
           </div>
           <div className="flex justify-end gap-2 pt-2">

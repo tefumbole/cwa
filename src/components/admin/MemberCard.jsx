@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Mail, Phone, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getFlagByCountry } from '@/utils/countryFlags';
 
 // MemberCard: Primarily used in the Admin dashboard.
 // Accepts isAdminView to toggle private contact details.
@@ -30,7 +31,12 @@ const MemberCard = ({ member, onEdit, onDelete, isAdminView = false }) => {
           )}
         </div>
         
-        <h3 className="text-xl font-bold text-[#003D82] mb-1 line-clamp-1" title={member.name}>{member.name}</h3>
+        <h3 className="text-xl font-bold text-[#003D82] mb-1 line-clamp-1 flex items-center justify-center gap-2" title={member.country ? `${member.name} · ${member.country}` : member.name}>
+          <span className="truncate">{member.name}</span>
+          {getFlagByCountry(member.country) && (
+            <span className="text-base shrink-0">{getFlagByCountry(member.country)}</span>
+          )}
+        </h3>
         <p className="text-sm font-semibold text-[#D4AF37] uppercase tracking-wide mb-3 line-clamp-1" title={member.title}>{member.title}</p>
         
         <p className="text-sm text-gray-600 line-clamp-3 mb-4 min-h-[60px] flex-grow">

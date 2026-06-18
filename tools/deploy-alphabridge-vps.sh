@@ -52,15 +52,8 @@ sleep 2
 curl -sf http://127.0.0.1:3003/health || { echo "API health check failed"; exit 1; }
 echo "    API OK"
 
-echo "==> 7. Nginx — ensure /api proxy exists in alphabridge site"
-SITE="/etc/nginx/sites-enabled/alphabridge"
-if [[ -f "$SITE" ]] && ! grep -q 'location /api/' "$SITE"; then
-  echo "    Add this block inside server { } in $SITE:"
-  cat deploy/nginx-api.conf.snippet
-  echo "    Then: nginx -t && systemctl reload nginx"
-else
-  nginx -t && systemctl reload nginx
-fi
+echo "==> 7. Nginx — apply all VPS vhost configs (prevents IPv6 / domain conflicts)"
+bash "$ROOT/tools/vps-apply-nginx.sh" "$ROOT"
 
 echo ""
 echo "Deploy complete. Test:"

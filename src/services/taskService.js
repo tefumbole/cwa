@@ -431,6 +431,31 @@ export const deleteTask = async (taskId) => {
     }
 };
 
+/**
+ * Admin: delete one or more task assignments (used on the Pending Acceptances page).
+ * Removes the assignment rows; any related queued notifications are cancelled.
+ */
+export const adminDeleteAssignments = async (assignmentIds = []) => {
+    try {
+        const ids = (assignmentIds || []).filter(Boolean);
+        if (!ids.length) return { success: false, error: 'No tasks selected' };
+
+        try {
+            await supabase.from('task_notification_queue').delete().in('assignment_id', ids);
+        } catch (e) {
+            // queue table is optional; ignore if it fails
+            console.warn('Could not clear notification queue', e?.message);
+        }
+
+        const { error } = await supabase.from('task_assignments').delete().in('id', ids);
+        if (error) throw error;
+        return { success: true, count: ids.length };
+    } catch (error) {
+        console.error('Error deleting assignments:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const getTasks = async (filters = {}) => {
   try {
     let query = supabase
@@ -695,6 +720,18 @@ export const getScheduledTasks = async () => {
 export const acceptTaskAssignment = async (assignmentId) => {
   try {
     const now = new Date().toISOString();
+
+    // Idempotent: if this assignment is already accepted, do not update again or
+    // re-send the "Task Accepted" confirmation messages.
+    const { data: existing } = await supabase
+      .from('task_assignments')
+      .select('id, status, task_id, user_id')
+      .eq('id', assignmentId)
+      .single();
+    if (existing && String(existing.status || '').toLowerCase() === 'accepted') {
+      return { success: true, data: existing, alreadyAccepted: true };
+    }
+
     const { error } = await supabase
       .from('task_assignments')
       .update({

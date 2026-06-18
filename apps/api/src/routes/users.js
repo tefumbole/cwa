@@ -34,6 +34,8 @@ function serializeUser(row) {
     name: row.full_name || row.name,
     phone: row.phone,
     role: row.role,
+    address: row.address || null,
+    must_change_credentials: row.must_change_credentials ? 1 : 0,
     status: row.status || row.user_status || 'active',
     created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     updated_at: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
@@ -58,15 +60,17 @@ function generateTempPassword() {
 
 async function syncProfile(pool, userRow) {
   await pool.query(
-    `INSERT INTO profiles (id, email, full_name, phone, role, status, username)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO profiles (id, email, full_name, phone, role, status, username, address, must_change_credentials)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
        email = VALUES(email),
        full_name = VALUES(full_name),
        phone = VALUES(phone),
        role = VALUES(role),
        status = VALUES(status),
-       username = VALUES(username)`,
+       username = VALUES(username),
+       address = VALUES(address),
+       must_change_credentials = VALUES(must_change_credentials)`,
     [
       userRow.id,
       userRow.email,
@@ -75,6 +79,8 @@ async function syncProfile(pool, userRow) {
       userRow.role,
       userRow.status || 'active',
       userRow.username || null,
+      userRow.address || null,
+      userRow.must_change_credentials ? 1 : 0,
     ]
   );
 }
@@ -146,13 +152,14 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { email, username, full_name, phone, role, password } = req.body || {};
+    const { email, username, full_name, phone, role, password, asTaskGuest } = req.body || {};
     if (!full_name?.trim()) {
       return res.status(400).json({ data: null, error: { message: 'Full name is required' } });
     }
 
     const pool = getPool();
-    const userRole = role || 'user';
+    // Task assignees added by phone become "guest" accounts limited to the task portal.
+    const userRole = asTaskGuest ? 'task_assignee' : (role || 'user');
     let formattedPhone = null;
     if (phone) {
       const { formatPhoneNumber } = await import('../services/wasenderWhatsAppService.js');
@@ -197,12 +204,13 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Task guests get the shared temporary password "system" (forced to change at first login).
     // Customers and other OTP-only contacts are created without a password.
     // When no password is supplied, generate a temporary one (they sign in via WhatsApp OTP / reset).
-    const effectivePassword = password && String(password).length
-      ? String(password)
-      : generateTempPassword();
-    if (password && String(password).length < 8) {
+    const effectivePassword = asTaskGuest
+      ? 'system'
+      : (password && String(password).length ? String(password) : generateTempPassword());
+    if (!asTaskGuest && password && String(password).length < 8) {
       return res.status(400).json({ data: null, error: { message: 'Password must be at least 8 characters' } });
     }
 
@@ -214,7 +222,11 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ data: null, error: { message: 'User with this email already exists' } });
     }
 
-    const normalizedUsername = username ? normalizeUsername(username) : null;
+    let normalizedUsername = username ? normalizeUsername(username) : null;
+    // Default task-guest username = the phone number digits they were invited with.
+    if (asTaskGuest && !normalizedUsername && formattedPhone) {
+      normalizedUsername = formattedPhone.replace(/\D/g, '');
+    }
     if (normalizedUsername) {
       if (normalizedUsername.length < 3) {
         return res.status(400).json({ data: null, error: { message: 'Username must be at least 3 characters' } });
@@ -232,9 +244,9 @@ router.post('/', async (req, res) => {
     const hash = await bcrypt.hash(effectivePassword, 10);
 
     await pool.query(
-      `INSERT INTO users (id, email, username, password_hash, name, role, status, phone)
-       VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
-      [id, effectiveEmail, normalizedUsername, hash, full_name, userRole, formattedPhone]
+      `INSERT INTO users (id, email, username, password_hash, name, role, status, phone, must_change_credentials)
+       VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+      [id, effectiveEmail, normalizedUsername, hash, full_name, userRole, formattedPhone, asTaskGuest ? 1 : 0]
     );
 
     const userRow = {
@@ -246,6 +258,7 @@ router.post('/', async (req, res) => {
       phone: formattedPhone,
       role: userRole,
       status: 'active',
+      must_change_credentials: asTaskGuest ? 1 : 0,
     };
     await syncProfile(pool, userRow);
 

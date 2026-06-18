@@ -1,6 +1,20 @@
 import { supabase } from '@/lib/customSupabaseClient';
 import { createProfile } from '@/services/profileService';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const STORAGE_KEY = 'alpha_supabase_auth';
+
+function getToken() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.access_token || parsed?.currentSession?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Generates a secure random temporary password
  * @returns {string} 12-character string
@@ -137,3 +151,41 @@ export const sendAccountCredentialsEmail = async (email, name, password) => {
         console.error("Failed to invoke email function:", e);
     }
 };
+
+/**
+ * Complete first-login profile for a task guest:
+ * set their own username, password, email and address.
+ */
+export async function completeOwnProfile(payload) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/auth/complete-profile`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.success === false) {
+    throw new Error(json.error || 'Could not update your profile.');
+  }
+  // Persist refreshed session so future requests use the latest credentials.
+  if (json.session) {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          access_token: json.session.access_token,
+          refresh_token: json.session.refresh_token,
+          expires_at: json.session.expires_at,
+          currentSession: json.session,
+          user: json.session.user,
+        })
+      );
+    } catch {
+      /* ignore storage errors */
+    }
+  }
+  return json;
+}

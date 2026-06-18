@@ -10,6 +10,8 @@ import { formatBytes } from '@/utils/imageCompression';
 import { Upload, X, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { COUNTRY_FLAGS, getFlagByCountry } from '@/utils/countryFlags';
 
 const AddMemberForm = ({ initialData, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -18,7 +20,8 @@ const AddMemberForm = ({ initialData, onSuccess, onCancel }) => {
     description: '',
     photo_url: '',
     email: '',
-    phone: ''
+    phone: '',
+    country: ''
   });
   
   const [preview, setPreview] = useState(null);
@@ -33,7 +36,7 @@ const AddMemberForm = ({ initialData, onSuccess, onCancel }) => {
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({ country: '', ...initialData });
       setPreview(initialData.photo_url);
     }
   }, [initialData]);
@@ -319,6 +322,36 @@ const AddMemberForm = ({ initialData, onSuccess, onCancel }) => {
             placeholder="+123..."
           />
         </div>
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="country">Country Flag <span className="text-gray-400 font-normal text-xs">(Optional)</span></Label>
+        <Select
+          value={formData.country || ''}
+          onValueChange={(value) => setFormData((prev) => ({ ...prev, country: value }))}
+        >
+          <SelectTrigger id="country">
+            <SelectValue placeholder="Select a country">
+              {formData.country ? (
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">{getFlagByCountry(formData.country)}</span>
+                  <span>{formData.country}</span>
+                </span>
+              ) : null}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {COUNTRY_FLAGS.map((c) => (
+              <SelectItem key={c.name} value={c.name}>
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">{c.flag}</span>
+                  <span>{c.name}</span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-400">The flag appears next to the member's name on the public team page.</p>
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t mt-4">

@@ -5,9 +5,17 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendOtp, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
+import { syncProfile } from './users.js';
 
 const router = Router();
 const JWT_EXPIRY = '7d';
+
+function normalizeUsername(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, '');
+}
 
 function buildSession(user, profile) {
   const expiresAt = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
@@ -96,6 +104,89 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('[auth/login]', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Self-service first-login profile completion for task guests:
+ * update username, password, email and address; clears the forced-change flag.
+ */
+router.patch('/complete-profile', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    const { username, password, email, address, full_name } = req.body || {};
+    const pool = getPool();
+
+    const updates = [];
+    const params = [];
+
+    if (username !== undefined && username !== null && String(username).trim() !== '') {
+      const norm = normalizeUsername(username);
+      if (norm.length < 3) {
+        return res.status(400).json({ success: false, error: 'Username must be at least 3 characters.' });
+      }
+      const [dup] = await pool.query(
+        'SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? LIMIT 1',
+        [norm, userId]
+      );
+      if (dup.length) {
+        return res.status(409).json({ success: false, error: 'Username is already taken.' });
+      }
+      updates.push('username = ?');
+      params.push(norm);
+    }
+
+    if (email !== undefined && email !== null && String(email).trim() !== '') {
+      const cleanEmail = String(email).trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
+      }
+      const [dupEmail] = await pool.query(
+        'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ? LIMIT 1',
+        [cleanEmail, userId]
+      );
+      if (dupEmail.length) {
+        return res.status(409).json({ success: false, error: 'This email is already in use.' });
+      }
+      updates.push('email = ?');
+      params.push(cleanEmail);
+    }
+
+    if (full_name !== undefined && String(full_name).trim() !== '') {
+      updates.push('name = ?');
+      params.push(String(full_name).trim());
+    }
+
+    if (address !== undefined) {
+      updates.push('address = ?');
+      params.push(address ? String(address).trim() : null);
+    }
+
+    if (password) {
+      if (String(password).length < 6) {
+        return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
+      }
+      updates.push('password_hash = ?');
+      params.push(await bcrypt.hash(String(password), 10));
+    }
+
+    updates.push('must_change_credentials = 0');
+
+    await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, [...params, userId]);
+
+    const [users] = await pool.query('SELECT * FROM users WHERE id = ? LIMIT 1', [userId]);
+    const user = users[0];
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    await syncProfile(pool, { ...user, full_name: user.name, must_change_credentials: 0 });
+
+    const [profiles] = await pool.query('SELECT * FROM profiles WHERE id = ? LIMIT 1', [userId]);
+    const session = buildSession(user, profiles[0] || null);
+    res.json({ success: true, session, user: session.user });
+  } catch (err) {
+    console.error('[auth/complete-profile]', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
