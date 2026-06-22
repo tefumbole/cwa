@@ -3,10 +3,7 @@ import { DEFAULT_LOGO_URL, isValidLogoUrl } from '@/constants/branding';
 import { getSystemSettings } from '@/services/settingsService';
 
 /**
- * Renders the company logo without a visible black box on dark headers.
- * - Starts with the default CDN logo (no flash)
- * - Optionally loads a custom logo from system settings once
- * - Uses mix-blend-lighten on dark backgrounds so JPG black backgrounds disappear
+ * Renders the company logo. Default PNG has a transparent background — no blend tricks.
  */
 const BrandLogo = ({
   alt = 'Beyond Enterprise',
@@ -48,14 +45,12 @@ const BrandLogo = ({
     };
   }, [preferSystemLogo, srcOverride]);
 
-  const blendClass = variant === 'onDark' ? 'mix-blend-lighten' : '';
-
   return (
     <span className="inline-flex items-center bg-transparent leading-none">
       <img
         src={src}
         alt={alt}
-        className={`${className} ${blendClass} bg-transparent`.trim()}
+        className={`${className} bg-transparent`.trim()}
         onError={applyFallback}
         decoding="async"
       />

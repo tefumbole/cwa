@@ -25,8 +25,8 @@ ERROR: Cannot connect to database "$DB_NAME".
 
 Create a NEW database in Hostinger hPanel (separate from alpha-bridge):
   1. hPanel → Databases → MySQL Databases → Create database
-  2. Database name: beyondtechworld (becomes u152889834_beyondtechworld)
-  3. Create user u152889834_beyondtechworld with ALL privileges on that database
+  2. Database name: beyondworld (becomes u152889834_beyondworld)
+  3. Create user u152889834_beyondworld with ALL privileges on that database
   4. Add VPS IP (187.124.2.238) to Remote MySQL allowlist
   5. Update apps/api/.env with DB_USER, DB_NAME, DB_PASSWORD
   6. Re-run: bash tools/setup-beyondtechworld-db.sh
