@@ -211,6 +211,14 @@ if (window.navigation && window.self !== window.top) {
 const addTransformIndexHtml = {
 	name: 'add-transform-index-html',
 	transformIndexHtml(html) {
+		const company = process.env.VITE_COMPANY_NAME || 'Beyond Enterprise';
+		const siteUrl = process.env.VITE_SITE_URL || 'https://beyondtechworld.com';
+		const logoUrl = process.env.VITE_LOGO_URL || '/branding/beyond-logo.png';
+		html = html
+			.replace(/%VITE_COMPANY_NAME%/g, company)
+			.replace(/%VITE_SITE_URL%/g, siteUrl)
+			.replace(/%VITE_LOGO_URL%/g, logoUrl);
+
 		const tags = [
 			{
 				tag: 'script',
