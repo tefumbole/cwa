@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/customSupabaseClient';
 import { sendWhatsAppMessage } from './wasenderapiService';
+import { WHATSAPP_PHONE } from '@/constants/branding';
 
-const ADMIN_PHONE = '+250794006160';
+const ADMIN_PHONE = WHATSAPP_PHONE;
 
 /**
  * Sends a contact message via WhatsApp and logs it to the database

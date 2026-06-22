@@ -97,7 +97,7 @@ function HomePage() {
   const testimonials = [{
     name: 'Client A',
     role: tl('home', 'CEO, Tech Company'),
-    content: tl('home', 'Alpha Bridge delivered exceptional networking solutions for our office. Professional and reliable.')
+    content: tl('home', 'Beyond Company Ltd delivered exceptional networking solutions for our office. Professional and reliable.')
   }, {
     name: 'Client B',
     role: tl('home', 'Event Organizer'),
@@ -110,8 +110,8 @@ function HomePage() {
 
   return <>
       <Helmet>
-        <title>Alpha Bridge Technologies Ltd | IT Consultancy & AV Solutions in Kigali</title>
-        <meta name="description" content="Alpha Bridge Technologies Ltd — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions in Kigali, Rwanda. Chat with us on WhatsApp for a quote." />
+        <title>Beyond Company Ltd | IT Consultancy & AV Solutions in Kigali</title>
+        <meta name="description" content="Beyond Company Ltd — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions in Kigali, Rwanda. Chat with us on WhatsApp for a quote." />
       </Helmet>
 
       {/* Hero Section */}
@@ -159,7 +159,7 @@ function HomePage() {
                transition={{ duration: 0.8, delay: 0.2 }}
              >
                <BrandLogo
-                 alt="Alpha Bridge"
+                 alt="Beyond Company Ltd"
                  className="h-24 md:h-32 w-auto object-contain mb-6 drop-shadow-2xl"
                  variant="onDark"
                />
@@ -285,7 +285,7 @@ function HomePage() {
       <section className="py-16 bg-[#003D82]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">{th('why_alpha_bridge', 'Why Alpha Bridge?')}</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{th('why_alpha_bridge', 'Why Beyond Company Ltd?')}</h2>
             <p className="text-xl text-gray-300">{th('why_alpha_bridge_subtitle', 'Excellence in every solution we deliver')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -376,7 +376,7 @@ function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <WhatsAppButton className="px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl" />
             
-            <a href="mailto:info@alpha-bridge.net">
+            <a href="mailto:info@beyondtechworld.com">
               <Button className="bg-white text-[#003D82] hover:bg-gray-100 px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl font-semibold">
                 <Mail className="w-5 h-5 mr-2" />
                 {th('email_us', 'Email Us')}

@@ -226,7 +226,7 @@ export default function RoleManagementPage() {
   return (
     <div className="space-y-6">
       <Helmet>
-        <title>Role Management | Alpha Bridge Technologies</title>
+        <title>Role Management | Beyond Company Ltd</title>
         <meta name="description" content="Manage system roles and permissions" />
       </Helmet>
 

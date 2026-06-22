@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { sendTextMessage, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
 
 const router = Router();
-const BRAND = 'Alpha Bridge Technologies Ltd';
+const BRAND = 'Beyond Company Ltd';
 
 router.use(requireAuth);
 

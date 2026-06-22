@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Phone, Mail, Globe, MessageCircle, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+  COMPANY_NAME,
+  CONTACT_EMAIL,
+  CONTACT_PHONE_DISPLAY,
+  WEBSITE_HOST,
+  whatsAppUrl,
+} from '@/constants/branding';
 
 function ContactPage() {
   const { toast } = useToast();
@@ -44,9 +51,8 @@ function ContactPage() {
     }
 
     // Create WhatsApp message
-    const message = `Hello Alpha Bridge, my name is ${formData.name}. I'm interested in ${formData.service}. My phone: ${formData.phone}. My email: ${formData.email}. Message: ${formData.message}`;
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/250794006160?text=${encodedMessage}`;
+    const message = `Hello ${COMPANY_NAME}, my name is ${formData.name}. I'm interested in ${formData.service}. My phone: ${formData.phone}. My email: ${formData.email}. Message: ${formData.message}`;
+    const whatsappUrl = whatsAppUrl(message);
 
     // Show success toast
     toast({
@@ -81,9 +87,9 @@ function ContactPage() {
     }
 
     // Create email body
-    const subject = 'New Website Inquiry — Alpha Bridge';
+    const subject = 'New Website Inquiry — Beyond Company Ltd';
     const body = `Name: ${formData.name}%0D%0APhone: ${formData.phone}%0D%0AEmail: ${formData.email}%0D%0AService: ${formData.service}%0D%0A%0D%0AMessage:%0D%0A${formData.message}`;
-    const mailtoUrl = `mailto:info@alpha-bridge.net?subject=${encodeURIComponent(subject)}&body=${body}`;
+    const mailtoUrl = `mailto:info@beyondtechworld.com?subject=${encodeURIComponent(subject)}&body=${body}`;
 
     // Show success toast
     toast({
@@ -98,10 +104,10 @@ function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Us | Alpha Bridge Technologies Ltd</title>
+        <title>Contact Us | Beyond Company Ltd</title>
         <meta
           name="description"
-          content="Get in touch with Alpha Bridge Technologies Ltd. Contact us via WhatsApp, email, or our contact form for IT consultancy and technology solutions in Kigali."
+          content="Get in touch with Beyond Company Ltd. Contact us via WhatsApp, email, or our contact form for IT consultancy and technology solutions in Kigali."
         />
       </Helmet>
 
@@ -185,7 +191,7 @@ function ContactPage() {
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-all bg-white text-gray-900"
-                    placeholder="info@alpha-bridge.net"
+                    placeholder="info@beyondtechworld.com"
                   />
                 </div>
 
@@ -266,12 +272,12 @@ function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-[#003D82] mb-1">WhatsApp</h3>
                       <a
-                        href="https://wa.me/250794006160"
+                        href="https://wa.me/237675321739"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-700 hover:text-[#0066CC] transition-colors"
                       >
-                        +250 794 006 160
+                        +237 675 321 739
                       </a>
                     </div>
                   </div>
@@ -283,10 +289,10 @@ function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-[#003D82] mb-1">Phone</h3>
                       <a
-                        href="tel:+250794006160"
+                        href="tel:+237675321739"
                         className="text-gray-700 hover:text-[#0066CC] transition-colors"
                       >
-                        +250 794 006 160
+                        +237 675 321 739
                       </a>
                     </div>
                   </div>
@@ -298,10 +304,10 @@ function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-[#003D82] mb-1">Email</h3>
                       <a
-                        href="mailto:info@alpha-bridge.net"
+                        href="mailto:info@beyondtechworld.com"
                         className="text-gray-700 hover:text-[#0066CC] transition-colors"
                       >
-                        info@alpha-bridge.net
+                        info@beyondtechworld.com
                       </a>
                     </div>
                   </div>
@@ -313,12 +319,12 @@ function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-[#003D82] mb-1">Website</h3>
                       <a
-                        href="https://www.alpha-bridge.net"
+                        href="https://www.beyondtechworld.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-700 hover:text-[#0066CC] transition-colors"
                       >
-                        www.alpha-bridge.net
+                        www.beyondtechworld.com
                       </a>
                     </div>
                   </div>

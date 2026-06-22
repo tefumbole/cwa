@@ -173,7 +173,7 @@ router.post('/', async (req, res) => {
     let effectiveEmail = email?.trim() || null;
     if (!effectiveEmail && formattedPhone) {
       const digits = formattedPhone.replace(/\D/g, '');
-      effectiveEmail = `c${digits}@customers.alpha-bridge.net`;
+      effectiveEmail = `c${digits}@customers.beyondtechworld.com`;
     }
     if (!effectiveEmail) {
       return res.status(400).json({ data: null, error: { message: 'Email or phone is required' } });

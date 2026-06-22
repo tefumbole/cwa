@@ -96,7 +96,7 @@ function EventRegistrationForm({ onSubmit, isSubmitting }) {
             id="email"
             name="email"
             type="email"
-            placeholder="info@alpha-bridge.net"
+            placeholder="info@beyondtechworld.com"
             value={formData.email}
             onChange={handleChange}
             className={errors.email ? "border-red-500" : ""}
@@ -122,7 +122,7 @@ function EventRegistrationForm({ onSubmit, isSubmitting }) {
         <Input
           id="companyName"
           name="companyName"
-          placeholder="Alpha Bridge Technologies Ltd"
+          placeholder="Beyond Company Ltd"
           value={formData.companyName}
           onChange={handleChange}
         />

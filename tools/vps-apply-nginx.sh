@@ -18,11 +18,13 @@ install -m 644 "$NGINX_SRC/000-default-reject.conf" "$AVAILABLE/000-default-reje
 install -m 644 "$NGINX_SRC/alphabridge.conf" "$AVAILABLE/alphabridge"
 install -m 644 "$NGINX_SRC/manukeza.conf" "$AVAILABLE/manukeza"
 install -m 644 "$NGINX_SRC/newvision.conf" "$AVAILABLE/newvision"
+install -m 644 "$NGINX_SRC/beyondtechworld.conf" "$AVAILABLE/beyondtechworld"
 install -m 644 "$NGINX_SRC/okusoma.conf" "$AVAILABLE/okusoma.com"
 
 echo "==> Enable sites (symlinks)"
 ln -sf "$AVAILABLE/000-default-reject" "$ENABLED/000-default-reject"
 ln -sf "$AVAILABLE/alphabridge" "$ENABLED/alphabridge"
+ln -sf "$AVAILABLE/beyondtechworld" "$ENABLED/beyondtechworld"
 ln -sf "$AVAILABLE/manukeza" "$ENABLED/manukeza"
 ln -sf "$AVAILABLE/newvision" "$ENABLED/newvision"
 ln -sf "$AVAILABLE/okusoma.com" "$ENABLED/okusoma.com"
@@ -52,6 +54,7 @@ check_site() {
 }
 
 check_site alpha-bridge.net "Alpha Bridge"
+check_site beyondtechworld.com "Beyond Company"
 check_site manukeza.com "Manukeza"
 check_site newvisiontraveltours.com "New Vision"
 check_site okusoma.com "School Management"

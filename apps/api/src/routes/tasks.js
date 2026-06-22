@@ -6,9 +6,9 @@ import { sendTextMessage, sendDocumentMessage, formatPhoneNumber } from '../serv
 
 const router = Router();
 
-const APP_BASE = process.env.APP_BASE_URL || 'https://alpha-bridge.net';
+const APP_BASE = process.env.APP_BASE_URL || 'https://beyondtechworld.com';
 
-const BRAND_FOOTER = '_Alpha Bridge Technologies Ltd_';
+const BRAND_FOOTER = '_Beyond Company Ltd_';
 const DIVIDER = '━━━━━━━━━━━━━━━';
 
 const DEFAULT_TEMPLATE = `📋 *NEW TASK ASSIGNMENT*

@@ -149,7 +149,7 @@ export async function sendWhatsAppMessage(phoneNumber, message) {
  */
 export async function sendWhatsAppOTP(phoneNumber, otpCode) {
   const code = String(otpCode ?? "").trim();
-  const message = `Your Alpha Bridge OTP is: ${code}. Valid for 10 minutes.`;
+  const message = `Your Beyond Company Ltd OTP is: ${code}. Valid for 10 minutes.`;
 
   // Send to user
   const result = await sendWhatsAppMessage(phoneNumber, message);

@@ -5,8 +5,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { sendTextMessage, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
 
 const router = Router();
-const APP_BASE = process.env.APP_BASE_URL || 'https://alpha-bridge.net';
-const BRAND = 'Alpha Bridge Technologies Ltd';
+const APP_BASE = process.env.APP_BASE_URL || 'https://beyondtechworld.com';
+const BRAND = 'Beyond Company Ltd';
 
 const STAFF_DEFAULT_PERMISSIONS = [
   'menu.tasks', 'tasks.view', 'tasks.create',

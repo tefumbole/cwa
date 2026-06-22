@@ -160,7 +160,7 @@ export async function createAdminAccount(adminData) {
       try {
         await sendWhatsAppMessage(
           adminData.phone,
-          `Welcome to Alpha Bridge Technologies Admin Portal! 🎉\n\nYour admin account has been created.\n\nEmail: ${adminData.email}\nTemporary password: ${tempPassword}\n\nPlease log in and change your password immediately.\n\nBest regards,\nAlpha Bridge Technologies Team`
+          `Welcome to Beyond Company Ltd Admin Portal! 🎉\n\nYour admin account has been created.\n\nEmail: ${adminData.email}\nTemporary password: ${tempPassword}\n\nPlease log in and change your password immediately.\n\nBest regards,\nBeyond Company Ltd Team`
         );
         console.log('WhatsApp notification sent');
       } catch (whatsappError) {
@@ -292,7 +292,7 @@ export async function createUserWithRole(userData) {
       try {
         await sendWhatsAppMessage(
           userData.phone,
-          `Welcome to Alpha Bridge Technologies! Your account has been created.\n\nEmail: ${userData.email}\nTemporary password: ${tempPassword}\n\nPlease log in to access your dashboard.`
+          `Welcome to Beyond Company Ltd! Your account has been created.\n\nEmail: ${userData.email}\nTemporary password: ${tempPassword}\n\nPlease log in to access your dashboard.`
         );
         console.log('WhatsApp notification sent');
       } catch (whatsappError) {

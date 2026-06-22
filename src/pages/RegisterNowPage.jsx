@@ -26,7 +26,7 @@ const RegisterNowPage = () => {
                         transition={{ delay: 0.1 }}
                         className="text-lg md:text-xl text-blue-100 max-w-2xl"
                     >
-                        Join Alpha Bridge Technologies and elevate your skills with our premium courses. Select your courses below to get started.
+                        Join Beyond Company Ltd and elevate your skills with our premium courses. Select your courses below to get started.
                     </motion.p>
                 </div>
             </div>

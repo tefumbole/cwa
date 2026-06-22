@@ -6,13 +6,14 @@ import BrandLogo from '@/components/BrandLogo';
 import { getSystemSettings } from '@/services/settingsService';
 import { useSiteLabel } from '@/hooks/useSiteLabel';
 import { usePageT } from '@/hooks/useSiteLabel';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, WEBSITE_HOST, WHATSAPP_PHONE } from '@/constants/branding';
 
 function Footer() {
   const tl = useSiteLabel();
   const tf = usePageT('footer');
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState({
-      developed_by: 'Alpha Bridge Technologies Ltd',
+      developed_by: 'Beyond Company Ltd',
       copyright_text: 'All rights reserved',
       logo_url: null
   });
@@ -60,8 +61,8 @@ function Footer() {
                 />
               </Link>
               <div className="text-2xl font-bold">
-                <span className="text-[#D4AF37]">Alpha Bridge</span>
-                <span className="block text-lg">Technologies Ltd</span>
+                <span className="text-[#D4AF37]">Beyond Company</span>
+                <span className="block text-lg">Ltd</span>
               </div>
             </div>
             <p className="text-gray-300 text-sm mb-4">
@@ -94,27 +95,27 @@ function Footer() {
                  />
               </div>
               <a
-                href="tel:+250794006160"
+                href={`tel:${WHATSAPP_PHONE}`}
                 className="flex items-center space-x-3 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
               >
                 <Phone className="w-5 h-5 flex-shrink-0" />
-                <span>+250 794 006 160</span>
+                <span>{CONTACT_PHONE_DISPLAY}</span>
               </a>
               <a
-                href="mailto:info@alpha-bridge.net"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="flex items-center space-x-3 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
               >
                 <Mail className="w-5 h-5 flex-shrink-0" />
-                <span>info@alpha-bridge.net</span>
+                <span>{CONTACT_EMAIL}</span>
               </a>
               <a
-                href="https://www.alpha-bridge.net"
+                href={`https://${WEBSITE_HOST}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-3 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
               >
                 <Globe className="w-5 h-5 flex-shrink-0" />
-                <span>www.alpha-bridge.net</span>
+                <span>{WEBSITE_HOST}</span>
               </a>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { X, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWhatsApp } from '@/context/WhatsAppContext';
 import { Button } from '@/components/ui/button';
+import { COMPANY_NAME, whatsAppUrl } from '@/constants/branding';
 
 function WhatsAppModal() {
   const { isModalOpen, closeModal } = useWhatsApp();
@@ -45,10 +46,8 @@ function WhatsAppModal() {
     const dService = service || '[Service]';
     const dMessage = message || '[Message]';
 
-    const whatsappMessage = `Hello Alpha Bridge, my name is ${dName}. I'm interested in ${dService}. My phone: ${dPhone}. My email: ${dEmail}. Message: ${dMessage}`;
-    const encodedMessage = encodeURIComponent(whatsappMessage);
-    // Task 8: Updated WhatsApp Number to Cameroon (+237 675-321-739)
-    const whatsappUrl = `https://wa.me/237675321739?text=${encodedMessage}`;
+    const whatsappMessage = `Hello ${COMPANY_NAME}, my name is ${dName}. I'm interested in ${dService}. My phone: ${dPhone}. My email: ${dEmail}. Message: ${dMessage}`;
+    const whatsappUrl = whatsAppUrl(whatsappMessage);
 
     window.open(whatsappUrl, '_blank');
     closeModal();
@@ -80,7 +79,7 @@ function WhatsAppModal() {
               <div className="bg-navy px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2 text-white">
                   <MessageCircle className="w-6 h-6 text-gold" />
-                  <h3 className="text-lg font-bold">Chat with Alpha Bridge</h3>
+                  <h3 className="text-lg font-bold">Chat with Beyond Company Ltd</h3>
                 </div>
                 <button 
                   onClick={closeModal}

@@ -12,8 +12,8 @@ const AnnouncementSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    companyName: 'Alpha Bridge Technologies Ltd',
-    defaultHeader: 'Alpha Bridge Technologies Ltd',
+    companyName: 'Beyond Company Ltd',
+    defaultHeader: 'Beyond Company Ltd',
     serialPrefix: 'ABT/ANN',
     nextSerial: 1,
     serialPadding: 6,

@@ -18,7 +18,7 @@ Reason: {LEAVE_REASON}
 
 This leave has been approved by management.
 
-For Alpha Bridge Technologies Ltd
+For Beyond Company Ltd
 HR Department`,
     is_default: 1,
   },
@@ -39,7 +39,7 @@ We hereby authorise {STAFF_NAME} (Employee No. {STAFF_CODE}, {POSITION}) to be a
 
 This permission is granted subject to company policy.
 
-For Alpha Bridge Technologies Ltd
+For Beyond Company Ltd
 HR Department`,
     is_default: 1,
   },
@@ -56,13 +56,13 @@ TO WHOM IT MAY CONCERN
 
 EMPLOYMENT CONFIRMATION
 
-This letter confirms that {STAFF_NAME} (Employee No. {STAFF_CODE}) is employed by Alpha Bridge Technologies Ltd in the capacity of {POSITION}, {CATEGORY} staff, since {HIRE_DATE}.
+This letter confirms that {STAFF_NAME} (Employee No. {STAFF_CODE}) is employed by Beyond Company Ltd in the capacity of {POSITION}, {CATEGORY} staff, since {HIRE_DATE}.
 
 {STAFF_NAME} is a person of good conduct and continues to be in our employment at the date of this letter.
 
 Should you require further information, please contact our HR department.
 
-For Alpha Bridge Technologies Ltd
+For Beyond Company Ltd
 HR Department`,
     is_default: 1,
   },
@@ -77,13 +77,13 @@ Date: {DATE}
 
 ATTESTATION OF WORK
 
-We, Alpha Bridge Technologies Ltd, hereby attest that {STAFF_NAME}, Employee No. {STAFF_CODE}, has worked with our organisation as {POSITION} from {HIRE_DATE} to the present date.
+We, Beyond Company Ltd, hereby attest that {STAFF_NAME}, Employee No. {STAFF_CODE}, has worked with our organisation as {POSITION} from {HIRE_DATE} to the present date.
 
 During this period, {STAFF_NAME} has performed assigned duties satisfactorily and maintains a good standing with the company.
 
 This attestation is issued upon request for official purposes.
 
-For Alpha Bridge Technologies Ltd
+For Beyond Company Ltd
 HR Department`,
     is_default: 1,
   },

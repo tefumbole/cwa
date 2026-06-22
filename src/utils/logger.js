@@ -1,5 +1,5 @@
 /**
- * Centralized logging utility for Alpha Bridge
+ * Centralized logging utility for Beyond Company Ltd
  * Ensures consistent log formatting and prevents sensitive data leaks.
  */
 

@@ -135,7 +135,7 @@ export const sendAccountCredentialsEmail = async (email, name, password) => {
         const { error } = await supabase.functions.invoke('send-email', {
             body: {
                 to: email,
-                subject: 'Your Alpha Bridge Applicant Account',
+                subject: 'Your Beyond Company Ltd Applicant Account',
                 templateType: 'account_credentials',
                 data: {
                     name,

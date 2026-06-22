@@ -8,7 +8,7 @@ import { supabase } from '@/lib/customSupabaseClient';
 
 // Admin credentials (hardcoded for security)
 const ADMIN_PHONE = '+237675321739';
-const ADMIN_EMAIL = 'admin@alpha-bridge.net';
+const ADMIN_EMAIL = 'admin@beyondtechworld.com';
 
 /**
  * Get admin account from profiles table
