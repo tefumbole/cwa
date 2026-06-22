@@ -19,24 +19,24 @@ TGT_NAME="${TGT_DB_NAME:-u152889834_beyondworld}"
 
 mkdir -p "$BACKUP_DIR"
 
+dump_db() {
+  local host="$1" user="$2" pass="$3" name="$4" out="$5"
+  mysqldump -h "$host" -u "$user" -p"$pass" "$name" \
+    --single-transaction --routines --triggers \
+    > "$out" 2>/dev/null \
+    || mysqldump -h "$host" -u "$user" -p"$pass" "$name" \
+    --single-transaction \
+    > "$out"
+}
+
 echo "==> 1. Backup current Beyond database (if any tables exist)..."
 if mysql -h "$TGT_HOST" -u "$TGT_USER" -p"$TGT_PASS" "$TGT_NAME" -e "SHOW TABLES" 2>/dev/null | grep -q .; then
-  mysqldump -h "$TGT_HOST" -u "$TGT_USER" -p"$TGT_PASS" "$TGT_NAME" \
-    --single-transaction --set-gtid-purged=OFF --column-statistics=0 \
-    > "$BACKUP_DIR/beyondworld-before-import-${STAMP}.sql" 2>/dev/null \
-    || mysqldump -h "$TGT_HOST" -u "$TGT_USER" -p"$TGT_PASS" "$TGT_NAME" \
-    --single-transaction --set-gtid-purged=OFF \
-    > "$BACKUP_DIR/beyondworld-before-import-${STAMP}.sql"
+  dump_db "$TGT_HOST" "$TGT_USER" "$TGT_PASS" "$TGT_NAME" "$BACKUP_DIR/beyondworld-before-import-${STAMP}.sql"
   echo "    Saved backup to $BACKUP_DIR/beyondworld-before-import-${STAMP}.sql"
 fi
 
 echo "==> 2. Dump Alpha Bridge database ($SRC_NAME)..."
-mysqldump -h "$SRC_HOST" -u "$SRC_USER" -p"$SRC_PASS" "$SRC_NAME" \
-  --single-transaction --set-gtid-purged=OFF --routines --triggers --column-statistics=0 \
-  > "$DUMP" 2>/dev/null \
-  || mysqldump -h "$SRC_HOST" -u "$SRC_USER" -p"$SRC_PASS" "$SRC_NAME" \
-  --single-transaction --set-gtid-purged=OFF --routines --triggers \
-  > "$DUMP"
+dump_db "$SRC_HOST" "$SRC_USER" "$SRC_PASS" "$SRC_NAME" "$DUMP"
 
 BYTES=$(wc -c < "$DUMP" | tr -d ' ')
 echo "    Dump size: $(du -h "$DUMP" | cut -f1) ($BYTES bytes)"
