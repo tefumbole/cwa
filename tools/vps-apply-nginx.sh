@@ -18,7 +18,12 @@ install -m 644 "$NGINX_SRC/000-default-reject.conf" "$AVAILABLE/000-default-reje
 install -m 644 "$NGINX_SRC/alphabridge.conf" "$AVAILABLE/alphabridge"
 install -m 644 "$NGINX_SRC/manukeza.conf" "$AVAILABLE/manukeza"
 install -m 644 "$NGINX_SRC/newvision.conf" "$AVAILABLE/newvision"
-install -m 644 "$NGINX_SRC/beyondtechworld.conf" "$AVAILABLE/beyondtechworld"
+if [[ -f /etc/letsencrypt/live/beyondtechworld.com/fullchain.pem ]]; then
+  install -m 644 "$NGINX_SRC/beyondtechworld.conf" "$AVAILABLE/beyondtechworld"
+else
+  echo "    beyondtechworld.com SSL cert missing — using HTTP-only config until certbot succeeds"
+  install -m 644 "$NGINX_SRC/beyondtechworld-http.conf" "$AVAILABLE/beyondtechworld"
+fi
 install -m 644 "$NGINX_SRC/okusoma.conf" "$AVAILABLE/okusoma.com"
 
 echo "==> Enable sites (symlinks)"
@@ -54,7 +59,7 @@ check_site() {
 }
 
 check_site alpha-bridge.net "Alpha Bridge"
-check_site beyondtechworld.com "Beyond Company"
+check_site beyondtechworld.com "Beyond Company" || echo "WARN beyondtechworld.com check skipped (DNS/SSL may be pending)"
 check_site manukeza.com "Manukeza"
 check_site newvisiontraveltours.com "New Vision"
 check_site okusoma.com "School Management"
