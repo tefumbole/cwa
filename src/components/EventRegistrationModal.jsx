@@ -33,7 +33,7 @@ function EventRegistrationModal({ isOpen, onClose }) {
       console.log('-----------------------');
 
       // 2. Send via WhatsApp (Client-side execution)
-      const whatsappMessage = `Hello Beyond Company Ltd, I'm registering for the Grand Launching event on April 5th 2026. Name: ${data.fullName}, Address: ${data.address}, Role: ${finalRole}. Please confirm my registration.`;
+      const whatsappMessage = `Hello Beyond Enterprise, I'm registering for the Grand Launching event on April 5th 2026. Name: ${data.fullName}, Address: ${data.address}, Role: ${finalRole}. Please confirm my registration.`;
       const encodedMessage = encodeURIComponent(whatsappMessage);
       const whatsappUrl = `https://wa.me/237675321739?text=${encodedMessage}`;
       

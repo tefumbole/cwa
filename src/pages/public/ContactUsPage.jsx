@@ -45,7 +45,7 @@ const ContactUsPage = () => {
   };
 
   const handleWhatsAppClick = () => {
-    window.open(`https://wa.me/237675321739?text=${encodeURIComponent("Hello Beyond Company Ltd, I would like to inquire about...")}`, '_blank');
+    window.open(`https://wa.me/237675321739?text=${encodeURIComponent("Hello Beyond Enterprise, I would like to inquire about...")}`, '_blank');
   };
 
   return (
@@ -56,7 +56,7 @@ const ContactUsPage = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#003D82] mb-4">Get in Touch</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Have a question, need assistance, or want to explore partnership opportunities? We're here to help. Reach out to the Beyond Company Ltd team today.
+            Have a question, need assistance, or want to explore partnership opportunities? We're here to help. Reach out to the Beyond Enterprise team today.
           </p>
         </div>
 
@@ -70,7 +70,7 @@ const ContactUsPage = () => {
                     <MapPin className="w-5 h-5" /> Office Location
                 </h3>
                 <div className="space-y-3 text-gray-600">
-                    <p className="font-semibold text-gray-800">Beyond Company Ltd.</p>
+                    <p className="font-semibold text-gray-800">Beyond Enterprise.</p>
                     <p>Norrsken House Kigali</p>
                     <p>Kigali, Rwanda</p>
                 </div>

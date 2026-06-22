@@ -116,15 +116,15 @@ const PendingShareApprovalsPage = () => {
       const pricePerShare = booking.investment_amount / booking.shares_assigned;
       const whatsappMessage = `Dear ${booking.full_name || 'Shareholder'},
 
-Your share booking request with Beyond Company Ltd has been approved.
+Your share booking request with Beyond Enterprise has been approved.
 
 Approved Shares: ${finalShares}
 Share Price: USD ${pricePerShare.toFixed(2)}
 Total Investment Value: USD ${finalTotal.toFixed(2)}
 
-Thank you for choosing to become part of Beyond Company Ltd.
+Thank you for choosing to become part of Beyond Enterprise.
 
-Beyond Company Ltd - The Technological Bridge to Kigali`;
+Beyond Enterprise - The Technological Bridge to Kigali`;
 
       console.log('[PENDING] Sending WhatsApp notification to:', booking.full_phone_number);
       

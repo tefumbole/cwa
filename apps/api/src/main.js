@@ -81,7 +81,7 @@ await checkDatabaseConnection();
 await seedAdminUser();
 
 app.listen(PORT, () => {
-  console.log(`Beyond Company Ltd API listening on port ${PORT}`);
+  console.log(`Beyond Enterprise API listening on port ${PORT}`);
   console.log(`Uploads: ${uploadDir}`);
   console.log(`Wasender: ${process.env.WASENDER_API_KEY ? 'configured' : 'NOT configured'}`);
 });

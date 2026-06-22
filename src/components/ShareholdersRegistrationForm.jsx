@@ -19,10 +19,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 const SHAREHOLDER_AGREEMENT_TEXT = `
 SHAREHOLDER AGREEMENT
 
-This Shareholder Agreement ("Agreement") is entered into between Beyond Company Ltd ("Company") and the undersigned shareholder ("Shareholder").
+This Shareholder Agreement ("Agreement") is entered into between Beyond Enterprise ("Company") and the undersigned shareholder ("Shareholder").
 
 1. SHARE OWNERSHIP
-The Shareholder agrees to purchase shares in Beyond Company Ltd at the agreed price per share.
+The Shareholder agrees to purchase shares in Beyond Enterprise at the agreed price per share.
 
 2. RIGHTS AND OBLIGATIONS
 - Shareholders have voting rights proportional to their share ownership
@@ -473,7 +473,7 @@ const ShareholdersRegistrationForm = () => {
         <CardHeader className="bg-gradient-to-r from-[#003D82] to-[#002855] text-white">
           <CardTitle className="text-2xl">{tForm('form_title', 'Become a Shareholder')}</CardTitle>
           <CardDescription className="text-blue-100">
-            {tForm('form_subtitle', 'Book your shares in Beyond Company Ltd (No login required)')}
+            {tForm('form_subtitle', 'Book your shares in Beyond Enterprise (No login required)')}
           </CardDescription>
         </CardHeader>
 
@@ -588,7 +588,7 @@ const ShareholdersRegistrationForm = () => {
                     <Input 
                       id="company_name" 
                       name="company_name" 
-                      placeholder="Beyond Company Ltd"
+                      placeholder="Beyond Enterprise"
                       className="pl-10 bg-white text-gray-900"
                       value={formData.company_name}
                       onChange={handleChange}

@@ -3,10 +3,10 @@ import { randomUUID, randomBytes } from 'node:crypto';
 import { getPool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendTextMessage, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
+import { COMPANY_NAME as BRAND } from '../constants/branding.js';
 
 const router = Router();
 const APP_BASE = process.env.APP_BASE_URL || 'https://beyondtechworld.com';
-const BRAND = 'Beyond Company Ltd';
 
 const STAFF_DEFAULT_PERMISSIONS = [
   'menu.tasks', 'tasks.view', 'tasks.create',

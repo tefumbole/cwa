@@ -42,7 +42,7 @@ function TrainingsPage() {
   return (
     <>
       <Helmet>
-        <title>Professional IT Training Programs 2026 | Beyond Company Ltd</title>
+        <title>Professional IT Training Programs 2026 | Beyond Enterprise</title>
         <meta
           name="description"
           content="Advanced technical training in AI, Cloud Computing, Cybersecurity, IT Consultancy, VoIP, Network Infrastructure, and CCTV Systems. Professional hands-on learning in Kigali, Rwanda."
@@ -290,7 +290,7 @@ function TrainingsPage() {
             Ready to Transform Your Career?
           </h2>
           <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-            Join thousands of professionals who have upgraded their skills with Beyond Company Ltd
+            Join thousands of professionals who have upgraded their skills with Beyond Enterprise
           </p>
           
           <div className="flex flex-col items-center space-y-6">

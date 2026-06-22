@@ -13,7 +13,7 @@ import {
 } from '@/services/announcementSettingsService';
 import { fetchShareholders, fetchStudents, fetchSystemUsers } from '@/services/recipientService';
 
-const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || 'Beyond Company Ltd';
+const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || 'Beyond Enterprise';
 const SEND_DELAY_MS = 6000;
 const STORAGE_BUCKET = 'announcement-attachments';
 

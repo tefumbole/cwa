@@ -3,12 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../db/pool.js';
 import { optionalAuth, requireAuth } from '../middleware/auth.js';
 import { sendTextMessage, sendDocumentMessage, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
+import { COMPANY_NAME } from '../constants/branding.js';
 
 const router = Router();
 
 const APP_BASE = process.env.APP_BASE_URL || 'https://beyondtechworld.com';
 
-const BRAND_FOOTER = '_Beyond Company Ltd_';
+const BRAND_FOOTER = `_${COMPANY_NAME}_`;
 const DIVIDER = '━━━━━━━━━━━━━━━';
 
 const DEFAULT_TEMPLATE = `📋 *NEW TASK ASSIGNMENT*

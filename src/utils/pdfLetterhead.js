@@ -14,7 +14,7 @@ export function getAgreementVerifyUrl(shareholderId) {
 }
 
 export function normalizeBrandingSettings(settings = {}) {
-  const appName = settings.application_name || 'Beyond Company Ltd';
+  const appName = settings.application_name || 'Beyond Enterprise';
 
   return {
     application_name: appName,

@@ -183,7 +183,7 @@ export const sendPendingAgreementViaWhatsApp = async (
     const { sharesCount, totalInvestment, referenceNumber } = details || {};
     const message = `Dear ${shareholderName},
 
-Thank you for submitting your shareholder agreement with Beyond Company Ltd.
+Thank you for submitting your shareholder agreement with Beyond Enterprise.
 
 Your signed agreement copy is attached in the next message.
 
@@ -194,7 +194,7 @@ Status: Pending Approval
 
 We will review your request and contact you shortly.
 
-Beyond Company Ltd
+Beyond Enterprise
 The Technological Bridge to Kigali`;
 
     const result = await sendDocumentBuffer(
@@ -225,15 +225,15 @@ export const sendPaymentConfirmationViaWhatsApp = async (shareholderPhone, share
     const { sharesCount, totalInvestment } = details || {};
     const message = `Dear ${shareholderName},
 
-Your payment for your Beyond Company Ltd share investment has been confirmed.
+Your payment for your Beyond Enterprise share investment has been confirmed.
 
 Payment Status: Paid
 Shares: ${sharesCount || 0}
 Total Investment: ${formatPrice(totalInvestment || 0)}
 
-Thank you for your investment. Welcome to Beyond Company Ltd!
+Thank you for your investment. Welcome to Beyond Enterprise!
 
-Beyond Company Ltd
+Beyond Enterprise
 The Technological Bridge to Kigali`;
 
     const { sendWhatsAppMessage } = await import('@/services/wasenderapiService');
@@ -278,10 +278,10 @@ Investment Summary:
 
 Your signed shareholder agreement PDF is attached in the next message.
 
-Thank you for investing with Beyond Company Ltd.
+Thank you for investing with Beyond Enterprise.
 
 Best regards,
-Beyond Company Ltd Team`;
+Beyond Enterprise Team`;
 
     const result = await sendDocumentBuffer(
       formattedPhone,

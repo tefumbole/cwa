@@ -6,14 +6,14 @@ import BrandLogo from '@/components/BrandLogo';
 import { getSystemSettings } from '@/services/settingsService';
 import { useSiteLabel } from '@/hooks/useSiteLabel';
 import { usePageT } from '@/hooks/useSiteLabel';
-import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, WEBSITE_HOST, WHATSAPP_PHONE } from '@/constants/branding';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, WEBSITE_HOST, WHATSAPP_PHONE, COMPANY_NAME, COMPANY_NAME_SHORT } from '@/constants/branding';
 
 function Footer() {
   const tl = useSiteLabel();
   const tf = usePageT('footer');
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState({
-      developed_by: 'Beyond Company Ltd',
+      developed_by: COMPANY_NAME,
       copyright_text: 'All rights reserved',
       logo_url: null
   });
@@ -54,15 +54,15 @@ function Footer() {
             <div className="mb-4">
               <Link to="/" className="inline-block mb-2 bg-transparent">
                 <BrandLogo
-                  alt="Company logo"
+                  alt={COMPANY_NAME}
                   className="h-[50px] w-auto object-contain hover:scale-105 transition-all duration-300"
                   variant="onDark"
                   src={settings.logo_url || undefined}
+                  preferSystemLogo={!settings.logo_url}
                 />
               </Link>
               <div className="text-2xl font-bold">
-                <span className="text-[#D4AF37]">Beyond Company</span>
-                <span className="block text-lg">Ltd</span>
+                <span className="text-[#D4AF37]">{COMPANY_NAME_SHORT}</span>
               </div>
             </div>
             <p className="text-gray-300 text-sm mb-4">

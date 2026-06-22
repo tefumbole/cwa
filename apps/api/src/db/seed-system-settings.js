@@ -43,8 +43,8 @@ export async function seedSystemSettings(pool) {
     ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       randomUUID(),
-      'Beyond Company Ltd',
-      '© Beyond Company Ltd',
+      'Beyond Enterprise',
+      '© Beyond Enterprise',
       1000,
       100,
       0,

@@ -36,7 +36,7 @@ const FAQAccordion = () => {
     },
     {
       question: "How often are financial reports shared?",
-      answer: "Beyond Company Ltd commits to annual financial reviews and regular shareholder communication for transparency."
+      answer: "Beyond Enterprise commits to annual financial reviews and regular shareholder communication for transparency."
     },
     {
       question: "Can I transfer my shares to someone else?",

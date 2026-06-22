@@ -87,7 +87,7 @@ function ContactPage() {
     }
 
     // Create email body
-    const subject = 'New Website Inquiry — Beyond Company Ltd';
+    const subject = 'New Website Inquiry — Beyond Enterprise';
     const body = `Name: ${formData.name}%0D%0APhone: ${formData.phone}%0D%0AEmail: ${formData.email}%0D%0AService: ${formData.service}%0D%0A%0D%0AMessage:%0D%0A${formData.message}`;
     const mailtoUrl = `mailto:info@beyondtechworld.com?subject=${encodeURIComponent(subject)}&body=${body}`;
 
@@ -104,10 +104,10 @@ function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Us | Beyond Company Ltd</title>
+        <title>Contact Us | Beyond Enterprise</title>
         <meta
           name="description"
-          content="Get in touch with Beyond Company Ltd. Contact us via WhatsApp, email, or our contact form for IT consultancy and technology solutions in Kigali."
+          content="Get in touch with Beyond Enterprise. Contact us via WhatsApp, email, or our contact form for IT consultancy and technology solutions in Kigali."
         />
       </Helmet>
 

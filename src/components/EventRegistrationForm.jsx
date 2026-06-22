@@ -122,7 +122,7 @@ function EventRegistrationForm({ onSubmit, isSubmitting }) {
         <Input
           id="companyName"
           name="companyName"
-          placeholder="Beyond Company Ltd"
+          placeholder="Beyond Enterprise"
           value={formData.companyName}
           onChange={handleChange}
         />

@@ -88,7 +88,7 @@ const ShareholderConfirmationPage = () => {
           </div>
           <h1 className="text-3xl font-bold text-[#003D82] mb-2">Application Submitted!</h1>
           <p className="text-lg text-gray-600">
-            Thank you for your investment interest in Beyond Company Ltd.
+            Thank you for your investment interest in Beyond Enterprise.
           </p>
         </div>
 

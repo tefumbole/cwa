@@ -3,9 +3,9 @@ import { randomUUID, randomBytes } from 'node:crypto';
 import { getPool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendTextMessage, formatPhoneNumber } from '../services/wasenderWhatsAppService.js';
+import { COMPANY_NAME as BRAND } from '../constants/branding.js';
 
 const router = Router();
-const BRAND = 'Beyond Company Ltd';
 
 router.use(requireAuth);
 

@@ -107,7 +107,7 @@ const ShareholdersAgreementPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0a192f] text-white">
-      <Helmet><title>Shareholders Agreement | Beyond Company Ltd</title></Helmet>
+      <Helmet><title>Shareholders Agreement | Beyond Enterprise</title></Helmet>
 
       {/* Hero Section */}
       <div className="relative pt-20 pb-12 overflow-hidden">

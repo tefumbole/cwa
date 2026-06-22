@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import BrandLogo from '@/components/BrandLogo';
 import { usePageT } from '@/hooks/useSiteLabel';
 import { useSiteLabel } from '@/hooks/useSiteLabel';
+import { COMPANY_NAME, HERO_IMAGE_URL } from '@/constants/branding';
 
 function HomePage() {
   const th = usePageT('home');
@@ -97,7 +98,7 @@ function HomePage() {
   const testimonials = [{
     name: 'Client A',
     role: tl('home', 'CEO, Tech Company'),
-    content: tl('home', 'Beyond Company Ltd delivered exceptional networking solutions for our office. Professional and reliable.')
+    content: tl('home', 'Beyond Enterprise delivered exceptional networking solutions for our office. Professional and reliable.')
   }, {
     name: 'Client B',
     role: tl('home', 'Event Organizer'),
@@ -110,8 +111,8 @@ function HomePage() {
 
   return <>
       <Helmet>
-        <title>Beyond Company Ltd | IT Consultancy & AV Solutions in Kigali</title>
-        <meta name="description" content="Beyond Company Ltd — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions in Kigali, Rwanda. Chat with us on WhatsApp for a quote." />
+        <title>{COMPANY_NAME} | IT Consultancy & AV Solutions</title>
+        <meta name="description" content={`${COMPANY_NAME} — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions. Chat with us on WhatsApp for a quote.`} />
       </Helmet>
 
       {/* Hero Section */}
@@ -119,7 +120,7 @@ function HomePage() {
         <motion.div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://horizons-cdn.hostinger.com/81ef3422-3855-479e-bfe8-28a4ceb0df39/dd5d2c583a8b091d7529cd8c4e5ff3ea.png)',
+            backgroundImage: `url(${HERO_IMAGE_URL})`,
             backgroundPosition: 'center',
             backgroundSize: 'cover',
           }}
@@ -159,9 +160,10 @@ function HomePage() {
                transition={{ duration: 0.8, delay: 0.2 }}
              >
                <BrandLogo
-                 alt="Beyond Company Ltd"
-                 className="h-24 md:h-32 w-auto object-contain mb-6 drop-shadow-2xl"
+                 alt={COMPANY_NAME}
+                 className="h-28 md:h-36 w-auto object-contain mb-6 drop-shadow-2xl"
                  variant="onDark"
+                 preferSystemLogo={false}
                />
              </motion.div>
 
@@ -171,7 +173,7 @@ function HomePage() {
                transition={{ duration: 0.7, delay: 0.35 }}
                className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight"
              >
-               {th('hero_title_line1', 'Your Technology Bridge to')} <motion.span className="text-[#D4AF37] inline-block" animate={{ scale: [1, 1.03, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>{th('hero_title_highlight', 'Kigali')}</motion.span>
+               {th('hero_title_line1', COMPANY_NAME)}
              </motion.h1>
              <motion.p
                initial={{ opacity: 0 }}
@@ -285,7 +287,7 @@ function HomePage() {
       <section className="py-16 bg-[#003D82]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">{th('why_alpha_bridge', 'Why Beyond Company Ltd?')}</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{th('why_alpha_bridge', 'Why Beyond Enterprise?')}</h2>
             <p className="text-xl text-gray-300">{th('why_alpha_bridge_subtitle', 'Excellence in every solution we deliver')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

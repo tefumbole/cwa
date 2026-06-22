@@ -59,7 +59,7 @@ check_site() {
 }
 
 check_site alpha-bridge.net "Alpha Bridge"
-check_site beyondtechworld.com "Beyond Company" || echo "WARN beyondtechworld.com check skipped (DNS/SSL may be pending)"
+check_site beyondtechworld.com "Beyond Enterprise" || echo "WARN beyondtechworld.com check skipped (DNS/SSL may be pending)"
 check_site manukeza.com "Manukeza"
 check_site newvisiontraveltours.com "New Vision"
 check_site okusoma.com "School Management"

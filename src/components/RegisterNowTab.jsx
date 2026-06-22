@@ -26,7 +26,7 @@ const RegisterNowTab = () => {
         client_name: 'Sr. Engr. Mbole',
         client_email: 'info@beyondtechworld.com',
         client_phone: '+237 675 321 739',
-        company_name: 'Beyond Company Ltd.'
+        company_name: 'Beyond Enterprise.'
     });
     const [submitting, setSubmitting] = useState(false);
     const [successId, setSuccessId] = useState(null);

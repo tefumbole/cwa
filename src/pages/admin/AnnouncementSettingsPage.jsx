@@ -12,8 +12,8 @@ const AnnouncementSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    companyName: 'Beyond Company Ltd',
-    defaultHeader: 'Beyond Company Ltd',
+    companyName: 'Beyond Enterprise',
+    defaultHeader: 'Beyond Enterprise',
     serialPrefix: 'ABT/ANN',
     nextSerial: 1,
     serialPadding: 6,

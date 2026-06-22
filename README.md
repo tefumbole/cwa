@@ -1,6 +1,8 @@
-# Beyond Company Ltd (BeyondTechWorld)
+# Beyond Enterprise (BeyondTechWorld)
 
-Web application for **Beyond Company Ltd**, deployed at [beyondtechworld.com](https://beyondtechworld.com).
+Web application for **Beyond Enterprise**, deployed at [beyondtechworld.com](https://beyondtechworld.com).
+
+Alpha Bridge runs separately at [alpha-bridge.net](https://alpha-bridge.net) on the same VPS (port 3003).
 
 ## Local development
 
@@ -8,23 +10,34 @@ Web application for **Beyond Company Ltd**, deployed at [beyondtechworld.com](ht
 npm run dev:local
 ```
 
-## Deploy to VPS (beyondtechworld.com)
+## VPS ports
 
-On the VPS:
+| Site | Domain | API port | PM2 process | Web root |
+|------|--------|----------|-------------|----------|
+| Alpha Bridge | alpha-bridge.net | 3003 | alphabridge-api | /var/www/alphabridge |
+| Beyond Enterprise | beyondtechworld.com | 3004 | beyondtechworld-api | /var/www/beyondtechworld |
 
-```bash
-cd /var/www/beyondtechworld
-bash tools/deploy-beyondtechworld-vps.sh
-```
-
-From your Mac (after pushing to GitHub):
+## Deploy
 
 ```bash
+# Alpha Bridge
+ssh myvps "cd /var/www/alphabridge && git pull && bash tools/deploy-alphabridge-vps.sh"
+
+# Beyond Enterprise
 ssh myvps "cd /var/www/beyondtechworld && git pull && bash tools/deploy-beyondtechworld-vps.sh"
 ```
 
+## Beyond Enterprise database (separate from Alpha Bridge)
+
+Create in Hostinger hPanel → Databases → MySQL:
+
+- Database: `beyondtechworld` → `u152889834_beyondtechworld`
+- User: `u152889834_beyondtechworld` with full privileges
+- Remote MySQL: allow VPS IP `187.124.2.238`
+
+Then on VPS: copy `apps/api/.env.beyondtechworld.example` → `apps/api/.env` and run `bash tools/setup-beyondtechworld-db.sh`.
+
 ## Branding
 
-- Company name: **Beyond Company Ltd**
-- WhatsApp contact: **+237 675 321 739**
-- Configure via `.env`: `VITE_COMPANY_NAME`, `VITE_ADMIN_PHONE_NUMBER`, `VITE_SITE_URL`
+- **Beyond Enterprise**: logo `/branding/beyond-logo.png`, hero `/branding/beyond-hero.png`
+- Override via `.env`: `VITE_COMPANY_NAME`, `VITE_LOGO_URL`, `VITE_HERO_IMAGE_URL`, `VITE_ADMIN_PHONE_NUMBER`

@@ -153,7 +153,7 @@ export const sendRegistrationConfirmation = async (registrationData, recipientEm
     'send-email',
     {
       to: recipientEmail,
-      subject: 'Course Registration Confirmation - Beyond Company Ltd',
+      subject: 'Course Registration Confirmation - Beyond Enterprise',
       templateType: 'registration_confirmation',
       data: {
         clientName: registrationData.client_name,
@@ -195,7 +195,7 @@ export const sendOTPEmail = async (email, otpCode) => {
     'send-email',
     {
       to: email,
-      subject: 'Your OTP Code - Beyond Company Ltd',
+      subject: 'Your OTP Code - Beyond Enterprise',
       htmlBody: `<h1>OTP Code</h1><p>${otpCode}</p>`,
       templateType: 'otp',
       data: { otpCode }

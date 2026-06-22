@@ -9,7 +9,7 @@ import { getSystemSettings } from '@/services/settingsService';
  * - Uses mix-blend-lighten on dark backgrounds so JPG black backgrounds disappear
  */
 const BrandLogo = ({
-  alt = 'Beyond Company Ltd',
+  alt = 'Beyond Enterprise',
   className = 'h-[40px] md:h-[50px] lg:h-[60px] w-auto object-contain',
   variant = 'onDark',
   preferSystemLogo = true,

@@ -60,4 +60,4 @@ You have been assigned a new task:
 👉 Open this link to *Accept* or *Reject* your task:
 {login_link}
 
-_Beyond Company Ltd_`;
+_Beyond Enterprise_`;

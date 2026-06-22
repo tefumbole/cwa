@@ -1,5 +1,5 @@
 /**
- * Centralized logging utility for Beyond Company Ltd
+ * Centralized logging utility for Beyond Enterprise
  * Ensures consistent log formatting and prevents sensitive data leaks.
  */
 

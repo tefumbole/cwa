@@ -85,10 +85,10 @@ router.post('/request', async (req, res) => {
     );
 
     const otpLabel = isCustomerSignup
-      ? 'Confirm your Beyond Company Ltd customer account.'
+      ? 'Confirm your Beyond Enterprise customer account.'
       : inviteToken
         ? 'Confirm your task assignment account.'
-        : 'Confirm your Beyond Company Ltd account.';
+        : 'Confirm your Beyond Enterprise account.';
     const sendResult = await sendOtp(formattedPhone, otpCode, otpLabel);
     if (!sendResult.success) {
       return res.status(502).json({ success: false, error: sendResult.error || 'Failed to send WhatsApp OTP' });

@@ -44,7 +44,7 @@ const GeneralSystemSettingsPage = () => {
 
         if (sys) {
           setSettings({
-            application_name: sys.application_name || 'Beyond Company Ltd',
+            application_name: sys.application_name || 'Beyond Enterprise',
             developed_by: sys.developed_by || '',
             copyright_text: sys.copyright_text || '',
           });

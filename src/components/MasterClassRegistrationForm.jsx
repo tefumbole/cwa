@@ -30,7 +30,7 @@ const MasterClassRegistrationForm = ({ onSubmit, isSubmitting, initialModule }) 
     modules: [],
     paymentPreference: 'pay_now', // pay_now or pay_later
     notes: '',
-    company: 'Beyond Company Ltd.'
+    company: 'Beyond Enterprise.'
   });
 
   const nameInputRef = useRef(null);

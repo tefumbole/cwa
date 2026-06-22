@@ -32,8 +32,8 @@ const SharesPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <Helmet>
-        <title>Invest in Shares | Beyond Company Ltd</title>
-        <meta name="description" content="Secure your shares in Beyond Company Ltd. Join our community of shareholders and be part of our growth story." />
+        <title>Invest in Shares | Beyond Enterprise</title>
+        <meta name="description" content="Secure your shares in Beyond Enterprise. Join our community of shareholders and be part of our growth story." />
       </Helmet>
 
       {/* Hero Section */}

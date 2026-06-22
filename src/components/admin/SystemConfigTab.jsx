@@ -355,7 +355,7 @@ const SystemConfigTab = () => {
                                 name="developed_by"
                                 value={config.developed_by}
                                 onChange={handleTextChange}
-                                placeholder="e.g. Beyond Company Ltd"
+                                placeholder="e.g. Beyond Enterprise"
                             />
                         </div>
 
