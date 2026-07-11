@@ -181,7 +181,10 @@ Route::get('/letters/scan/{id}', 'QRController@letterScan')->name('letters.scan'
 
 
 Auth::routes(['register' => false, 'reset' => false, 'verify' => false]);
-Route::get('/admin/login', 'Auth\LoginController@showLoginForm')->name('admin.login');
+// Admin login lives at /admin/login. Named `login` so the framework's default
+// auth redirects (Authenticate middleware, admin views) resolve here — the Beyond
+// portal below intentionally takes over the /login URI for public users.
+Route::get('/admin/login', 'Auth\LoginController@showLoginForm')->name('login');
 Route::post('/admin/login', 'Auth\LoginController@login');
 
 // Beyond portal login (must be after Auth::routes — Laravel 6 always registers /login in auth())
