@@ -30,6 +30,14 @@ export const DEFAULT_LOGO_URL =
 export const HERO_IMAGE_URL =
   import.meta.env.VITE_HERO_IMAGE_URL || '/branding/beyond-hero.png';
 
+/** Software developer credit — shown in footer/login. Phone links to WhatsApp. */
+export const DEVELOPER = {
+  name: 'Sr. Engr. Tefu R. Mbole',
+  phone: '+237675321739',
+  waMe: '237675321739',
+  whatsAppUrl: 'https://wa.me/237675321739',
+};
+
 export function whatsAppUrl(message) {
   const text = typeof message === 'string' ? message : '';
   return `https://wa.me/${WHATSAPP_WA_ME}?text=${encodeURIComponent(text)}`;

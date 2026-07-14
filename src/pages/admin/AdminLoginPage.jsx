@@ -10,6 +10,7 @@ import { Lock, User, Loader2, AlertCircle, ShieldCheck, ArrowRight, UserPlus } f
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_VERSION, APP_VERSION_LABEL } from '@/constants/appVersion';
+import { DEVELOPER } from '@/constants/branding';
 
 // Import Modals
 import AdminSignUpModal from '@/components/AdminSignUpModal';
@@ -196,6 +197,17 @@ const AdminLoginPage = () => {
           <div className="text-center space-y-2 pt-6 border-t border-gray-100 mt-6">
             <p className="text-xs text-gray-400 flex justify-center items-center gap-1">
               <Lock className="w-3 h-3" /> 2FA Enabled • IP Logged
+            </p>
+            <p className="text-[11px] text-gray-400">
+              Developed By: <span className="font-medium text-gray-500">{DEVELOPER.name}</span>{' '}
+              <a
+                href={DEVELOPER.whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#25D366] hover:underline font-semibold"
+              >
+                {DEVELOPER.phone}
+              </a>
             </p>
           </div>
         </div>

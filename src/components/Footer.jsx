@@ -6,7 +6,7 @@ import BrandLogo from '@/components/BrandLogo';
 import { getSystemSettings } from '@/services/settingsService';
 import { useSiteLabel } from '@/hooks/useSiteLabel';
 import { usePageT } from '@/hooks/useSiteLabel';
-import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, WEBSITE_HOST, WHATSAPP_PHONE, COMPANY_NAME, COMPANY_NAME_SHORT } from '@/constants/branding';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, WEBSITE_HOST, WHATSAPP_PHONE, COMPANY_NAME, COMPANY_NAME_SHORT, DEVELOPER } from '@/constants/branding';
 
 function Footer() {
   const tl = useSiteLabel();
@@ -128,7 +128,16 @@ function Footer() {
               : settings.copyright_text}
           </p>
           <p className="text-gray-500 text-xs mt-2">
-             {tf('developed_by', 'Developed by')} <span className="text-gray-400 font-medium">{settings.developed_by}</span>
+             {tf('developed_by', 'Developed By')}:{' '}
+             <span className="text-gray-300 font-medium">{DEVELOPER.name}</span>{' '}
+             <a
+               href={DEVELOPER.whatsAppUrl}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="text-[#25D366] hover:underline font-semibold"
+             >
+               {DEVELOPER.phone}
+             </a>
           </p>
           <p className="text-gray-600 text-[10px] mt-1">
              {tf('location', 'Kigali, Rwanda')}
