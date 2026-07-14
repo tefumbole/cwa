@@ -203,6 +203,11 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('/otp/screen/store', 'HomeController@otpCheckStore')->name('check.otp.store');
 	Route::post('/otp/screen/resend', 'HomeController@otpResend')->name('check.otp.resend');
     Route::get('/admin', 'HomeController@index');
+
+    // Site Content management (Admin/Owner) — reorder public + side menus
+    Route::get('/admin/site-content', 'SiteContentController@index')->name('site-content.index');
+    Route::post('/admin/site-content/landing-menu', 'SiteContentController@saveLandingMenu')->name('site-content.landing-menu');
+    Route::post('/admin/site-content/side-menu', 'SiteContentController@saveSideMenu')->name('site-content.side-menu');
 	Route::get('/wp', 'HomeController@whatsapp');
 	Route::get('/mmt', 'HomeController@mobileMoneyToken');
 	Route::get('/mmr', 'HomeController@mobileMoneyRequest');

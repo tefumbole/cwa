@@ -30,16 +30,22 @@
 <body class="bg-white text-gray-800 flex flex-col min-h-screen">
 
 @php
-    $navLinks = [
-        ['label' => 'Home', 'url' => url('/')],
-        ['label' => 'Training', 'url' => url('/trainings')],
-        ['label' => 'Events', 'url' => url('/events')],
-        ['label' => 'Register Now', 'url' => url('/register-now')],
-        ['label' => 'Apply Now', 'url' => url('/apply-now'), 'special' => true],
-        ['label' => 'About Us', 'url' => url('/about')],
-        ['label' => 'Shareholders', 'url' => url('/shareholders')],
-        ['label' => 'Contact Us', 'url' => url('/contact')],
+    $navDefs = [
+        'home'         => ['label' => 'Home', 'url' => url('/')],
+        'trainings'    => ['label' => 'Training', 'url' => url('/trainings')],
+        'events'       => ['label' => 'Events', 'url' => url('/events')],
+        'register'     => ['label' => 'Register Now', 'url' => url('/register-now')],
+        'apply'        => ['label' => 'Apply Now', 'url' => url('/apply-now'), 'special' => true],
+        'about'        => ['label' => 'About Us', 'url' => url('/about')],
+        'shareholders' => ['label' => 'Shareholders', 'url' => url('/shareholders')],
+        'contact'      => ['label' => 'Contact Us', 'url' => url('/contact')],
     ];
+    $navLinks = [];
+    foreach (\App\Support\SiteMenu::landingOrder() as $navKey) {
+        if (isset($navDefs[$navKey])) {
+            $navLinks[] = $navDefs[$navKey];
+        }
+    }
     $currentUrl = url()->current();
 @endphp
 

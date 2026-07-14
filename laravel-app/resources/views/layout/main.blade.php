@@ -907,6 +907,9 @@
                         @if(Auth::user()->role_id != 7)
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                         @endif
+                        @if(in_array((int) Auth::user()->role_id, [1, 2], true))
+                            <li><a href="{{ url('/admin/site-content') }}"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
+                        @endif
                         <?php
                         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
                         if (!isset($all_permission) || !is_array($all_permission)) {
@@ -2088,6 +2091,31 @@
                             </ul>
                         </li>
                     </ul>
+                    @php $__sideMenuOrder = \App\Support\SiteMenu::sideOrder(); @endphp
+                    <script>
+                    (function () {
+                        var order = @json($__sideMenuOrder);
+                        var ul = document.getElementById('side-main-menu');
+                        if (!ul || !order || !order.length) return;
+                        function keyOf(li) {
+                            var a = li.querySelector('a');
+                            if (!a) return null;
+                            if (a.getAttribute('data-nav-key')) return a.getAttribute('data-nav-key');
+                            var href = a.getAttribute('href') || '';
+                            if (href.charAt(0) === '#') return href.slice(1);
+                            if (/\/admin\/site-content/.test(href)) return 'site-content';
+                            if (/\/admin\/?$/.test(href)) return 'dashboard';
+                            return null;
+                        }
+                        var map = {};
+                        Array.prototype.slice.call(ul.children).forEach(function (li) {
+                            if (li.tagName !== 'LI') return;
+                            var k = keyOf(li);
+                            if (k && !map[k]) map[k] = li;
+                        });
+                        order.forEach(function (k) { if (map[k]) ul.appendChild(map[k]); });
+                    })();
+                    </script>
                 </div>
                 <div class="sidebar-user-panel">
                     <div class="sidebar-user-meta">
