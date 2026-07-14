@@ -19,7 +19,7 @@ class AppVersion
             return $configured;
         }
 
-        return 'BCL V.2.1.4';
+        return '2.2.0';
     }
 
     public static function build()
