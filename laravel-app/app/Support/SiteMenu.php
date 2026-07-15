@@ -40,6 +40,7 @@ class SiteMenu
             'events'       => 'Events',
             'tasks'        => 'Task Manager',
             'announcements'=> 'Announcements',
+            'courses'      => 'Courses',
             'shop'         => 'Shops',
             'order'        => 'Online Order',
             'payments'     => 'Payments',

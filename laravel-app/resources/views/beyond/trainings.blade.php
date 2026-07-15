@@ -1,4 +1,4 @@
-@extends('beyond.layout')
+8@extends('beyond.layout')
 
 @section('title', 'Professional IT Training Programs 2026')
 @section('meta_description', 'Advanced technical training in AI, Cloud Computing, Cybersecurity, IT Consultancy, VoIP, Network Infrastructure, and CCTV Systems.')
@@ -75,7 +75,7 @@
                                             {{ $section['title'] }}
                                         </h4>
                                         <ul class="space-y-2.5">
-                                            @foreach ($section['items'] as $item)
+                                            @foreach (($section['items'] ?? $section['topics'] ?? []) as $item)
                                                 <li class="flex items-start gap-3 text-gray-700 text-sm">
                                                     <i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 flex-shrink-0" style="color: {{ $module['color'] }}"></i>
                                                     <span>{{ $item }}</span>

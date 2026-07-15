@@ -1180,6 +1180,26 @@
                                 </ul>
                             </li>
                         @endif
+                        @php
+                            $courses_module_permission = \Spatie\Permission\Models\Permission::where('name', 'courses_module')->first();
+                            $courses_module_active = $role && $courses_module_permission ? \DB::table('role_has_permissions')->where([
+                                ['permission_id', $courses_module_permission->id],
+                                ['role_id', $role->id]
+                            ])->first() : null;
+                        @endphp
+                        @if($courses_module_active)
+                            <li><a href="#courses-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Courses</span></a>
+                                <ul id="courses-module" class="collapse list-unstyled ">
+                                    <li id="courses-list-menu"><a href="{{ route('courses.index') }}">Course List</a></li>
+                                    <li id="courses-create-menu"><a href="{{ route('courses.create') }}">Add Course</a></li>
+                                    <li id="courses-regs-menu"><a href="{{ route('courses.registrations') }}">Registrations</a></li>
+                                    <li id="courses-inv-menu"><a href="{{ route('courses.invoices') }}">Invoices</a></li>
+                                    <li id="courses-cert-menu"><a href="{{ route('courses.certificates') }}">Certificates</a></li>
+                                    <li id="courses-progress-menu"><a href="{{ route('courses.progress') }}">Student Progress</a></li>
+                                    <li id="courses-feedback-menu"><a href="{{ route('courses.feedback') }}">Feedback</a></li>
+                                </ul>
+                            </li>
+                        @endif
                         @if(in_array('shops-index', $all_permission))
                             <li>
                                 <a href="#shop" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-building"></i><span>Shops</span><span></a>
@@ -2199,6 +2219,7 @@
                                 if (anchor === 'events-module') return 'events';
                                 if (anchor === 'tasks-module') return 'tasks';
                                 if (anchor === 'announcements-module') return 'announcements';
+                                if (anchor === 'courses-module') return 'courses';
                                 return anchor;
                             }
                             if (/\/admin\/site-content/.test(href)) return 'site-content';

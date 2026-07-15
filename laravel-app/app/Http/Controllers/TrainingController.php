@@ -21,8 +21,14 @@ class TrainingController extends Controller
 
     public function trainings()
     {
+        $manager = app(\App\Services\CourseManagerService::class);
+        $programs = $manager->programsForFrontend();
+        if (empty($programs)) {
+            $programs = $this->trainingProgramsConfig();
+        }
+
         return view('beyond.trainings', [
-            'programs' => $this->trainingProgramsConfig(),
+            'programs' => $programs,
         ]);
     }
 

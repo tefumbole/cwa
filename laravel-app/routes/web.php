@@ -261,6 +261,25 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('/admin/announcements/settings', 'AnnouncementManagerController@settings')->name('announcements.settings');
     Route::post('/admin/announcements/settings', 'AnnouncementManagerController@updateSettings')->name('announcements.settings.update');
 
+    // Course Manager (AlphaBridge-style)
+    Route::get('/admin/courses', 'CourseManagerController@index')->name('courses.index');
+    Route::get('/admin/courses/create', 'CourseManagerController@create')->name('courses.create');
+    Route::post('/admin/courses', 'CourseManagerController@store')->name('courses.store');
+    Route::get('/admin/courses/{id}/edit', 'CourseManagerController@edit')->name('courses.edit');
+    Route::post('/admin/courses/{id}', 'CourseManagerController@update')->name('courses.update');
+    Route::post('/admin/courses/{id}/delete', 'CourseManagerController@destroy')->name('courses.destroy');
+    Route::post('/admin/courses/{id}/move', 'CourseManagerController@move')->name('courses.move');
+    Route::get('/admin/courses/{id}/feedback', 'CourseManagerController@courseFeedback')->name('courses.course-feedback');
+    Route::get('/admin/course-registrations', 'CourseManagerController@registrations')->name('courses.registrations');
+    Route::post('/admin/course-registrations/{id}', 'CourseManagerController@updateRegistration')->name('courses.registrations.update');
+    Route::get('/admin/course-invoices', 'CourseManagerController@invoices')->name('courses.invoices');
+    Route::get('/admin/course-certificates', 'CourseManagerController@certificates')->name('courses.certificates');
+    Route::post('/admin/course-certificates/{id}/revoke', 'CourseManagerController@revokeCertificate')->name('courses.certificates.revoke');
+    Route::get('/admin/course-progress', 'CourseManagerController@progress')->name('courses.progress');
+    Route::post('/admin/course-progress/{id}', 'CourseManagerController@updateProgress')->name('courses.progress.update');
+    Route::get('/admin/course-feedback', 'CourseManagerController@feedback')->name('courses.feedback');
+    Route::post('/admin/course-feedback/{id}/delete', 'CourseManagerController@destroyFeedback')->name('courses.feedback.destroy');
+
     // Events module (Phase 1)
     Route::get('/admin/events', 'EventDashboardController@index')->name('events.dashboard');
     Route::get('/admin/events/list', 'EventController@index')->name('events.index');
