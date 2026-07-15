@@ -1,15 +1,15 @@
 @extends('beyond.layout')
 
-@section('title', 'Careers — Apply Now')
-@section('meta_description', 'Join Beyond Enterprise. Explore our open positions and apply online.')
+@section('title', 'Apply Now — Jobs & Internships')
+@section('meta_description', 'Apply for jobs, internships, and openings published on the Beyond Enterprise Job Board.')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 pb-20">
     <div class="bg-gradient-to-r from-brand-blue via-[#004e9a] to-brand-dark text-white py-20 px-4 relative overflow-hidden">
         <div class="max-w-7xl mx-auto text-center relative z-10">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Build Your Future With Us</h1>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Apply Now</h1>
             <p class="text-xl text-blue-100 max-w-2xl mx-auto font-light leading-relaxed">
-                Join a team of innovators, creators, and problem solvers. Explore our open positions and find where you belong.
+                Browse jobs, internships, and other openings from our Job Board — then apply online in minutes.
             </p>
         </div>
     </div>
@@ -37,9 +37,9 @@
         @if ($jobs->isEmpty())
             <div class="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                 <i data-lucide="briefcase" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-                <h3 class="text-2xl font-bold text-gray-700 mb-2">No positions available</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mb-2">No openings available</h3>
                 <p class="text-gray-500 max-w-md mx-auto">
-                    {{ $search ? "We couldn't find any jobs matching your search." : 'There are currently no open positions. Please check back later!' }}
+                    {{ $search ? "We couldn't find any roles matching your search." : 'Active Job Board postings (jobs, internships, and more) will appear here.' }}
                 </p>
             </div>
         @else

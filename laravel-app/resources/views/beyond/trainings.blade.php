@@ -1,4 +1,4 @@
-8@extends('beyond.layout')
+@extends('beyond.layout')
 
 @section('title', 'Professional IT Training Programs 2026')
 @section('meta_description', 'Advanced technical training in AI, Cloud Computing, Cybersecurity, IT Consultancy, VoIP, Network Infrastructure, and CCTV Systems.')
@@ -40,14 +40,17 @@
 <section id="programs" class="py-20 bg-gradient-to-b from-gray-50 to-white" x-data="{ expanded: null }">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-bold text-brand-blue mb-4">Training Programs</h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Select a program to explore the comprehensive curriculum, tools, and career opportunities</p>
+            <h2 class="text-4xl md:text-5xl font-bold text-brand-blue mb-4">Our Courses</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Courses managed in Course Manager appear here. Select a program to explore the curriculum and register.</p>
         </div>
         <div class="space-y-6">
-            @foreach ($programs as $module)
-                @php $icon = $iconMap[$module['icon'] ?? ''] ?? 'briefcase'; @endphp
+            @forelse ($programs as $module)
+                @php
+                    $icon = $iconMap[$module['icon'] ?? ''] ?? 'briefcase';
+                    $expandKey = $loop->index;
+                @endphp
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow">
-                    <button type="button" @click="expanded = expanded === {{ $module['id'] }} ? null : {{ $module['id'] }}"
+                    <button type="button" @click="expanded = expanded === {{ $expandKey }} ? null : {{ $expandKey }}"
                             class="w-full px-6 md:px-8 py-6 flex items-center justify-between hover:bg-gray-50 transition-colors text-left">
                         <div class="flex items-center space-x-4 md:space-x-6 flex-1 min-w-0">
                             <div class="p-4 rounded-xl flex-shrink-0" style="background-color: {{ $module['color'] }}15">
@@ -56,16 +59,23 @@
                             <div class="min-w-0">
                                 <h3 class="text-xl md:text-2xl font-bold text-brand-blue mb-1">{{ $module['title'] }}</h3>
                                 <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                                    <span class="font-semibold">{{ $module['duration'] }}</span>
-                                    <span class="hidden sm:inline">•</span>
-                                    <span class="hidden sm:inline">{{ $module['deliveryMode'] }}</span>
+                                    @if(!empty($module['category']))
+                                        <span class="bg-blue-50 text-brand-blue text-xs font-semibold px-2 py-0.5 rounded-full">{{ $module['category'] }}</span>
+                                    @endif
+                                    @if(!empty($module['duration']))
+                                        <span class="font-semibold">{{ $module['duration'] }}</span>
+                                    @endif
+                                    @if(!empty($module['deliveryMode']))
+                                        <span class="hidden sm:inline">•</span>
+                                        <span class="hidden sm:inline">{{ $module['deliveryMode'] }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        <i data-lucide="chevron-up" class="w-6 h-6 flex-shrink-0 ml-4 text-brand-gold" x-show="expanded === {{ $module['id'] }}" x-cloak></i>
-                        <i data-lucide="chevron-down" class="w-6 h-6 flex-shrink-0 ml-4 text-gray-400" x-show="expanded !== {{ $module['id'] }}"></i>
+                        <i data-lucide="chevron-up" class="w-6 h-6 flex-shrink-0 ml-4 text-brand-gold" x-show="expanded === {{ $expandKey }}" x-cloak></i>
+                        <i data-lucide="chevron-down" class="w-6 h-6 flex-shrink-0 ml-4 text-gray-400" x-show="expanded !== {{ $expandKey }}"></i>
                     </button>
-                    <div x-show="expanded === {{ $module['id'] }}" x-cloak class="border-t border-gray-200">
+                    <div x-show="expanded === {{ $expandKey }}" x-cloak class="border-t border-gray-200">
                         <div class="px-6 md:px-8 py-8 bg-gradient-to-b from-gray-50 to-white">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                                 @foreach (($module['sections'] ?? []) as $section)
@@ -106,7 +116,12 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="text-center py-16 bg-white rounded-2xl border border-gray-200">
+                    <h3 class="text-2xl font-bold text-brand-blue mb-2">No courses published yet</h3>
+                    <p class="text-gray-600 max-w-md mx-auto">Active courses from Course Manager will appear here under Training.</p>
+                </div>
+            @endforelse
         </div>
     </div>
 </section>
