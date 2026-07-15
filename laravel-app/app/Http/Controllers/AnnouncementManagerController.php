@@ -123,11 +123,35 @@ class AnnouncementManagerController extends Controller
             ]);
         }
 
-        $msg = $row->status === 'scheduled'
-            ? 'Announcement scheduled (' . $row->reference . ').'
-            : 'Announcement sent (' . $row->reference . ').';
+        $row = $row->fresh();
+        if ($row->status === 'scheduled') {
+            return redirect()->route('announcements.index')
+                ->with('message', 'Announcement scheduled (' . $row->reference . ').');
+        }
 
-        return redirect()->route('announcements.index')->with('message', $msg);
+        $failures = [];
+        foreach (($row->send_results_json ? json_decode($row->send_results_json, true) : []) ?: [] as $r) {
+            if (empty($r['ok'])) {
+                $failures[] = ($r['name'] ?? 'Recipient') . ' (' . ($r['phone'] ?? 'no phone') . ')';
+            }
+        }
+
+        if ($row->whatsapp_status === 'sent' && empty($failures)) {
+            return redirect()->route('announcements.index')
+                ->with('message', 'Announcement sent on WhatsApp (' . $row->reference . ').');
+        }
+
+        if ($row->whatsapp_status === 'partial') {
+            return redirect()->route('announcements.index')
+                ->with('message', 'Announcement partially sent (' . $row->reference . '). Failed: ' . implode('; ', $failures));
+        }
+
+        return redirect()->route('announcements.index')
+            ->with('not_permitted',
+                'Announcement saved (' . $row->reference . ') but WhatsApp delivery failed. '
+                . 'Check each recipient phone in People → Customers/Users (full number e.g. 675321739, not +237237…). '
+                . 'Failed: ' . (implode('; ', $failures) ?: 'unknown')
+            );
     }
 
     public function index(Request $request)

@@ -16,6 +16,9 @@
         @if(session('message'))
             <div class="alert alert-success">{{ session('message') }}</div>
         @endif
+        @if(session('not_permitted'))
+            <div class="alert alert-danger">{{ session('not_permitted') }}</div>
+        @endif
 
         <form method="GET" class="form-inline mb-3">
             <input type="text" name="q" value="{{ request('q') }}" class="form-control mr-2 mb-2" placeholder="Search subject or reference…">
