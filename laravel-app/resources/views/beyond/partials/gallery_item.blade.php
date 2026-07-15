@@ -57,8 +57,10 @@
         @if ($item->description)
             <p class="text-gray-600 text-sm leading-relaxed">{{ $item->description }}</p>
         @endif
-        <span class="inline-block mt-3 text-xs font-semibold uppercase tracking-wide text-brand-gold">
-            {{ \App\Support\GalleryEmbed::types()[$item->type] ?? $item->type }}
-        </span>
+        @if ($item->type !== 'image')
+            <span class="inline-block mt-3 text-xs font-semibold uppercase tracking-wide text-brand-gold">
+                {{ \App\Support\GalleryEmbed::types()[$item->type] ?? $item->type }}
+            </span>
+        @endif
     </div>
 </div>

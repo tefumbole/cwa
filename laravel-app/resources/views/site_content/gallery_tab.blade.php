@@ -153,7 +153,7 @@
 @if($galleryItems->count())
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
         <h6 class="font-weight-bold mb-0">Gallery items ({{ $galleryItems->count() }})</h6>
-        <small class="text-muted">Drag cards to reorder — order saves automatically.</small>
+        <small class="text-muted">Drag cards to rearrange, then click Save order when done.</small>
     </div>
 
     <form method="POST" action="{{ route('site-content.gallery.reorder') }}" id="gallery-reorder-form">
@@ -207,6 +207,7 @@
                 </li>
             @endforeach
         </ul>
+        <button type="submit" class="btn btn-primary mt-3" id="gallery-save-order">Save order</button>
     </form>
 @else
     <p class="text-muted">No gallery items yet. Add your first photo or video link above.</p>
@@ -264,8 +265,6 @@
                     var input = li.querySelector('.gallery-order-input');
                     if (input) input.value = li.getAttribute('data-id');
                 });
-                var form = document.getElementById('gallery-reorder-form');
-                if (form) form.submit();
             }
         });
     }
