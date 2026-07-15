@@ -79,11 +79,11 @@ class TrainingController extends Controller
             return;
         }
 
-        $message = "Hello {$registration->client_name},\n\n"
-            ."Your Beyond Enterprise training registration was received.\n"
-            ."Reference: {$registration->reference_number}\n"
-            ."Courses: {$registration->course_names}\n\n"
-            ."Our team will contact you shortly with the next steps.";
+        $message = \App\Support\WhatsAppMessage::trainingRegistration(
+            $registration->client_name,
+            $registration->reference_number,
+            $registration->course_names
+        );
 
         $this->whatsapp->sendText($registration->client_phone, $message);
     }

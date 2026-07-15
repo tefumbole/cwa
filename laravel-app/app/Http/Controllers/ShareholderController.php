@@ -123,13 +123,13 @@ class ShareholderController extends Controller
         $amount = $this->settings->formatPrice($shareholder->investment_amount, $settings['currency']);
         $verifyUrl = url('/verify/agreement/'.$shareholder->id);
 
-        $message = "Hello {$shareholder->full_name},\n\n"
-            ."Your Beyond Enterprise shareholder registration was received.\n"
-            ."Reference: {$shareholder->reference_number}\n"
-            ."Shares: {$shareholder->shares_assigned}\n"
-            ."Investment: {$amount}\n\n"
-            ."Our team will contact you with payment instructions.\n"
-            ."Verify your signed agreement: {$verifyUrl}";
+        $message = \App\Support\WhatsAppMessage::shareholderRegistration(
+            $shareholder->full_name,
+            $shareholder->reference_number,
+            $shareholder->shares_assigned,
+            $amount,
+            $verifyUrl
+        );
 
         $this->whatsapp->sendText($shareholder->full_phone_number, $message);
     }

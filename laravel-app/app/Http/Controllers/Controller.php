@@ -1099,12 +1099,12 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForAccount($user, $password){
 
-        $msg = '*Congrats:* Your account has been created' . '\n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
-        $msg .= request()->getHost() . '\n\n';
-
+        $msg = \App\Support\WhatsAppMessage::accountCreated(
+            $user->name,
+            $user->phone,
+            $password,
+            url('/login')
+        );
 
         try{
             $this->wpMessage($user->phone, $msg);
@@ -1118,16 +1118,14 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForVendorAccount($user, $password){
 
-        $general_setting = GeneralSetting::first();
-
-        $msg = '*Congrats:* Your account has been created' . '\n\n';
-        $msg .= '*Vendor name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
-        $msg .= '\n\n';
-        $msg .= '*Note:* Your Account is under review, Admin will review and approve your account soon. After approval you can sale your products. On every sale you will charged ' .$user->commission. '% \n\n';
-        $msg .= request()->getHost() . '\n\n';
-
+        $note = 'Your account is under review. After approval you can sell products. Commission: '.$user->commission.'% per sale.';
+        $msg = \App\Support\WhatsAppMessage::accountCreated(
+            $user->name,
+            $user->phone,
+            $password,
+            url('/login'),
+            $note
+        );
 
         try{
             $this->wpMessage($user->phone, $msg);

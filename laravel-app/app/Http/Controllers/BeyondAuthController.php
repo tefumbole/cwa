@@ -218,7 +218,7 @@ class BeyondAuthController extends Controller
         }
 
         $otp = $this->auth->createOtp($request->phone, 'password_reset');
-        $send = $this->whatsapp->sendOtp($request->phone, $otp['code'], 'Password reset');
+        $send = $this->whatsapp->sendOtp($request->phone, $otp['code'], 'password_reset');
         if (! $send['success']) {
             return back()->withErrors(['phone' => $send['error'] ?? 'Failed to send verification code.']);
         }

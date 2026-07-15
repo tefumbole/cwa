@@ -19,9 +19,9 @@ class BeyondWasenderService
         return WhatsAppPhone::forWasender($phone);
     }
 
-    public function sendOtp($phone, $code, $label = 'Beyond Enterprise')
+    public function sendOtp($phone, $code, $label = 'login')
     {
-        $message = "Your {$label} verification code is: {$code}. Valid for 10 minutes. Do not share this code.";
+        $message = \App\Support\WhatsAppMessage::otpMessage($code, $label, 10);
 
         return $this->sendText($phone, $message);
     }

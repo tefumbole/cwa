@@ -172,12 +172,147 @@ class WhatsAppMessage
         return $msg;
     }
 
-    public static function otpMessage($otp)
+    public static function otpPurposeLabel($purpose = null)
     {
-        $msg = self::statusBlock('🔐', 'Verification Code');
-        $msg .= 'Your OTP for *' . self::companyName() . "* is:\n\n";
-        $msg .= "*{$otp}*\n\n";
-        $msg .= "This code expires in 5 minutes. Do not share it.";
+        $key = strtolower(trim((string) $purpose));
+        $map = [
+            'login' => 'Login verification',
+            'password_reset' => 'Password reset',
+            'password reset' => 'Password reset',
+            'reset' => 'Password reset',
+            'register' => 'Account registration',
+            'verify' => 'Account verification',
+        ];
+
+        return $map[$key] ?? ($purpose ? ucwords(str_replace('_', ' ', (string) $purpose)) : 'Login verification');
+    }
+
+    /**
+     * Standard OTP / authentication WhatsApp template.
+     * Heading is always "Authentication".
+     */
+    public static function otpMessage($otp, $purpose = 'login', $expiresMinutes = 10)
+    {
+        $company = self::companyName();
+        $purposeLabel = self::otpPurposeLabel($purpose);
+        $minutes = max(1, (int) $expiresMinutes);
+
+        $msg = self::statusBlock('🔐', 'Authentication');
+        $msg .= "Welcome to *{$company}*.\n\n";
+        $msg .= "Your one-time passcode (OTP) is:\n\n";
+        $msg .= "👉 *{$otp}*\n\n";
+        $msg .= "━━━━━━━━━━━━━━━━\n";
+        $msg .= self::bullet('Purpose', $purposeLabel);
+        $msg .= self::bullet('Expires in', "{$minutes} minutes");
+        $msg .= "\n⚠️ *Security notice:* Never share this code with anyone. Our team will never ask for your OTP.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function accountCreated($name, $phone, $password, $loginUrl = null, $note = null)
+    {
+        $msg = self::statusBlock('🎉', 'Account Created');
+        $msg .= self::greeting($name);
+        $msg .= "Your account on *" . self::companyName() . "* has been created.\n\n";
+        $msg .= self::bullet('Name', $name);
+        $msg .= self::bullet('Phone', $phone);
+        $msg .= self::bullet('Password', $password);
+        if ($loginUrl) {
+            $msg .= self::actionLink('Sign in', $loginUrl);
+        }
+        if ($note) {
+            $msg .= "\n*Note:* {$note}\n";
+        }
+        $msg .= "\nPlease change your password after first login.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function applicationUnderReview($name, $jobTitle, $reference, $isInternship = false)
+    {
+        $kind = $isInternship ? 'Internship' : 'Job';
+        $msg = self::statusBlock('📩', $kind.' Application');
+        $msg .= self::greeting($name);
+        $msg .= "Your application for *{$jobTitle}* has been received and is now *under review*.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::bullet('Type', $kind);
+        $msg .= "\nWe will notify you on WhatsApp at every stage. Please keep this number available.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function applicationSelected($name, $jobTitle, $reference, $agreementUrl, $isInternship = false)
+    {
+        $kind = $isInternship ? 'Internship' : 'Employment';
+        $msg = self::statusBlock('✅', 'Selected');
+        $msg .= self::greeting($name);
+        $msg .= "Congratulations! You have been *selected* for the {$kind} role *{$jobTitle}*.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::actionLink('Sign your agreement', $agreementUrl);
+        $msg .= "\nAfter signing, you will receive a WhatsApp confirmation.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function applicationRejected($name, $jobTitle, $reference, $reason = null)
+    {
+        $msg = self::statusBlock('❌', 'Application Update');
+        $msg .= self::greeting($name);
+        $msg .= "Thank you for applying for *{$jobTitle}* at *" . self::companyName() . "*.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= "\nAfter careful review, we are unable to proceed with your application at this time.\n";
+        if ($reason) {
+            $msg .= self::bullet('Reason', $reason);
+        }
+        $msg .= "\nWe wish you the best in your future opportunities.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function applicationAgreementSigned($name, $jobTitle, $reference, $isInternship = false)
+    {
+        $kind = $isInternship ? 'Internship' : 'Employment';
+        $msg = self::statusBlock('📝', $kind.' Agreement Signed');
+        $msg .= self::greeting($name);
+        $msg .= "Your {$kind} agreement for *{$jobTitle}* has been signed and received.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::bullet('Working hours', '7:30 AM – 4:00 PM');
+        $msg .= self::bullet('Timesheets', 'Daily · minimum 40 hours per week');
+        $msg .= "\nFailure to complete assigned tasks may result in termination.\n\n";
+        $msg .= 'Welcome to *' . self::companyName() . '*.';
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function shareholderRegistration($name, $reference, $shares, $investmentLabel, $verifyUrl)
+    {
+        $msg = self::statusBlock('📈', 'Shareholder Registration');
+        $msg .= self::greeting($name);
+        $msg .= "Your shareholder registration with *" . self::companyName() . "* has been received.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::bullet('Shares', $shares);
+        $msg .= self::bullet('Investment', $investmentLabel);
+        $msg .= "\nOur team will contact you with payment instructions.";
+        $msg .= self::actionLink('Verify signed agreement', $verifyUrl);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function trainingRegistration($name, $reference, $courses)
+    {
+        $msg = self::statusBlock('🎓', 'Training Registration');
+        $msg .= self::greeting($name);
+        $msg .= "Your training registration with *" . self::companyName() . "* has been received.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::bullet('Courses', $courses);
+        $msg .= "\nOur team will contact you shortly with the next steps.";
         $msg .= self::footer();
 
         return $msg;
