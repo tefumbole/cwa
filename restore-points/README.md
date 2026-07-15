@@ -4,6 +4,7 @@ Each restore point is a **git tag** plus a short manifest in this folder.
 
 | Version | Tag | Notes |
 |---------|-----|-------|
+| ABT_ERP_V.2.2.23 | `ABT_ERP_V.2.2.23` | Job Board internships, countdown, camera snap, WhatsApp stages, logo fix, header toggle |
 | ABT_ERP_V.2.2.15 | `ABT_ERP_V.2.2.15` | Timesheets (Employee + Admin), Laravel deploy script (storage perms) |
 | ABT_ERP_V.2.2.0 | `ABT_ERP_V.2.2.0` | Events module phases 1–8, gallery/CMS |
 | ABT_ERP_V.1.1.2 | `ABT_ERP_V.1.1.2` | Custom role permissions, signed agreements, version auto-bump |
