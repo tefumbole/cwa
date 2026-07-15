@@ -138,6 +138,27 @@ class CourseManagerController extends Controller
         return back();
     }
 
+    public function reorder(Request $request)
+    {
+        $this->authorizeCourses('courses.update');
+        $ids = $request->input('ids', []);
+        if (! is_array($ids) || ! count($ids)) {
+            return response()->json(['ok' => false, 'error' => 'No ids'], 422);
+        }
+        $this->courses->reorderCourses($ids);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function cloneCourse($id)
+    {
+        $this->authorizeCourses('courses.create');
+        $clone = $this->courses->cloneCourse(Course::findOrFail($id));
+
+        return redirect()->route('courses.edit', $clone->id)
+            ->with('message', 'Course cloned. Rename it and set status to Active when ready.');
+    }
+
     public function registrations(Request $request)
     {
         $this->authorizeCourses('courses.view');

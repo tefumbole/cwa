@@ -147,6 +147,36 @@ class CourseManagerService
         }
     }
 
+    public function reorderCourses(array $orderedIds)
+    {
+        foreach (array_values($orderedIds) as $i => $id) {
+            Course::where('id', $id)->update(['sort_order' => $i]);
+        }
+    }
+
+    public function cloneCourse(Course $source)
+    {
+        $max = (int) Course::max('sort_order');
+        $name = 'Copy of ' . $source->name;
+
+        return Course::create([
+            'id' => (string) Str::uuid(),
+            'legacy_id' => null,
+            'name' => $name,
+            'slug' => Str::slug($name) . '-' . Str::random(4),
+            'description' => $source->description,
+            'price' => $source->price,
+            'duration' => $source->duration,
+            'delivery_mode' => $source->delivery_mode,
+            'category' => $source->category,
+            'curriculum_json' => $source->curriculum_json,
+            'icon' => $source->icon,
+            'color' => $source->color,
+            'sort_order' => $max + 1,
+            'status' => 'draft',
+        ]);
+    }
+
     public function registrations($q = null, $status = null)
     {
         $query = TrainingRegistration::query()->orderByDesc('created_at');

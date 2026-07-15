@@ -265,10 +265,12 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('/admin/courses', 'CourseManagerController@index')->name('courses.index');
     Route::get('/admin/courses/create', 'CourseManagerController@create')->name('courses.create');
     Route::post('/admin/courses', 'CourseManagerController@store')->name('courses.store');
+    Route::post('/admin/courses/reorder', 'CourseManagerController@reorder')->name('courses.reorder');
     Route::get('/admin/courses/{id}/edit', 'CourseManagerController@edit')->name('courses.edit');
     Route::post('/admin/courses/{id}', 'CourseManagerController@update')->name('courses.update');
     Route::post('/admin/courses/{id}/delete', 'CourseManagerController@destroy')->name('courses.destroy');
     Route::post('/admin/courses/{id}/move', 'CourseManagerController@move')->name('courses.move');
+    Route::post('/admin/courses/{id}/clone', 'CourseManagerController@cloneCourse')->name('courses.clone');
     Route::get('/admin/courses/{id}/feedback', 'CourseManagerController@courseFeedback')->name('courses.course-feedback');
     Route::get('/admin/course-registrations', 'CourseManagerController@registrations')->name('courses.registrations');
     Route::post('/admin/course-registrations/{id}', 'CourseManagerController@updateRegistration')->name('courses.registrations.update');
