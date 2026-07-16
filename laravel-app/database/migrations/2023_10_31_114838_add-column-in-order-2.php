@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnInOrderTable extends Migration
+class AddColumnInOrder2 extends Migration
 {
     /**
      * Run the migrations.
@@ -14,8 +14,7 @@ class AddColumnInOrderTable extends Migration
     public function up()
     {
         Schema::table('orders', function (Blueprint $table) {
-//            $table->string('customer_doc')->nullable();
-//            $table->string('result_doc')->nullable();
+//            $table->tinyInteger('is_service')->default(0);
         });
     }
 
