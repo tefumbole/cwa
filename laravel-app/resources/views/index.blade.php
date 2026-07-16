@@ -108,10 +108,18 @@
     $totalCustomers = \App\Customer::count();
     $totalProducts = \App\Product::count();
     $activeBookings = \App\Booking::whereIn('booking_status', [1, 2])->count();
+    $bookingCompleted = \App\Booking::where('booking_status', 1)->count();
+    $bookingPending = \App\Booking::where('booking_status', 2)->count();
+    $bookingDraft = \App\Booking::where('booking_status', 3)->count();
+    $bookingRequests = \App\Booking::where('is_frontend', 1)->where('booking_status', 2)->count();
     $activeUsers = \App\User::where('is_active', true)->count();
     $whatsappReady = !empty(config('services.whatsapp.wasender_api_key'))
         && !empty(config('services.whatsapp.wasender_session_id'));
     $lastLogin = Auth::user()->updated_at ? Auth::user()->updated_at->isToday() ? 'Today' : Auth::user()->updated_at->format('M j, Y') : 'Today';
+    $chartRevenue = (float) $revenue;
+    $chartProfit = (float) $profit;
+    $chartPurchase = (float) $purchase;
+    $chartExpense = (float) $expense;
 @endphp
 <div class="beyond-dashboard">
   <div class="beyond-dashboard-hero">
@@ -139,33 +147,71 @@
   <div class="row">
     <div class="col-xl-9">
       <div class="beyond-stat-grid">
-        <div class="beyond-stat-card">
+        <a href="{{ route('sales.index') }}" class="beyond-stat-card" title="Open Sale List">
           <div>
             <div class="label">{{ trans('file.revenue') }}</div>
             <div class="value revenue-data">{{ number_format((float)$revenue, 2, '.', ',') }}</div>
           </div>
           <div class="beyond-stat-icon blue"><i class="dripicons-graph-bar"></i></div>
-        </div>
-        <div class="beyond-stat-card">
+        </a>
+        <a href="javascript:void(0)" id="beyond-profit-stat-link" class="beyond-stat-card" title="Open Summary / Profit Report">
           <div>
             <div class="label">{{ trans('file.profit') }}</div>
             <div class="value profit-data">{{ number_format((float)$profit, 2, '.', ',') }}</div>
           </div>
           <div class="beyond-stat-icon green"><i class="dripicons-trophy"></i></div>
-        </div>
-        <div class="beyond-stat-card">
+        </a>
+        {!! Form::open(['route' => 'report.profitLoss', 'method' => 'post', 'id' => 'beyond-profit-stat-form', 'class' => 'd-none']) !!}
+          <input type="hidden" name="start_date" value="{{ date('Y-m').'-01' }}" />
+          <input type="hidden" name="end_date" value="{{ date('Y-m-d') }}" />
+        {!! Form::close() !!}
+        <a href="{{ route('booking.index') }}" class="beyond-stat-card" title="Open Rental Bookings">
           <div>
             <div class="label">Active Bookings</div>
             <div class="value">{{ number_format($activeBookings) }}</div>
           </div>
           <div class="beyond-stat-icon gold"><i class="dripicons-calendar"></i></div>
-        </div>
-        <div class="beyond-stat-card">
+        </a>
+        <a href="{{ route('customer.index') }}" class="beyond-stat-card" title="Open Customer List">
           <div>
             <div class="label">{{ trans('file.Customer List') }}</div>
             <div class="value">{{ number_format($totalCustomers) }}</div>
           </div>
           <div class="beyond-stat-icon purple"><i class="dripicons-user-group"></i></div>
+        </a>
+      </div>
+
+      <div class="beyond-chart-grid">
+        <div class="beyond-chart-panel">
+          <h5><i class="dripicons-graph-bar"></i> Financial Overview</h5>
+          <div class="beyond-chart-canvas-wrap">
+            <canvas id="beyond-finance-bar"
+              data-revenue="{{ $chartRevenue }}"
+              data-profit="{{ $chartProfit }}"
+              data-purchase="{{ $chartPurchase }}"
+              data-expense="{{ $chartExpense }}"
+              data-label-revenue="{{ trans('file.revenue') }}"
+              data-label-profit="{{ trans('file.profit') }}"
+              data-label-purchase="{{ trans('file.Purchase') }}"
+              data-label-expense="{{ trans('file.Expense') }}"></canvas>
+          </div>
+          <p class="text-muted small mb-0 mt-2">Selected period totals — click Revenue or Profit cards above for details.</p>
+        </div>
+        <div class="beyond-chart-panel">
+          <h5><i class="dripicons-graph-pie"></i> Bookings Distribution</h5>
+          <div class="beyond-chart-canvas-wrap">
+            <canvas id="beyond-booking-pie"
+              data-completed="{{ $bookingCompleted }}"
+              data-pending="{{ $bookingPending }}"
+              data-draft="{{ $bookingDraft }}"
+              data-requests="{{ $bookingRequests }}"></canvas>
+          </div>
+          <div class="beyond-chart-legend">
+            <span><i style="background:#22c55e;"></i> Completed ({{ $bookingCompleted }})</span>
+            <span><i style="background:#f59e0b;"></i> Pending ({{ $bookingPending }})</span>
+            <span><i style="background:#94a3b8;"></i> Draft ({{ $bookingDraft }})</span>
+            <span><i style="background:#7b61ff;"></i> Guest Requests ({{ $bookingRequests }})</span>
+          </div>
         </div>
       </div>
 
@@ -624,5 +670,87 @@
         $('.purchase_return-data').html(parseFloat(data[3]).toFixed(2));
         $('.purchase_return-data').show(500);
     }
+
+    $('#beyond-profit-stat-link').on('click', function (e) {
+        e.preventDefault();
+        var $form = $('#beyond-profit-stat-form');
+        if ($form.length) {
+            $form.submit();
+        } else {
+            window.location.href = '{{ route('sales.index') }}';
+        }
+    });
+
+    (function () {
+        if (typeof Chart === 'undefined') return;
+
+        var barEl = document.getElementById('beyond-finance-bar');
+        if (barEl) {
+            var labels = [
+                barEl.getAttribute('data-label-revenue') || 'Revenue',
+                barEl.getAttribute('data-label-profit') || 'Profit',
+                barEl.getAttribute('data-label-purchase') || 'Purchase',
+                barEl.getAttribute('data-label-expense') || 'Expense'
+            ];
+            var values = [
+                parseFloat(barEl.getAttribute('data-revenue') || 0),
+                parseFloat(barEl.getAttribute('data-profit') || 0),
+                parseFloat(barEl.getAttribute('data-purchase') || 0),
+                parseFloat(barEl.getAttribute('data-expense') || 0)
+            ];
+            new Chart(barEl, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#0b3f90', '#00a86b', '#7b61ff', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    tooltips: { mode: 'index', intersect: false },
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true }, gridLines: { color: '#f1f5f9' } }],
+                        xAxes: [{ gridLines: { display: false }, barPercentage: 0.55 }]
+                    }
+                }
+            });
+        }
+
+        var pieEl = document.getElementById('beyond-booking-pie');
+        if (pieEl) {
+            var pieValues = [
+                parseInt(pieEl.getAttribute('data-completed') || 0, 10),
+                parseInt(pieEl.getAttribute('data-pending') || 0, 10),
+                parseInt(pieEl.getAttribute('data-draft') || 0, 10),
+                parseInt(pieEl.getAttribute('data-requests') || 0, 10)
+            ];
+            var pieSum = pieValues.reduce(function (a, b) { return a + b; }, 0);
+            if (pieSum === 0) {
+                pieValues = [1, 0, 0, 0];
+            }
+            new Chart(pieEl, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending', 'Draft', 'Guest Requests'],
+                    datasets: [{
+                        data: pieValues,
+                        backgroundColor: ['#22c55e', '#f59e0b', '#94a3b8', '#7b61ff'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 58,
+                    legend: { display: false }
+                }
+            });
+        }
+    })();
 </script>
 @endsection

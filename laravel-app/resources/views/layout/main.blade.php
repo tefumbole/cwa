@@ -723,6 +723,18 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 12px;
+                text-decoration: none !important;
+                color: inherit;
+                transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+                cursor: pointer;
+            }
+
+            a.beyond-stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 28px rgba(15, 35, 80, 0.1);
+                border-color: #c6d4ef;
+                text-decoration: none !important;
+                color: inherit;
             }
 
             .beyond-stat-card .label {
@@ -737,6 +749,57 @@
                 font-size: 28px;
                 font-weight: 800;
                 line-height: 1.1;
+            }
+
+            .beyond-chart-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+                margin: 0 0 24px;
+            }
+            @media (max-width: 991px) {
+                .beyond-chart-grid { grid-template-columns: 1fr; }
+            }
+            .beyond-chart-panel {
+                background: #fff;
+                border: 1px solid #e3e9f4;
+                border-radius: 14px;
+                box-shadow: 0 8px 24px rgba(15, 35, 80, 0.05);
+                padding: 18px 20px 16px;
+            }
+            .beyond-chart-panel h5 {
+                margin: 0 0 12px;
+                color: var(--beyond-primary);
+                font-size: 16px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .beyond-chart-panel h5 i { font-size: 18px; }
+            .beyond-chart-canvas-wrap {
+                height: 260px;
+                position: relative;
+            }
+            .beyond-chart-legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 14px;
+                margin-top: 10px;
+                font-size: 12px;
+                color: #64748b;
+                font-weight: 600;
+            }
+            .beyond-chart-legend span {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .beyond-chart-legend i {
+                width: 10px;
+                height: 10px;
+                border-radius: 3px;
+                display: inline-block;
             }
 
             .beyond-stat-icon {

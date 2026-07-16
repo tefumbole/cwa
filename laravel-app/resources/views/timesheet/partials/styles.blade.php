@@ -1,16 +1,91 @@
 <style>
     .ts-shell { max-width: 1100px; margin: 0 auto; }
+
+    /* Rental-module style colored tabs */
     .ts-nav {
-        display: flex; flex-wrap: wrap; gap: 4px 16px;
-        border-bottom: 1px solid #e5e7eb; margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 1.5rem;
+        padding: 0;
+        border: 0;
     }
     .ts-nav a {
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 12px 4px 14px; color: #64748b; text-decoration: none;
-        font-weight: 600; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 2px solid #cbd5e1;
+        background: #fff;
+        color: #64748b;
+        text-decoration: none !important;
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 1.2;
+        white-space: nowrap;
+        transition: all .15s ease;
+        margin: 0;
     }
-    .ts-nav a:hover { color: #0b3f90; text-decoration: none; }
-    .ts-nav a.is-active { color: #0b3f90; border-bottom-color: #0b3f90; }
+    .ts-nav a i {
+        font-size: 15px;
+    }
+    .ts-nav a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 35, 80, 0.08);
+        text-decoration: none !important;
+    }
+    .ts-nav a.is-active {
+        color: #fff !important;
+        box-shadow: 0 6px 16px rgba(15, 35, 80, 0.14);
+    }
+    .ts-nav a.is-active i { color: #fff !important; }
+
+    .ts-nav a.tone-blue { border-color: #0b3f90; color: #0b3f90; }
+    .ts-nav a.tone-blue i { color: #0b3f90; }
+    .ts-nav a.tone-blue.is-active,
+    .ts-nav a.tone-blue:hover { background: #0b3f90; border-color: #0b3f90; color: #fff !important; }
+    .ts-nav a.tone-blue:hover i { color: #fff !important; }
+
+    .ts-nav a.tone-gold { border-color: #c6ab47; color: #8a7424; }
+    .ts-nav a.tone-gold i { color: #8a7424; }
+    .ts-nav a.tone-gold.is-active,
+    .ts-nav a.tone-gold:hover { background: #c6ab47; border-color: #c6ab47; color: #10213d !important; }
+    .ts-nav a.tone-gold:hover i,
+    .ts-nav a.tone-gold.is-active i { color: #10213d !important; }
+
+    .ts-nav a.tone-purple { border-color: #7b61ff; color: #7b61ff; }
+    .ts-nav a.tone-purple i { color: #7b61ff; }
+    .ts-nav a.tone-purple.is-active,
+    .ts-nav a.tone-purple:hover { background: #7b61ff; border-color: #7b61ff; color: #fff !important; }
+    .ts-nav a.tone-purple:hover i { color: #fff !important; }
+
+    .ts-nav a.tone-green { border-color: #10b981; color: #10b981; }
+    .ts-nav a.tone-green i { color: #10b981; }
+    .ts-nav a.tone-green.is-active,
+    .ts-nav a.tone-green:hover { background: #10b981; border-color: #10b981; color: #fff !important; }
+    .ts-nav a.tone-green:hover i { color: #fff !important; }
+
+    .ts-nav a.tone-teal { border-color: #0ea5a4; color: #0ea5a4; }
+    .ts-nav a.tone-teal i { color: #0ea5a4; }
+    .ts-nav a.tone-teal.is-active,
+    .ts-nav a.tone-teal:hover { background: #0ea5a4; border-color: #0ea5a4; color: #fff !important; }
+    .ts-nav a.tone-teal:hover i { color: #fff !important; }
+
+    .ts-nav a.tone-orange { border-color: #f59e0b; color: #c77708; }
+    .ts-nav a.tone-orange i { color: #c77708; }
+    .ts-nav a.tone-orange.is-active,
+    .ts-nav a.tone-orange:hover { background: #f59e0b; border-color: #f59e0b; color: #10213d !important; }
+    .ts-nav a.tone-orange:hover i,
+    .ts-nav a.tone-orange.is-active i { color: #10213d !important; }
+
+    .ts-nav a.tone-pink { border-color: #e91e8c; color: #e91e8c; }
+    .ts-nav a.tone-pink i { color: #e91e8c; }
+    .ts-nav a.tone-pink.is-active,
+    .ts-nav a.tone-pink:hover { background: #e91e8c; border-color: #e91e8c; color: #fff !important; }
+    .ts-nav a.tone-pink:hover i { color: #fff !important; }
+
     .ts-title { color: #0b3f90; font-weight: 800; font-size: 1.75rem; margin: 0 0 4px; }
     .ts-subtitle { color: #6b7280; margin: 0; }
     .ts-card {
