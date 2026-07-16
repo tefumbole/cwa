@@ -65,8 +65,8 @@
                         <div>
                             <h3 class="font-bold text-lg mb-2 text-brand-gold">Business Hours</h3>
                             <div class="space-y-1 text-sm">
-                                <div class="flex justify-between"><span class="text-blue-100">Mon - Fri:</span><span class="font-medium">{{ \App\Support\SiteContent::text('contact.hours_weekday', '9:00 AM - 6:00 PM') }}</span></div>
-                                <div class="flex justify-between"><span class="text-blue-100">Sat & Sun:</span><span class="font-medium opacity-80">{{ \App\Support\SiteContent::text('contact.hours_weekend', 'Closed') }}</span></div>
+                                <div class="flex justify-between gap-4"><span class="text-blue-100">Tue – Sat:</span><span class="font-medium text-right">{{ \App\Support\SiteContent::text('contact.hours_weekday', '8:00 AM - 5:00 PM') }}</span></div>
+                                <div class="flex justify-between gap-4"><span class="text-blue-100">Sun & Mon:</span><span class="font-medium opacity-80 text-right">{{ \App\Support\SiteContent::text('contact.hours_weekend', 'Closed') }}</span></div>
                             </div>
                         </div>
                     </div>
