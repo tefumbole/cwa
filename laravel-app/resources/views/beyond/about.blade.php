@@ -101,4 +101,6 @@
     </div>
 </section>
 
+@include('beyond.partials.contact_section')
+
 @endsection
