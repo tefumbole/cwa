@@ -103,6 +103,17 @@ nav.navbar,
   color: var(--cwa-white) !important;
 }
 
+/* Keep admin header title readable on Marian blue (overrides global h1 color) */
+.header .brand-big,
+.header .brand-big a,
+.header .brand-big h1,
+nav.navbar .brand-big,
+nav.navbar .brand-big a,
+nav.navbar .brand-big h1,
+nav.navbar h1 {
+  color: var(--cwa-white) !important;
+}
+
 nav.navbar a,
 .navbar a,
 .navbar .nav-link,

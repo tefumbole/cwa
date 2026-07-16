@@ -69,6 +69,13 @@ fix_writable_dirs() {
   fi
 }
 
+if [[ ! -f "$APP/public/vendor/bootstrap/css/bootstrap.min.css" ]]; then
+  echo "ERROR: missing admin assets at $APP/public/vendor (Bootstrap CSS)."
+  echo "       Copy from a working Laravel sibling, e.g.:"
+  echo "       rsync -a /var/www/beyondtechworld/laravel-app/public/vendor/ $APP/public/vendor/"
+  exit 1
+fi
+
 echo "==> 2. Ensure storage is writable BEFORE artisan (bootstrap)"
 fix_writable_dirs
 

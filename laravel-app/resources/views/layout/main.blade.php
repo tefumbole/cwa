@@ -3,7 +3,7 @@
       <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <link rel="icon" type="image/png" href="{{url('public/logo', $general_setting->site_logo)}}" />
+        <link rel="icon" type="image/png" href="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" />
           @if(!Route::is('report.customer'))
             <title>{{$general_setting->site_title}}</title>
           @else
