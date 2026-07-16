@@ -65,10 +65,9 @@
     </form>
 @endif
 
-<p class="text-center mt-6 text-sm space-x-3">
+<p class="text-center mt-6 text-sm">
     <a href="{{ url('/login') }}" class="text-brand-gold hover:underline inline-flex items-center gap-1">
         <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Sign in
     </a>
-    <a href="{{ url('/login?tab=signup') }}" class="text-brand-blue hover:underline font-semibold">Sign up</a>
 </p>
 @endsection

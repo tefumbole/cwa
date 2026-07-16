@@ -62,7 +62,6 @@
         'permissions'  => ['label' => 'Permissions', 'url' => url('/permissions')],
         'about'        => ['label' => 'About Us', 'url' => url('/about')],
         'gallery'      => ['label' => 'Gallery', 'url' => url('/gallery')],
-        'shareholders' => ['label' => 'Shareholders', 'url' => url('/shareholders')],
     ];
     $navLinks = [];
     $hiddenNav = \App\Support\SiteMenu::landingHiddenKeys();

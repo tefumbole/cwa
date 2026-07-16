@@ -10,10 +10,10 @@ use App\SiteSetting;
  */
 class SiteMenu
 {
-    /** Public nav keys hidden from the landing menu (contact lives on About). */
+    /** Public nav keys hidden from the landing menu. */
     public static function landingHiddenKeys()
     {
-        return ['contact'];
+        return ['contact', 'shareholders'];
     }
 
     /** Public site header items: key => label (default order). */
@@ -29,7 +29,6 @@ class SiteMenu
             'permissions'  => 'Permissions',
             'about'        => 'About Us',
             'gallery'      => 'Gallery',
-            'shareholders' => 'Shareholders',
             // Contact is merged into About Us (#contact) — not a separate nav item
         ];
     }

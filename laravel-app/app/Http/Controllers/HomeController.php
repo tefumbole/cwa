@@ -41,7 +41,7 @@ class HomeController extends Controller
 
     public function dashboard()
     {
-        if(Auth::user()->otp_verify == 0) {
+        if(Auth::user()->otp_verify == 0 && ! app(\App\Services\BeyondAuthService::class)->shouldSkipOtp()) {
             return redirect()->route('check.otp');
         }
         $role = Role::find(Auth::user()->role_id);
@@ -302,7 +302,7 @@ echo $response;
         $this->manageBooking();
         $role = Role::find(Auth::user()->role_id);
         $role->revokePermissionTo('search_all_products');
-        if($role->hasPermissionTo('one_time_otp')) {
+        if($role->hasPermissionTo('one_time_otp') && ! app(\App\Services\BeyondAuthService::class)->shouldSkipOtp()) {
             if (Auth::user()->otp_verify == 0) {
                 return redirect()->route('check.otp');
             }

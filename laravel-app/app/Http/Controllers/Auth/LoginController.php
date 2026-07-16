@@ -83,13 +83,20 @@ class LoginController extends Controller
 
             if( $role->id != 5 ) {
 
-                if($role->hasPermissionTo('one_time_otp')){
+                $skipOtp = app(\App\Services\BeyondAuthService::class)->shouldSkipOtp();
+                if($role->hasPermissionTo('one_time_otp') && ! $skipOtp){
                     Auth::user()->update(['otp_verify' => 0]);
                     return redirect()->route('check.otp');
                 }
 
+                Auth::user()->update(['otp_verify' => 1]);
                 return redirect('/admin');
             } else {
+                    $skipOtp = app(\App\Services\BeyondAuthService::class)->shouldSkipOtp();
+                    if ($skipOtp) {
+                        Auth::user()->update(['otp_verify' => 1]);
+                        return redirect('/');
+                    }
                     Auth::user()->update(['otp_verify' => 0]);
                     $otp = $this->sendOTP(Auth::user()->phone);
                     Session::put('otp', $otp);

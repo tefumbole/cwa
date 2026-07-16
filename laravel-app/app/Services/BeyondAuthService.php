@@ -142,7 +142,9 @@ class BeyondAuthService
 
     public function shouldSkipOtp()
     {
-        return app()->environment('local') && env('BEYOND_SKIP_OTP', false);
+        // Temporary kill-switch for environments without WhatsApp OTP.
+        // Set BEYOND_SKIP_OTP=false in .env when Wasender is fully configured.
+        return filter_var(env('BEYOND_SKIP_OTP', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     public function hashPassword($password)
