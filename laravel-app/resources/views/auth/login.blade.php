@@ -1,13 +1,23 @@
-<?php $general_setting = DB::table('general_settings')->find(1); ?>
+<?php
+    $general_setting = DB::table('general_settings')->latest()->first();
+    $appName = ($general_setting && !empty($general_setting->site_title))
+        ? $general_setting->site_title
+        : config('app.name', "Catholic Women's Association");
+    $siteLogo = ($general_setting && !empty($general_setting->site_logo)) ? $general_setting->site_logo : null;
+?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{$general_setting->site_title}}</title>
+    <title>{{ $appName }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="manifest" href="{{url('manifest.json')}}">
-    <link rel="icon" type="image/png" href="{{url('public/logo', $general_setting->site_logo)}}" />
+    @if($siteLogo)
+    <link rel="icon" type="image/png" href="{{url('public/logo', $siteLogo)}}" />
+    @else
+    <link rel="icon" type="image/png" href="{{ url('/branding/cwa-logo.png') }}" />
+    @endif
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">
     <style>
         body {
@@ -86,12 +96,11 @@
     </style>
 </head>
 <body>
-@php
-    $appName = $general_setting->site_title ?? config('app.name', 'Application');
-@endphp
 <div class="auth-card">
-    @if(!empty($general_setting->site_logo))
-        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{$appName}}" class="auth-logo">
+    @if($siteLogo)
+        <img src="{{url('public/logo', $siteLogo)}}" alt="{{$appName}}" class="auth-logo">
+    @else
+        <img src="{{ url('/branding/cwa-logo.png') }}" alt="{{$appName}}" class="auth-logo">
     @endif
     <h1 class="auth-title">{{$appName}}</h1>
 
