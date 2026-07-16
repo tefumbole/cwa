@@ -20,7 +20,7 @@ class SiteBrand
             }
         }
 
-        return url('/branding/beyond-logo.png');
+        return url('/branding/cwa-logo.png');
     }
 
     public static function siteTitle($generalSetting = null)

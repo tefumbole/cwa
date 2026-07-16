@@ -26,7 +26,15 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { blue: '#003D82', dark: '#002855', light: '#0066CC', gold: '#D4AF37', navy: '#1a1a2e' },
+                        // CWA uniform palette: navy cardigan, medium blue accents, white, gold medal/logo
+                        brand: {
+                            blue: '#0B2545',
+                            dark: '#061628',
+                            light: '#2F6FAD',
+                            sky: '#8EC5E8',
+                            gold: '#D4A017',
+                            navy: '#081A30',
+                        },
                     },
                 },
             },
@@ -41,7 +49,7 @@
     </style>
     @stack('head')
 </head>
-<body class="bg-white text-gray-800 flex flex-col min-h-screen">
+<body class="bg-white text-slate-800 flex flex-col min-h-screen">
 
 @php
     $navDefs = [
@@ -226,7 +234,7 @@
         </div>
         <div class="mt-12 pt-8 border-t border-gray-700 text-center">
             <p class="text-gray-400 text-sm">© {{ date('Y') }} Catholic Women's Association. All rights reserved.</p>
-            <p class="text-gray-500 text-xs mt-2">Cameroon</p>
+            <p class="text-gray-500 text-xs mt-2">Head Office: X559+X22 Finance Junction Nkwen, Bamenda</p>
             <p class="text-gray-600 text-xs mt-1">v{{ \App\Support\AppVersion::label() }}</p>
         </div>
     </div>

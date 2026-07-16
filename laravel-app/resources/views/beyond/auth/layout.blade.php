@@ -7,14 +7,14 @@
     @keyframes beyondLogoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .beyond-logo-spin { animation: beyondLogoSpin 6s linear infinite; }
     .beyond-logo-ring {
-        background: conic-gradient(from 0deg, #D4AF37, #003D82, #0066CC, #D4AF37);
+        background: conic-gradient(from 0deg, #D4A017, #0B2545, #2F6FAD, #8EC5E8, #D4A017);
         animation: beyondLogoSpin 8s linear infinite;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="min-h-[80vh] bg-gradient-to-br from-brand-blue to-[#001f42] flex items-center justify-center p-4">
+<div class="min-h-[80vh] bg-gradient-to-br from-brand-blue to-brand-dark flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div class="pt-8 pb-4 px-8 text-center">
             <div class="relative mx-auto mb-4 h-24 w-24">

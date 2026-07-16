@@ -37,8 +37,8 @@
 
 {{-- Hero --}}
 <section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 md:py-0">
-    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('{{ \App\Support\SiteContent::image('home.hero_image', '/branding/beyond-hero.png') }}');">
-        <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('{{ \App\Support\SiteContent::image('home.hero_image', '/branding/cwa-hero.png') }}');">
+        <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/70 via-brand-blue/55 to-brand-dark/80"></div>
     </div>
 
     @for ($i = 0; $i < 6; $i++)
@@ -58,7 +58,7 @@
         </div>
         <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 flex-wrap">
             <a href="{{ url('/about') }}"
-               class="bg-brand-gold hover:bg-[#b5952f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
+               class="bg-brand-gold hover:bg-[#b8890f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,160,23,0.35)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
                 {{ \App\Support\SiteContent::text('home.cta_primary', 'About CWA') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
             </a>
             <a href="{{ url('/about') }}#contact"
@@ -174,7 +174,7 @@
 @endif
 
 {{-- Member voices --}}
-<section class="py-16 bg-gray-50">
+<section class="py-16 bg-brand-sky/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'Voices from Our Members') }}</h2>

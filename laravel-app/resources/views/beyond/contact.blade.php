@@ -24,8 +24,8 @@
                     </h3>
                     <div class="space-y-3 text-gray-600">
                         <p class="font-semibold text-gray-800">{{ \App\Support\SiteContent::text('contact.office_name', "Catholic Women's Association.") }}</p>
-                        <p>{{ \App\Support\SiteContent::text('contact.office_line1', 'Cameroon') }}</p>
-                        <p>{{ \App\Support\SiteContent::text('contact.office_line2', '') }}</p>
+                        <p>{{ \App\Support\SiteContent::text('contact.office_line1', 'X559+X22 Finance Junction Nkwen') }}</p>
+                        <p>{{ \App\Support\SiteContent::text('contact.office_line2', 'Bamenda, Cameroon') }}</p>
                     </div>
                 </div>
 
