@@ -84,6 +84,10 @@ else
 fi
 
 echo "==> 4. Clear / rebuild caches"
+# Drop compiled provider manifests that can reference --dev packages (e.g. Ignition)
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php
+COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload -o --no-dev --no-interaction >/dev/null
+run_artisan package:discover --ansi >/dev/null || true
 run_artisan view:clear || true
 run_artisan route:clear || true
 run_artisan config:clear || true
