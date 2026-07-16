@@ -20,7 +20,8 @@ class SiteBrand
             }
         }
 
-        return url('/branding/cwa-logo.png');
+        // nginx root is laravel-app/, so public assets are under /public/...
+        return url('public/branding/cwa-logo.png');
     }
 
     public static function siteTitle($generalSetting = null)

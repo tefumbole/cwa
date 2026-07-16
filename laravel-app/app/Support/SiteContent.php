@@ -63,7 +63,7 @@ class SiteContent
                 'fields' => [
                     'hero_title'            => ['html', 'Hero title (HTML allowed)', 'Catholic Women\'s Association <span class="text-brand-gold">of Cameroon</span>'],
                     'hero_subtitle'         => ['textarea', 'Hero subtitle', '“To Serve and Not to Be Served” (Matthew 20:28) — Promoting the spiritual, social, and economic well-being of women and families through prayer, evangelization, service, and charity.'],
-                    'hero_image'            => ['image', 'Hero background image', '/branding/cwa-hero.png'],
+                    'hero_image'            => ['image', 'Hero background image', '/public/branding/cwa-hero.png'],
                     'cta_primary'           => ['text', 'Hero primary button text', 'About CWA'],
                     'services_heading'      => ['text', 'Pillars heading', 'Our Mission in Action'],
                     'services_subheading'   => ['text', 'Pillars subheading', 'Faith, service, and community for Catholic women across Cameroon'],

@@ -4,8 +4,8 @@
     $locale = app()->getLocale();
     $isFr = strpos((string) $locale, 'fr') === 0;
     $landingBanner = $isFr
-        ? url('/branding/cwa-landing-fr.png')
-        : url('/branding/cwa-landing-en.png');
+        ? url('public/branding/cwa-landing-fr.png')
+        : url('public/branding/cwa-landing-en.png');
 @endphp
 
 @section('title', $isFr ? "Association des Femmes Catholiques du Cameroun" : "Catholic Women's Association of Cameroon")

@@ -16,7 +16,7 @@
     @if($siteLogo)
     <link rel="icon" type="image/png" href="{{url('public/logo', $siteLogo)}}" />
     @else
-    <link rel="icon" type="image/png" href="{{ url('/branding/cwa-logo.png') }}" />
+    <link rel="icon" type="image/png" href="{{ url('public/branding/cwa-logo.png') }}" />
     @endif
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">
     <style>
@@ -100,7 +100,7 @@
     @if($siteLogo)
         <img src="{{url('public/logo', $siteLogo)}}" alt="{{$appName}}" class="auth-logo">
     @else
-        <img src="{{ url('/branding/cwa-logo.png') }}" alt="{{$appName}}" class="auth-logo">
+        <img src="{{ url('public/branding/cwa-logo.png') }}" alt="{{$appName}}" class="auth-logo">
     @endif
     <h1 class="auth-title">{{$appName}}</h1>
 
