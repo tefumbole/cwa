@@ -46,8 +46,12 @@
 @php
     $navDefs = [
         'home'         => ['label' => 'Home', 'url' => url('/')],
+        'trainings'    => ['label' => 'Training', 'url' => url('/trainings')],
         'events'       => ['label' => 'Events', 'url' => url('/events')],
         'rentals'      => ['label' => 'Rentals', 'url' => url('/rentals')],
+        'register'     => ['label' => 'Register Now', 'url' => url('/register-now')],
+        'apply'        => ['label' => 'Apply Now', 'url' => url('/apply-now'), 'special' => true],
+        'permissions'  => ['label' => 'Permissions', 'url' => url('/permissions')],
         'about'        => ['label' => 'About Us', 'url' => url('/about')],
         'gallery'      => ['label' => 'Gallery', 'url' => url('/gallery')],
         'shareholders' => ['label' => 'Shareholders', 'url' => url('/shareholders')],

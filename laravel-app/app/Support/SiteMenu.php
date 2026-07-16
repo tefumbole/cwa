@@ -10,10 +10,10 @@ use App\SiteSetting;
  */
 class SiteMenu
 {
-    /** Public nav keys removed from the CWA site (still reachable by URL if needed). */
+    /** Public nav keys hidden from the landing menu (contact lives on About). */
     public static function landingHiddenKeys()
     {
-        return ['trainings', 'register', 'apply', 'permissions', 'contact'];
+        return ['contact'];
     }
 
     /** Public site header items: key => label (default order). */
@@ -21,8 +21,12 @@ class SiteMenu
     {
         return [
             'home'         => 'Home',
+            'trainings'    => 'Training',
             'events'       => 'Events',
             'rentals'      => 'Rentals',
+            'register'     => 'Register Now',
+            'apply'        => 'Apply Now',
+            'permissions'  => 'Permissions',
             'about'        => 'About Us',
             'gallery'      => 'Gallery',
             'shareholders' => 'Shareholders',
