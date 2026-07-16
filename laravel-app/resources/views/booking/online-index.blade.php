@@ -9,7 +9,7 @@
         <div class="container-fluid">
             <div class="card">
                 <div class="card-header mt-2">
-                    <h3 class="text-center">Booking List</h3>
+                    <h3 class="text-center">{{ $page_title ?? 'Online Booking List' }}</h3>
                 </div>
                 {!! Form::open(['route' => 'online.booking.index', 'method' => 'get']) !!}
                 <div class="row mb-3">

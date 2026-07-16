@@ -56,10 +56,14 @@
                 {{ \App\Support\SiteContent::text('home.hero_subtitle', 'Professional IT Consultancy, Enterprise Networking, and Audio-Visual Production, Cloud, AI and Cyber') }}
             </p>
         </div>
-        <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-6">
-            <a href="{{ url('/about') }}#contact"
+        <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 flex-wrap">
+            <a href="{{ url('/trainings') }}"
                class="bg-brand-gold hover:bg-[#b5952f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
-                {{ \App\Support\SiteContent::text('home.cta_primary', 'Get a Free Quote') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
+                {{ \App\Support\SiteContent::text('home.cta_primary', 'Get a Free Quotation') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
+            </a>
+            <a href="{{ url('/rentals') }}"
+               class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-white/15 hover:bg-white/25 border border-brand-gold/80 backdrop-blur-sm text-brand-gold inline-flex items-center justify-center gap-2 transition-all">
+                <i data-lucide="package" class="w-5 h-5"></i> Rentals
             </a>
             <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
                class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-brand-light/40 hover:bg-brand-light/60 border border-white/30 backdrop-blur-sm text-white inline-flex items-center justify-center gap-2 transition-all">

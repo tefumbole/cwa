@@ -401,6 +401,35 @@
                 transition: all 0.15s ease;
                 white-space: nowrap;
                 margin: 0;
+                position: relative;
+            }
+
+            .beyond-attention-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+                height: 20px;
+                padding: 0 5px;
+                margin-left: 6px;
+                border-radius: 999px;
+                background: #0b3f90;
+                border: 2px solid #e67e22;
+                color: #e67e22;
+                font-size: 11px;
+                font-weight: 800;
+                line-height: 1;
+            }
+            .beyond-module-tab .beyond-attention-badge {
+                position: absolute;
+                top: -8px;
+                left: -8px;
+                margin: 0;
+                box-shadow: 0 2px 6px rgba(0,0,0,.2);
+            }
+            .side-navbar .beyond-attention-badge {
+                float: right;
+                margin-top: 2px;
             }
 
             .beyond-module-tab i {
@@ -1069,6 +1098,21 @@
                         ])->first();
                         ?>
                         @if($index_permission_booking_active)
+                            <?php
+                                $booking_request_count = \App\Booking::where('is_frontend', 1)->where('booking_status', 2)->count();
+                                $booking_awaiting_count = \App\BookingContract::where('review_status', \App\BookingContract::STATUS_PENDING_CLIENT)->count();
+                                $booking_pending_review_count = \App\BookingContract::where('review_status', \App\BookingContract::STATUS_PENDING_REVIEW)->count();
+                                $booking_reminder_count = 0;
+                                try {
+                                    if (\Illuminate\Support\Facades\Schema::hasTable('booking_reminders')) {
+                                        $booking_reminder_count = \App\BookingReminder::whereDate('remind_at', '>=', now()->toDateString())
+                                            ->whereDate('remind_at', '<=', now()->addDays(3)->toDateString())
+                                            ->count();
+                                    }
+                                } catch (\Throwable $e) {
+                                    $booking_reminder_count = 0;
+                                }
+                            ?>
                             <li><a href="#booking" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-exchange"></i><span>{{trans('file.Booking Module')}}</span></a>
                                 <ul id="booking" class="collapse list-unstyled ">
                                         <?php
@@ -1096,14 +1140,31 @@
                                         ?>
                                     @if($create_permission_booking_active)
                                         <li id="booking-index-menu"><a href="{{route('booking.index')}}">Booking List</a></li>
+                                        <li id="booking-requests-menu">
+                                            <a href="{{route('booking.requests')}}">Booking Request
+                                                @if($booking_request_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_request_count }}">{{ $booking_request_count > 99 ? '99+' : $booking_request_count }}</span>@endif
+                                            </a>
+                                        </li>
                                         <li id="booking-product-menu"><a href="{{route('booking.product')}}">Booked Products</a></li>
-                                        <li id="booking-reminders-menu"><a href="{{route('booking.reminders')}}">Booking Reminder</a></li>
+                                        <li id="booking-reminders-menu">
+                                            <a href="{{route('booking.reminders')}}">Booking Reminder
+                                                @if($booking_reminder_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_reminder_count }}">{{ $booking_reminder_count > 99 ? '99+' : $booking_reminder_count }}</span>@endif
+                                            </a>
+                                        </li>
                                     @endif
                                     @if(in_array('booking_awaiting_signature', $all_permission))
-                                        <li id="booking-awaiting-menu"><a href="{{route('booking.awaiting-signature')}}">Awaiting Signature</a></li>
+                                        <li id="booking-awaiting-menu">
+                                            <a href="{{route('booking.awaiting-signature')}}">Awaiting Signature
+                                                @if($booking_awaiting_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_awaiting_count }}">{{ $booking_awaiting_count > 99 ? '99+' : $booking_awaiting_count }}</span>@endif
+                                            </a>
+                                        </li>
                                     @endif
                                     @if(in_array('booking_pending_review', $all_permission))
-                                        <li id="booking-pending-menu"><a href="{{route('booking.pending-review')}}">Pending Review</a></li>
+                                        <li id="booking-pending-menu">
+                                            <a href="{{route('booking.pending-review')}}">Pending Review
+                                                @if($booking_pending_review_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_pending_review_count }}">{{ $booking_pending_review_count > 99 ? '99+' : $booking_pending_review_count }}</span>@endif
+                                            </a>
+                                        </li>
                                     @endif
                                     @if(in_array('booking_signed_contracts', $all_permission))
                                         <li id="booking-signed-menu"><a href="{{route('booking.signed-contracts')}}">Signed Contracts</a></li>
@@ -1126,6 +1187,41 @@
                             ['role_id', $role->id]
                         ])->first() : null;
                         ?>
+                        <?php
+                        $permissions_module = DB::table('permissions')->where('name', 'permissions_module')->first();
+                        $permissions_module_active = $permissions_module ? DB::table('role_has_permissions')->where([
+                            ['permission_id', $permissions_module->id],
+                            ['role_id', $role->id]
+                        ])->first() : null;
+                        $perm_pending_count = 0;
+                        try {
+                            if (\Illuminate\Support\Facades\Schema::hasTable('staff_permissions')) {
+                                $perm_pending_count = \App\StaffPermission::where('status', 'pending')->count();
+                            }
+                        } catch (\Throwable $e) {
+                            $perm_pending_count = 0;
+                        }
+                        ?>
+                        <?php
+                        $hrm_for_perms = DB::table('permissions')->where('name', 'hrm')->first();
+                        $hrm_for_perms_active = $hrm_for_perms ? DB::table('role_has_permissions')->where([
+                            ['permission_id', $hrm_for_perms->id],
+                            ['role_id', $role->id]
+                        ])->first() : null;
+                        ?>
+                        @if($permissions_module_active || $hrm_for_perms_active)
+                            <li><a href="#staff-permissions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checkmark"></i><span>Permissions</span></a>
+                                <ul id="staff-permissions" class="collapse list-unstyled ">
+                                    <li id="perm-requests-menu">
+                                        <a href="{{ route('permissions.requests') }}">Permission Request
+                                            @if($perm_pending_count > 0)<span class="beyond-attention-badge" data-count="{{ $perm_pending_count }}">{{ $perm_pending_count > 99 ? '99+' : $perm_pending_count }}</span>@endif
+                                        </a>
+                                    </li>
+                                    <li id="perm-approved-menu"><a href="{{ route('permissions.approved') }}">Approved Permissions</a></li>
+                                    <li id="perm-list-menu"><a href="{{ route('permissions.index') }}">Permissions Listings</a></li>
+                                </ul>
+                            </li>
+                        @endif
                         @if($events_module_active)
                             <li><a href="#events-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-calendar"></i><span>Events</span></a>
                                 <ul id="events-module" class="collapse list-unstyled ">
@@ -2267,6 +2363,7 @@
                                 if (anchor === 'courses-module') return 'courses';
                                 if (anchor === 'timesheets-module') return 'timesheets';
                                 if (anchor === 'timesheet-admin-module') return 'timesheet-admin';
+                                if (anchor === 'staff-permissions') return 'permissions';
                                 return anchor;
                             }
                             if (/\/admin\/site-content/.test(href)) return 'site-content';
@@ -3150,7 +3247,9 @@
                           return;
                       }
 
-                      var label = $.trim($link.text());
+                      var $badge = $link.find('.beyond-attention-badge').first();
+                      var badgeHtml = $badge.length ? $badge.clone() : null;
+                      var label = $.trim($link.clone().children('.beyond-attention-badge, .badge').remove().end().text());
                       if (!label) {
                           return;
                       }
@@ -3165,6 +3264,9 @@
                       });
                       $tab.append($('<i>', { 'class': iconClass }));
                       $tab.append($('<span>').text(label));
+                      if (badgeHtml) {
+                          $tab.append(badgeHtml);
+                      }
 
                       $nav.append($tab);
                   });

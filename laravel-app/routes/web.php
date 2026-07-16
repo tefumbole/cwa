@@ -53,6 +53,14 @@ Route::post('/register-now', 'TrainingController@storeRegistration')->name('trai
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');
 Route::redirect('/registration', '/register-now');
 
+Route::get('/rentals', 'PublicRentalController@index')->name('beyond.rentals');
+Route::post('/rentals', 'PublicRentalController@store')->name('beyond.rentals.store');
+Route::get('/rentals/confirmation/{reference}', 'PublicRentalController@confirmation')->name('beyond.rentals.confirmation');
+
+Route::get('/permissions', 'PublicPermissionController@index')->name('beyond.permissions');
+Route::post('/permissions', 'PublicPermissionController@store')->name('beyond.permissions.store');
+Route::get('/permissions/confirmation/{reference}', 'PublicPermissionController@confirmation')->name('beyond.permissions.confirmation');
+
 // Student portal (training) — requires Beyond auth + OTP
 Route::middleware(['beyond.auth', 'beyond.otp'])->group(function () {
     Route::get('/student/dashboard', 'StudentDashboardController@dashboard')->name('student.dashboard');
@@ -248,6 +256,11 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('/admin/tasks/users/search', 'TaskManagerController@searchUsers')->name('tasks.users.search');
 
     // Job Board admin
+    Route::get('/admin/permissions', 'StaffPermissionAdminController@index')->name('permissions.index');
+    Route::get('/admin/permissions/requests', 'StaffPermissionAdminController@requests')->name('permissions.requests');
+    Route::get('/admin/permissions/approved', 'StaffPermissionAdminController@approved')->name('permissions.approved');
+    Route::post('/admin/permissions/{id}', 'StaffPermissionAdminController@update')->name('permissions.update');
+
     Route::get('/admin/jobs', 'JobBoardController@index')->name('jobs.index');
     Route::get('/admin/jobs/create', 'JobBoardController@create')->name('jobs.create');
     Route::get('/admin/jobs/create-internship', 'JobBoardController@createInternship')->name('jobs.createInternship');
@@ -790,6 +803,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::post('bookings/goods-received/{id}/resend', 'BookingGoodsReceiptController@resend')->name('booking.goods-received.resend');
     Route::get('bookings/goods-received/{id}/signed-pdf', 'BookingGoodsReceiptController@signedPdf')->name('booking.goods-received.signed-pdf');
     Route::get('online/bookings/index', 'BookingController@onlineIndex')->name('online.booking.index');
+    Route::get('bookings/requests', 'BookingController@bookingRequests')->name('booking.requests');
     Route::get('bookings/gen_invoice/{id}', 'BookingController@genInvoice')->name('booking.invoice');
     Route::get('bookings/returns/{id}', 'BookingController@return')->name('booking.return');
     Route::post('/bookings/return/data/{id}', 'BookingController@returnData')->name('booking.return.data');

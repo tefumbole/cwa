@@ -189,10 +189,22 @@ class BookingController extends Controller
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
     }
 
+    public function bookingRequests(Request $request)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if ($role && ($role->hasPermissionTo('booking_index') || $role->hasPermissionTo('booking_module') || $role->hasPermissionTo('sales-index'))) {
+            $request->attributes->set('booking_requests_title', 'Booking Requests');
+
+            return $this->onlineIndex($request);
+        }
+
+        return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access booking requests.');
+    }
+
     public function onlineIndex(Request $request)
     {
         $role = Role::find(Auth::user()->role_id);
-        if($role->hasPermissionTo('sales-index')) {
+        if($role->hasPermissionTo('sales-index') || $role->hasPermissionTo('booking_index') || $role->hasPermissionTo('booking_module')) {
             $permissions = Role::findByName($role->name)->permissions;
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
@@ -218,8 +230,9 @@ class BookingController extends Controller
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
             $lims_warehouse_list = Warehouse::where('is_active', true)->get();
             $lims_account_list = Account::with('departments')->where('is_active', true)->get();
+            $page_title = $request->attributes->get('booking_requests_title', 'Online Booking List');
 
-            return view('booking.online-index',compact('starting_date', 'ending_date', 'warehouse_id', 'lims_gift_card_list', 'lims_pos_setting_data', 'lims_reward_point_setting_data', 'lims_account_list', 'lims_warehouse_list', 'all_permission'));
+            return view('booking.online-index',compact('starting_date', 'ending_date', 'warehouse_id', 'lims_gift_card_list', 'lims_pos_setting_data', 'lims_reward_point_setting_data', 'lims_account_list', 'lims_warehouse_list', 'all_permission', 'page_title'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
