@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Auto-bump ERP patch version before push (unless this push already updates appVersion.js).
+# Ensure CWA version was bumped before push (covers commits that skipped the hook).
+# Skip once with:  SKIP_VERSION_BUMP=1 git push ...
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -23,12 +24,13 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     changed_files="$(git diff --name-only $range 2>/dev/null || true)"
   fi
 
-  if echo "$changed_files" | grep -q 'appVersion.js'; then
+  # Already bumped in this push (pre-commit or manual) — do nothing.
+  if echo "$changed_files" | grep -Eq '(^|/)laravel-app/VERSION$|(^|/)appVersion\.js$'; then
     continue
   fi
 
-  NEXT="$(node tools/bump-version.js | awk '{print $3}')"
-  git add src/constants/appVersion.js apps/api/src/constants/appVersion.js
+  NEXT="$(node tools/bump-version.js | awk -F' -> ' '{print $2}')"
+  git add laravel-app/VERSION src/constants/appVersion.js apps/api/src/constants/appVersion.js
   git commit -m "chore: bump version to ${NEXT}" --no-verify
 done
 

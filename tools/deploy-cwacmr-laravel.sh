@@ -110,4 +110,5 @@ fi
 echo ""
 echo "CWA Laravel deploy complete."
 echo "  HEAD: $(git -C "$ROOT" rev-parse --short HEAD)"
+echo "  VERSION: $(tr -d '\n' < "$APP/VERSION" 2>/dev/null || echo '?')"
 echo "  Site: https://www.cwacmr.org"

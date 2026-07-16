@@ -245,7 +245,7 @@
         <div class="mt-12 pt-8 border-t border-gray-700 text-center">
             <p class="text-gray-400 text-sm">© {{ date('Y') }} Catholic Women's Association. All rights reserved.</p>
             <p class="text-gray-500 text-xs mt-2">Head Office: X559+X22 Finance Junction Nkwen, Bamenda</p>
-            <p class="text-gray-600 text-xs mt-1">v{{ \App\Support\AppVersion::label() }}</p>
+            <p class="text-gray-600 text-xs mt-1">{{ \App\Support\AppVersion::label() }}</p>
         </div>
     </div>
 </footer>

@@ -15,7 +15,7 @@ return [
 
     'name' => env('APP_NAME', "Catholic Women's Association"),
 
-    'version' => env('APP_VERSION', 'BCL V.2.1.4'),
+    'version' => env('APP_VERSION', 'CWA V 1.1.1'),
 
     'version_build' => env('APP_VERSION_BUILD'),
 

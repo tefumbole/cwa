@@ -1,1 +1,1 @@
-export const APP_VERSION = 'ABT_ERP_V.2.2.39';
+export const APP_VERSION = 'CWA_V.1.1.1';

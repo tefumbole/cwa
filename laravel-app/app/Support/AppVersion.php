@@ -19,7 +19,7 @@ class AppVersion
             return $configured;
         }
 
-        return '2.2.0';
+        return 'CWA V 1.1.1';
     }
 
     public static function build()
