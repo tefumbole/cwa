@@ -1,39 +1,48 @@
+@php
+    $siteLogoUrl = \App\Support\SiteBrand::logoUrl($general_setting ?? null);
+    $siteTitle = \App\Support\SiteBrand::siteTitle($general_setting ?? null);
+    $webUser = Auth::guard('web')->user();
+    $beyondUser = Auth::guard('beyond')->user();
+    $headerUser = $webUser ?: $beyondUser;
+    $isAdminSession = (bool) $webUser;
+    $headerName = $headerUser ? $headerUser->name : '';
+    $headerRole = $isAdminSession
+        ? 'ADMINISTRATOR'
+        : strtoupper(str_replace('_', ' ', optional($beyondUser)->role ?: 'USER'));
+    $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
+    $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
+    $locale = app()->getLocale();
+    $isFr = strpos((string) $locale, 'fr') === 0;
+@endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $isFr ? 'fr' : 'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @php
-        $siteLogoUrl = \App\Support\SiteBrand::logoUrl($general_setting ?? null);
-        $siteTitle = \App\Support\SiteBrand::siteTitle($general_setting ?? null);
-        $webUser = Auth::guard('web')->user();
-        $beyondUser = Auth::guard('beyond')->user();
-        $headerUser = $webUser ?: $beyondUser;
-        $isAdminSession = (bool) $webUser;
-        $headerName = $headerUser ? $headerUser->name : '';
-        $headerRole = $isAdminSession
-            ? 'ADMINISTRATOR'
-            : strtoupper(str_replace('_', ' ', optional($beyondUser)->role ?: 'USER'));
-        $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
-        $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
-    @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
     <meta name="description" content="@yield('meta_description', "Catholic Women's Association of Cameroon — To Serve and Not to Be Served (Matthew 20:28). Prayer, evangelization, charity, and community service.")">
     <link rel="icon" href="{{ $siteLogoUrl }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('public/css/cwa-theme.css') }}">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // CWA uniform palette: navy cardigan, medium blue accents, white, gold medal/logo
+                        // CWA Cameroon 60th Anniversary palette
                         brand: {
-                            blue: '#0B2545',
-                            dark: '#061628',
-                            light: '#2F6FAD',
-                            sky: '#8EC5E8',
-                            gold: '#D4A017',
-                            navy: '#081A30',
+                            primary: '#0A3D91',
+                            blue: '#0A3D91',
+                            dark: '#072a66',
+                            secondary: '#1E6FD9',
+                            light: '#A7D1FF',
+                            sky: '#A7D1FF',
+                            gold: '#D4AF37',
+                            'gold-light': '#E2C14E',
+                            soft: '#F7F9FC',
+                            border: '#DCE4F2',
+                            muted: '#6B7280',
+                            navy: '#0A3D91',
                         },
                     },
                 },
@@ -99,8 +108,10 @@
 
             <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
                 <div class="flex items-center gap-1 text-xs font-semibold">
-                    <span class="bg-brand-gold text-brand-blue px-2 py-1 rounded">EN</span>
-                    <a href="#" class="text-white hover:text-brand-gold px-2 py-1 border border-white/20 rounded">FR</a>
+                    <a href="{{ url('/language/en') }}"
+                       class="px-2 py-1 rounded {{ ! $isFr ? 'bg-brand-gold text-white' : 'text-white hover:text-brand-gold-light border border-white/20' }}">EN</a>
+                    <a href="{{ url('/language/fr') }}"
+                       class="px-2 py-1 rounded {{ $isFr ? 'bg-brand-gold text-white' : 'text-white hover:text-brand-gold-light border border-white/20' }}">FR</a>
                 </div>
 
                 <a href="tel:+237683155315" class="text-white hover:text-brand-gold transition-colors" title="Call Us">

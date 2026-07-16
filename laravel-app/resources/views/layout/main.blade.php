@@ -93,15 +93,26 @@
 
         <!-- Custom stylesheet - for your changes-->
         <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
+        <link rel="stylesheet" href="<?php echo asset('public/css/cwa-theme.css') ?>" type="text/css" id="cwa-theme">
         <style>
             :root {
-                --beyond-primary: #0b3f90;
-                --beyond-primary-dark: #072f6b;
-                --beyond-accent: #c6ab47;
-                --beyond-bg: #f3f6fb;
-                --beyond-card: #ffffff;
-                --beyond-text: #1f2a44;
-                --beyond-muted: #6f7b91;
+                --cwa-primary: #0A3D91;
+                --cwa-secondary: #1E6FD9;
+                --cwa-light-blue: #A7D1FF;
+                --cwa-gold: #D4AF37;
+                --cwa-gold-light: #E2C14E;
+                --cwa-white: #FFFFFF;
+                --cwa-soft-white: #F7F9FC;
+                --cwa-border: #DCE4F2;
+                --cwa-text: #1F2B3D;
+                --cwa-muted: #6B7280;
+                --beyond-primary: var(--cwa-primary);
+                --beyond-primary-dark: #072a66;
+                --beyond-accent: var(--cwa-gold);
+                --beyond-bg: var(--cwa-soft-white);
+                --beyond-card: var(--cwa-white);
+                --beyond-text: var(--cwa-text);
+                --beyond-muted: var(--cwa-muted);
             }
 
             body {
@@ -294,15 +305,15 @@
 
             .side-navbar .side-menu > li > a:hover,
             .side-navbar .side-menu > li > a:focus {
-                background: rgba(198, 171, 71, 0.18);
+                background: var(--cwa-secondary);
                 color: #ffffff;
             }
 
             .side-navbar .side-menu > li > a.menu-parent-active,
             .side-navbar .side-menu > li > a[aria-expanded="true"],
             .side-navbar .side-menu > li.active > a {
-                background: var(--beyond-accent) !important;
-                color: var(--beyond-primary-dark) !important;
+                background: var(--cwa-gold) !important;
+                color: #ffffff !important;
                 font-weight: 700;
             }
 
@@ -311,7 +322,7 @@
             .side-navbar .side-menu > li.active > a i,
             .side-navbar .side-menu > li > a.menu-parent-active [class*="dripicons-"],
             .side-navbar .side-menu > li > a.menu-parent-active [class*="fa-"] {
-                color: var(--beyond-primary-dark) !important;
+                color: #ffffff !important;
             }
 
             #side-main-menu ul.collapse,

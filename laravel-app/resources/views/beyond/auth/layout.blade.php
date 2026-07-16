@@ -7,7 +7,7 @@
     @keyframes beyondLogoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .beyond-logo-spin { animation: beyondLogoSpin 6s linear infinite; }
     .beyond-logo-ring {
-        background: conic-gradient(from 0deg, #D4A017, #0B2545, #2F6FAD, #8EC5E8, #D4A017);
+        background: conic-gradient(from 0deg, #D4AF37, #0A3D91, #1E6FD9, #A7D1FF, #D4AF37);
         animation: beyondLogoSpin 8s linear infinite;
     }
 </style>

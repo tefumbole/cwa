@@ -218,6 +218,9 @@ Route::post('/signup', 'BeyondAuthController@register')->name('beyond.signup');
 // Portal logout must NOT share POST /logout with Auth::routes (admin POS logout).
 Route::post('/portal/logout', 'BeyondAuthController@logout')->name('beyond.logout');
 
+// Public EN/FR language switch for the CWA site (sets language cookie)
+Route::get('/language/{locale}', 'LanguageController@switchLanguage')->name('language.switch');
+
 Route::group(['middleware' => 'auth'], function() {
 	Route::get('/dashboard', 'HomeController@dashboard');
 });

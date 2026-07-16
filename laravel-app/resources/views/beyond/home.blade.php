@@ -1,212 +1,167 @@
 @extends('beyond.layout')
 
-@section('title', "Catholic Women's Association of Cameroon")
-@section('meta_description', "Catholic Women's Association of Cameroon — To Serve and Not to Be Served (Matthew 20:28). Spiritual growth, evangelization, charity, and community service.")
+@php
+    $locale = app()->getLocale();
+    $isFr = strpos((string) $locale, 'fr') === 0;
+    $landingBanner = $isFr
+        ? url('/branding/cwa-landing-fr.png')
+        : url('/branding/cwa-landing-en.png');
+@endphp
+
+@section('title', $isFr ? "Association des Femmes Catholiques du Cameroun" : "Catholic Women's Association of Cameroon")
+@section('meta_description', $isFr
+    ? "Association des Femmes Catholiques du Cameroun — Pour servir et non pour être servi (Matthieu 20:28). 60 ans de foi, de service et d'autonomisation."
+    : "Catholic Women's Association of Cameroon — To Serve and Not to Be Served (Matthew 20:28). Six decades of faith, service and empowerment.")
 
 @section('content')
 
-@php
-    $pillars = [
-        ['icon' => 'heart', 'title' => 'Spiritual Growth', 'desc' => 'Promoting renewal of Catholic women and deepening knowledge of God’s Word'],
-        ['icon' => 'book-open', 'title' => 'Christian Faith', 'desc' => 'Strengthening faith through prayer, formation, and witness'],
-        ['icon' => 'hand-heart', 'title' => 'Evangelization & Charity', 'desc' => 'Translating Christian values into action through service and works of mercy'],
-        ['icon' => 'users', 'title' => 'Family & Church', 'desc' => 'Supporting families, the Church, and society through community service'],
-        ['icon' => 'sparkles', 'title' => 'Women’s Well-being', 'desc' => 'Uplifting the spiritual, social, and economic well-being of women and families'],
-        ['icon' => 'church', 'title' => 'Marian Model', 'desc' => 'Modelling our lives after the Blessed Virgin Mary in holiness and service'],
-    ];
-    $whyUs = [
-        ['icon' => 'book-open', 'title' => 'Faith First', 'desc' => 'Rooted in the Gospel and the life of the Church'],
-        ['icon' => 'heart-handshake', 'title' => 'Service', 'desc' => 'Living our motto: to serve and not to be served'],
-        ['icon' => 'users', 'title' => 'Sisterhood', 'desc' => 'A community of committed Catholic women across Cameroon'],
-        ['icon' => 'globe', 'title' => 'Society', 'desc' => 'Transforming communities through love, charity, and evangelization'],
-    ];
-    $communities = [
-        ['icon' => 'church', 'name' => 'Parishes'],
-        ['icon' => 'home', 'name' => 'Families'],
-        ['icon' => 'heart', 'name' => 'Women'],
-        ['icon' => 'graduation-cap', 'name' => 'Youth'],
-        ['icon' => 'heart', 'name' => 'The Needy'],
-        ['icon' => 'landmark', 'name' => 'Society'],
-    ];
-    $testimonials = [
-        ['name' => 'Member', 'role' => 'CWA Cameroon', 'content' => 'Through CWA I have grown in prayer and found sisters who serve God and neighbour with joy.'],
-        ['name' => 'Member', 'role' => 'Parish Group', 'content' => 'Our association helps us live the Gospel through charity, evangelization, and care for families.'],
-        ['name' => 'Member', 'role' => 'CWA Community', 'content' => 'We strive to model our lives after the Blessed Virgin Mary — holy, committed, and ready to serve.'],
-    ];
-@endphp
-
-{{-- Hero --}}
-<section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 md:py-0">
-    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('{{ \App\Support\SiteContent::image('home.hero_image', '/branding/cwa-hero.png') }}');">
-        <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/70 via-brand-blue/55 to-brand-dark/80"></div>
-    </div>
-
-    @for ($i = 0; $i < 6; $i++)
-        <div class="absolute w-2 h-2 rounded-full bg-brand-gold/40 floaty"
-             style="left: {{ 10 + $i * 15 }}%; top: {{ 20 + ($i % 3) * 25 }}%; animation-delay: {{ $i * 0.4 }}s;"></div>
-    @endfor
-
-    <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full mt-20 md:mt-0">
-        <div class="mb-8 flex flex-col items-center">
-            <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}" class="h-20 md:h-24 w-auto object-contain mb-6 drop-shadow-2xl">
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight">
-                {!! \App\Support\SiteContent::html('home.hero_title', 'Catholic Women\'s Association <span class="text-brand-gold">of Cameroon</span>') !!}
-            </h1>
-            <p class="text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto drop-shadow-md">
-                {{ \App\Support\SiteContent::text('home.hero_subtitle', '“To Serve and Not to Be Served” (Matthew 20:28) — Promoting the spiritual, social, and economic well-being of women and families through prayer, evangelization, service, and charity.') }}
-            </p>
-        </div>
-        <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 flex-wrap">
-            <a href="{{ url('/about') }}"
-               class="bg-brand-gold hover:bg-[#b8890f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,160,23,0.35)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
-                {{ \App\Support\SiteContent::text('home.cta_primary', 'About CWA') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
-            </a>
-            <a href="{{ url('/about') }}#contact"
-               class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-white/15 hover:bg-white/25 border border-brand-gold/80 backdrop-blur-sm text-brand-gold inline-flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="mail" class="w-5 h-5"></i> Contact Us
-            </a>
-            <a href="https://wa.me/237683155315" target="_blank" rel="noopener"
-               class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-brand-light/40 hover:bg-brand-light/60 border border-white/30 backdrop-blur-sm text-white inline-flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
-            </a>
+{{-- 60th Anniversary landing banner (EN / FR) --}}
+<section class="relative w-full bg-brand-soft">
+    <div class="relative w-full">
+        <img
+            src="{{ $landingBanner }}"
+            alt="{{ $isFr ? 'CWA Cameroun — 60e anniversaire' : 'CWA Cameroon — 60th Anniversary' }}"
+            class="w-full h-auto block object-cover object-center max-h-[92vh]"
+        >
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-blue/90 via-brand-blue/40 to-transparent pt-24 pb-8 px-4">
+            <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
+                <a href="{{ url('/about') }}"
+                   class="bg-brand-gold hover:bg-brand-gold-light text-white h-12 px-8 text-base font-bold rounded-full inline-flex items-center justify-center shadow-lg">
+                    {{ $isFr ? 'À propos de la CWA' : 'About CWA' }}
+                    <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
+                </a>
+                <a href="{{ url('/about') }}#contact"
+                   class="h-12 px-8 text-base font-bold rounded-full border-2 border-white/80 text-white hover:bg-white/15 inline-flex items-center justify-center gap-2">
+                    <i data-lucide="mail" class="w-4 h-4"></i>
+                    {{ $isFr ? 'Nous contacter' : 'Contact Us' }}
+                </a>
+                <a href="https://wa.me/237683155315" target="_blank" rel="noopener"
+                   class="h-12 px-8 text-base font-bold rounded-full bg-[#25D366] hover:bg-[#1EBE57] text-white inline-flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    WhatsApp
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
-{{-- Mission pillars --}}
+{{-- Motto strip --}}
+<section class="bg-brand-blue text-white py-10">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <p class="text-xl md:text-2xl font-semibold tracking-wide">
+            {{ $isFr ? '« Pour servir et non pour être servi »' : '“To Serve and Not to Be Served”' }}
+        </p>
+        <p class="text-brand-gold mt-2 text-sm md:text-base tracking-widest uppercase">
+            {{ $isFr ? '— Matthieu 20:28 —' : '— Matthew 20:28 —' }}
+        </p>
+        <p class="mt-6 text-white/85 max-w-2xl mx-auto">
+            {{ $isFr
+                ? 'Six décennies de foi, de service et d\'autonomisation (1964 – 2024).'
+                : 'Six decades of faith, service and empowerment (1964 – 2024).' }}
+        </p>
+    </div>
+</section>
+
+{{-- Pillars --}}
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.services_heading', 'Our Mission in Action') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.services_subheading', 'Faith, service, and community for Catholic women across Cameroon') }}</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-brand-blue mb-3">
+                {{ $isFr ? 'Nos piliers' : 'Our Pillars' }}
+            </h2>
+            <div class="h-1 w-20 bg-brand-gold mx-auto"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach ($pillars as $s)
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-gray-100">
-                    <div class="text-brand-light mb-4"><i data-lucide="{{ $s['icon'] }}" class="w-12 h-12"></i></div>
-                    <h3 class="text-2xl font-semibold text-brand-blue mb-3">{{ $s['title'] }}</h3>
-                    <p class="text-gray-700">{{ $s['desc'] }}</p>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+            @foreach (($isFr
+                ? [
+                    ['icon' => 'hand-heart', 'label' => 'Service'],
+                    ['icon' => 'book-open', 'label' => 'Foi'],
+                    ['icon' => 'users', 'label' => 'Unité'],
+                    ['icon' => 'heart', 'label' => 'Amour'],
+                    ['icon' => 'sparkles', 'label' => 'Autonomisation'],
+                ]
+                : [
+                    ['icon' => 'hand-heart', 'label' => 'Service'],
+                    ['icon' => 'book-open', 'label' => 'Faith'],
+                    ['icon' => 'users', 'label' => 'Unity'],
+                    ['icon' => 'heart', 'label' => 'Love'],
+                    ['icon' => 'sparkles', 'label' => 'Empowerment'],
+                ]) as $pillar)
+                <div class="bg-brand-soft border border-brand-border rounded-xl p-6 text-center hover:shadow-md transition">
+                    <div class="text-brand-gold mb-3 flex justify-center"><i data-lucide="{{ $pillar['icon'] }}" class="w-10 h-10"></i></div>
+                    <h3 class="text-sm md:text-base font-bold text-brand-blue uppercase tracking-wide">{{ $pillar['label'] }}</h3>
                 </div>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- Why CWA --}}
-<section class="py-16 bg-brand-blue">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('home.why_heading', "Why the Catholic Women\\'s Association?") }}</h2>
-            <p class="text-xl text-gray-300">{{ \App\Support\SiteContent::text('home.why_subheading', 'Serving God, the Church, and society since 1964') }}</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            @foreach ($whyUs as $f)
-                <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 border border-white/5">
-                    <div class="text-brand-gold mb-4 flex justify-center"><i data-lucide="{{ $f['icon'] }}" class="w-10 h-10"></i></div>
-                    <h3 class="text-xl font-semibold text-white mb-2">{{ $f['title'] }}</h3>
-                    <p class="text-gray-300 text-sm">{{ $f['desc'] }}</p>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- Communities --}}
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.industries_heading', 'Communities We Serve') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.industries_subheading', 'Walking with women, families, parishes, and society across Cameroon') }}</p>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            @foreach ($communities as $ind)
-                <div class="bg-white rounded-xl shadow-md p-6 text-center border border-gray-100 hover:shadow-lg transition-shadow">
-                    <div class="text-brand-light mb-3 flex justify-center"><i data-lucide="{{ $ind['icon'] }}" class="w-10 h-10"></i></div>
-                    <h3 class="text-lg font-semibold text-brand-blue">{{ $ind['name'] }}</h3>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- Events --}}
+{{-- Events teaser --}}
 @if(!empty($homeEvents) && $homeEvents->isNotEmpty())
-<section class="py-16 bg-white border-t border-gray-100">
+<section class="py-16 bg-brand-soft border-t border-brand-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">Upcoming Events</h2>
-            <p class="text-xl text-gray-600">Gatherings, formation, and celebrations of the Catholic Women's Association</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-brand-blue mb-3">
+                {{ $isFr ? 'Événements à venir' : 'Upcoming Events' }}
+            </h2>
+            <div class="h-1 w-20 bg-brand-gold mx-auto"></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($homeEvents as $ev)
-                <a href="{{ url('/events/' . $ev['slug']) }}" class="group block bg-white rounded-xl border border-gray-200 hover:border-brand-blue hover:shadow-xl transition overflow-hidden">
-                    <div class="relative h-44 bg-gray-200 overflow-hidden">
+                <a href="{{ url('/events/' . $ev['slug']) }}" class="group block bg-white rounded-xl border border-brand-border hover:border-brand-gold hover:shadow-xl transition overflow-hidden">
+                    <div class="relative h-44 bg-brand-light/30 overflow-hidden">
                         @if(!empty($ev['flyer']))
                             <img src="{{ $ev['flyer'] }}" alt="{{ $ev['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-blue to-brand-light">
-                                <i data-lucide="calendar" class="w-12 h-12 text-white opacity-60"></i>
+                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-blue to-brand-secondary">
+                                <i data-lucide="calendar" class="w-12 h-12 text-white opacity-70"></i>
                             </div>
                         @endif
                         @if(!empty($ev['start']))
-                            <span class="absolute top-3 right-3 bg-brand-gold text-brand-blue text-xs font-bold px-3 py-1 rounded-full">{{ $ev['start']->format('M d') }}</span>
+                            <span class="absolute top-3 right-3 bg-brand-gold text-white text-xs font-bold px-3 py-1 rounded-full">{{ $ev['start']->format('M d') }}</span>
                         @endif
                     </div>
                     <div class="p-5">
-                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand-blue line-clamp-2 mb-2">{{ $ev['title'] }}</h3>
+                        <h3 class="text-lg font-bold text-brand-blue group-hover:text-brand-secondary line-clamp-2 mb-2">{{ $ev['title'] }}</h3>
                         @if(!empty($ev['start']))
-                            <p class="text-sm text-gray-600 mb-1"><i data-lucide="calendar" class="w-4 h-4 inline text-brand-blue"></i> {{ $ev['start']->format('D, M j, Y g:i A') }}</p>
+                            <p class="text-sm text-brand-muted mb-1"><i data-lucide="calendar" class="w-4 h-4 inline text-brand-gold"></i> {{ $ev['start']->format('D, M j, Y g:i A') }}</p>
                         @endif
                         @if(!empty($ev['venue']))
-                            <p class="text-sm text-gray-600 line-clamp-1"><i data-lucide="map-pin" class="w-4 h-4 inline text-brand-blue"></i> {{ $ev['venue'] }}</p>
+                            <p class="text-sm text-brand-muted line-clamp-1"><i data-lucide="map-pin" class="w-4 h-4 inline text-brand-gold"></i> {{ $ev['venue'] }}</p>
                         @endif
                     </div>
                 </a>
             @endforeach
         </div>
         <div class="text-center mt-10">
-            <a href="{{ url('/events') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-blue text-white font-semibold hover:bg-brand-dark transition">
-                View all events <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            <a href="{{ url('/events') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-primary text-white font-semibold hover:bg-brand-secondary transition">
+                {{ $isFr ? 'Voir tous les événements' : 'View all events' }}
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
         </div>
     </div>
 </section>
 @endif
 
-{{-- Member voices --}}
-<section class="py-16 bg-brand-sky/15">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'Voices from Our Members') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.testimonials_subheading', 'Women living the CWA motto through faith and service') }}</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            @foreach ($testimonials as $t)
-                <div class="bg-white rounded-xl shadow-md p-8 border border-gray-200">
-                    <p class="text-gray-700 italic mb-6">"{{ $t['content'] }}"</p>
-                    <div>
-                        <p class="font-semibold text-brand-blue">{{ $t['name'] }}</p>
-                        <p class="text-sm text-gray-500">{{ $t['role'] }}</p>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
 {{-- CTA --}}
-<section class="py-16 bg-gradient-to-r from-brand-blue via-brand-light to-brand-blue">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-6">{{ \App\Support\SiteContent::text('home.cta_heading', 'Join Us in Service') }}</h2>
-        <p class="text-xl text-gray-200 mb-8">{{ \App\Support\SiteContent::text('home.cta_text', "Reach out to the Catholic Women\\'s Association — together we serve God, the Church, and society in the spirit of the Blessed Virgin Mary.") }}</p>
+<section class="py-16 bg-gradient-to-r from-brand-blue via-brand-secondary to-brand-blue">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            {{ $isFr ? 'Marchez avec nous dans la foi et le service' : 'Walk with us in faith and service' }}
+        </h2>
+        <p class="text-lg text-white/90 mb-8">
+            {{ $isFr
+                ? 'Contactez l\'Association des Femmes Catholiques — nous sommes là pour servir.'
+                : 'Contact the Catholic Women\'s Association — we are here to serve.' }}
+        </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="https://wa.me/237683155315" target="_blank" rel="noopener"
-               class="px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold inline-flex items-center justify-center gap-2">
-                <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
+               class="px-8 py-4 text-lg rounded-lg shadow-xl bg-brand-gold hover:bg-brand-gold-light text-white font-semibold inline-flex items-center justify-center gap-2">
+                <i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp
             </a>
             <a href="mailto:info@cwacam.org"
-               class="bg-white text-brand-blue hover:bg-gray-100 px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl font-semibold inline-flex items-center justify-center gap-2">
-                <i data-lucide="mail" class="w-5 h-5"></i> Email Us
+               class="bg-white text-brand-blue hover:bg-brand-soft px-8 py-4 text-lg rounded-lg shadow-xl font-semibold inline-flex items-center justify-center gap-2">
+                <i data-lucide="mail" class="w-5 h-5"></i> {{ $isFr ? 'Écrire' : 'Email Us' }}
             </a>
         </div>
     </div>

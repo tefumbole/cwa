@@ -1,0 +1,346 @@
+/*
+ * Catholic Women's Association Cameroon — 60th Anniversary theme
+ * Source of truth for brand colors. Also published to public/css/cwa-theme.css
+ */
+
+:root {
+  /* Main Marian Blues */
+  --cwa-primary: #0A3D91;
+  --cwa-secondary: #1E6FD9;
+  --cwa-light-blue: #A7D1FF;
+
+  /* Anniversary Gold */
+  --cwa-gold: #D4AF37;
+  --cwa-gold-light: #E2C14E;
+
+  /* Whites */
+  --cwa-white: #FFFFFF;
+  --cwa-soft-white: #F7F9FC;
+
+  /* Neutral */
+  --cwa-border: #DCE4F2;
+  --cwa-text: #1F2B3D;
+  --cwa-muted: #6B7280;
+
+  /* Legacy aliases used by admin layout */
+  --beyond-primary: var(--cwa-primary);
+  --beyond-primary-dark: #072a66;
+  --beyond-accent: var(--cwa-gold);
+  --beyond-bg: var(--cwa-soft-white);
+  --beyond-card: var(--cwa-white);
+  --beyond-text: var(--cwa-text);
+  --beyond-muted: var(--cwa-muted);
+}
+
+/* ---------- Base ---------- */
+body {
+  color: var(--cwa-text);
+  background: var(--cwa-soft-white);
+}
+
+h1, h2, h3, h4, .page-title, .card-header h3, .card-header h4 {
+  color: var(--cwa-primary);
+}
+
+/* ---------- Sidebar ---------- */
+.side-navbar {
+  background: var(--cwa-primary) !important;
+}
+
+.sidebar-user-panel {
+  background: #072a66 !important;
+}
+
+.side-navbar .side-menu li a i,
+.side-navbar .side-menu li a [class*="dripicons-"],
+.side-navbar .side-menu li a [class*="fa-"],
+.side-navbar .side-menu li a i::before,
+.sidebar-user-link i {
+  color: var(--cwa-gold) !important;
+}
+
+.side-navbar .side-menu > li > a:hover,
+.side-navbar .side-menu > li > a:focus {
+  background: var(--cwa-secondary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.side-navbar .side-menu > li > a.menu-parent-active,
+.side-navbar .side-menu > li > a[aria-expanded="true"],
+.side-navbar .side-menu > li.active > a {
+  background: var(--cwa-gold) !important;
+  color: var(--cwa-white) !important;
+}
+
+.side-navbar .side-menu > li > a.menu-parent-active i,
+.side-navbar .side-menu > li > a[aria-expanded="true"] i,
+.side-navbar .side-menu > li.active > a i,
+.side-navbar .side-menu > li > a.menu-parent-active [class*="dripicons-"],
+.side-navbar .side-menu > li > a.menu-parent-active [class*="fa-"],
+.side-navbar .side-menu > li.active > a [class*="dripicons-"],
+.side-navbar .side-menu > li.active > a [class*="fa-"] {
+  color: var(--cwa-white) !important;
+}
+
+.side-navbar li a:focus,
+.side-navbar li a:hover,
+.side-navbar li.active > a,
+.side-navbar li a[aria-expanded="true"] {
+  background: var(--cwa-secondary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.side-navbar .sidenav-header {
+  background: var(--cwa-primary) !important;
+}
+
+/* ---------- Top nav / navbar ---------- */
+nav.navbar,
+.navbar,
+.navbar-light,
+.pos-page .navbar {
+  background: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+}
+
+nav.navbar a,
+.navbar a,
+.navbar .nav-link,
+nav.navbar a.menu-btn {
+  color: var(--cwa-white) !important;
+}
+
+nav.navbar a:hover,
+.navbar a:hover,
+.navbar .nav-link:hover,
+nav.navbar a.menu-btn:hover {
+  color: var(--cwa-gold-light) !important;
+  background: transparent !important;
+}
+
+nav.navbar a.active,
+.navbar .nav-link.active {
+  color: var(--cwa-gold) !important;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary,
+button.btn-primary,
+a.btn-primary,
+.btn-info,
+button.btn-info,
+a.btn-info {
+  background: var(--cwa-primary) !important;
+  border-color: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-info:hover,
+.btn-info:focus {
+  background: var(--cwa-secondary) !important;
+  border-color: var(--cwa-secondary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.btn-warning,
+button.btn-warning,
+a.btn-warning,
+.btn-secondary,
+button.btn-secondary,
+a.btn-secondary {
+  background: var(--cwa-gold) !important;
+  border-color: var(--cwa-gold) !important;
+  color: var(--cwa-white) !important;
+}
+
+.btn-warning:hover,
+.btn-secondary:hover {
+  background: var(--cwa-gold-light) !important;
+  border-color: var(--cwa-gold-light) !important;
+  color: var(--cwa-white) !important;
+}
+
+.btn-success,
+button.btn-success,
+a.btn-success,
+.btn-outline-success {
+  background: var(--cwa-secondary) !important;
+  border-color: var(--cwa-secondary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.btn-success:hover,
+.btn-outline-success:hover {
+  background: var(--cwa-primary) !important;
+  border-color: var(--cwa-primary) !important;
+}
+
+.btn-danger,
+.btn-outline-danger {
+  background: var(--cwa-muted) !important;
+  border-color: var(--cwa-muted) !important;
+  color: var(--cwa-white) !important;
+}
+
+/* ---------- Tabs ---------- */
+.nav-tabs .nav-link,
+.nav-pills .nav-link {
+  background: var(--cwa-white) !important;
+  color: var(--cwa-primary) !important;
+  border: 1px solid var(--cwa-light-blue) !important;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-pills .nav-link:hover {
+  background: var(--cwa-light-blue) !important;
+  color: var(--cwa-primary) !important;
+}
+
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  background: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+  border-color: var(--cwa-primary) !important;
+}
+
+/* ---------- Cards / dashboard ---------- */
+.card,
+.count-title,
+.statistics .card {
+  background: var(--cwa-white);
+  border-color: var(--cwa-border);
+}
+
+.card {
+  border-top: 5px solid var(--cwa-gold);
+}
+
+.card-title,
+.count-title strong,
+.dashboard-counts .count-title h3,
+.statistics .card-header {
+  color: var(--cwa-primary) !important;
+}
+
+.dashboard-counts .count-title i,
+.card .icon,
+.statistics i {
+  color: var(--cwa-gold) !important;
+}
+
+/* ---------- Tables ---------- */
+table thead,
+table.dataTable thead,
+.table thead th,
+.dataTables_wrapper .dataTables_scrollHead {
+  background: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.table thead th,
+table.dataTable thead th {
+  border-color: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.table-hover tbody tr:hover,
+table.dataTable tbody tr:hover {
+  background: var(--cwa-soft-white) !important;
+}
+
+.table a,
+table a {
+  color: var(--cwa-secondary) !important;
+}
+
+/* ---------- Forms ---------- */
+label,
+.form-label,
+.control-label {
+  color: var(--cwa-primary) !important;
+  font-weight: 600;
+}
+
+.form-control:focus,
+input.input-material:focus,
+select.form-control:focus,
+textarea.form-control:focus {
+  border-color: var(--cwa-secondary) !important;
+  box-shadow: 0 0 0 3px rgba(30, 111, 217, 0.15) !important;
+  outline: none;
+}
+
+input.input-material ~ label.active {
+  color: var(--cwa-primary) !important;
+}
+
+/* ---------- Badges / status ---------- */
+.badge-success,
+.label-success,
+.bg-success {
+  background: var(--cwa-secondary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.badge-warning,
+.label-warning,
+.bg-warning {
+  background: var(--cwa-gold) !important;
+  color: var(--cwa-white) !important;
+}
+
+.badge-info,
+.label-info,
+.bg-info,
+.badge-primary {
+  background: var(--cwa-light-blue) !important;
+  color: var(--cwa-primary) !important;
+}
+
+.badge-secondary,
+.badge-dark,
+.badge-danger,
+.label-danger,
+.bg-danger {
+  background: var(--cwa-muted) !important;
+  color: var(--cwa-white) !important;
+}
+
+/* ---------- Progress / misc purple replacements ---------- */
+.progress-bar,
+.progress-bar.bg-primary,
+.statistics .user-activity .progress .progress-bar.bg-primary {
+  background: var(--cwa-primary) !important;
+}
+
+.gmpc,
+.statistics .user-activity .page-statistics strong {
+  color: var(--cwa-primary) !important;
+}
+
+/* Bootstrap utility overrides that clash with CWA palette */
+.text-success { color: var(--cwa-secondary) !important; }
+.text-warning { color: var(--cwa-gold) !important; }
+.text-info,
+.text-primary { color: var(--cwa-primary) !important; }
+.bg-primary { background-color: var(--cwa-primary) !important; }
+.border-primary { border-color: var(--cwa-primary) !important; }
+
+/* Pagination */
+.page-item.active .page-link {
+  background: var(--cwa-primary) !important;
+  border-color: var(--cwa-primary) !important;
+  color: var(--cwa-white) !important;
+}
+
+.page-link {
+  color: var(--cwa-primary) !important;
+}
+
+.page-link:hover {
+  color: var(--cwa-secondary) !important;
+  background: var(--cwa-soft-white) !important;
+}
