@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Candidate Portal')
-@section('meta_description', 'Track your job applications with Beyond Enterprise.')
+@section('meta_description', "Track your job applications with Catholic Women's Association.")
 
 @php
     $statusColors = [

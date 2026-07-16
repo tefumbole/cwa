@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Our Projects')
-@section('meta_description', 'Explore our recent projects in IT consultancy, networking, and audio-visual installations across Kigali, Rwanda.')
+@section('meta_description', "Works of service, charity, and community life from the Catholic Women's Association.")
 
 @section('content')
 
@@ -46,7 +46,7 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl font-bold text-brand-blue mb-6">Inspired by our work?</h2>
         <p class="text-lg text-gray-700 mb-8">Let's discuss how we can bring the same level of quality to your next project.</p>
-        <a href="https://wa.me/237675321739?text={{ urlencode('Hello Beyond Enterprise, I would like to start a project.') }}"
+        <a href="https://wa.me/237683155315?text={{ urlencode("Hello Catholic Women's Association, I would like to learn more about CWA.") }}"
            target="_blank" rel="noopener"
            class="inline-flex items-center gap-2 bg-brand-gold text-brand-blue px-8 py-4 text-lg font-bold rounded-lg shadow-xl">
             <i data-lucide="message-circle" class="w-5 h-5"></i> Start Your Project

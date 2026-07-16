@@ -4,7 +4,7 @@
 
 @php
     $title = 'Sign in';
-    $header = '<h1 class="text-2xl font-bold text-brand-blue">Beyond Enterprise</h1><p class="text-brand-blue text-sm mt-1">Secure Portal</p>';
+    $header = '<h1 class="text-2xl font-bold text-brand-blue">Catholic Women\'s Association</h1><p class="text-brand-blue text-sm mt-1">Secure Portal</p>';
     $activeTab = $tab ?? 'signin';
 @endphp
 

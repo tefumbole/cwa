@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Invest in Shares')
-@section('meta_description', 'Secure your shares in Beyond Enterprise. Join our community of shareholders and be part of our growth story.')
+@section('meta_description', "Shareholding with the Catholic Women's Association.")
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
@@ -51,7 +51,7 @@
                         <i data-lucide="users" class="h-5 w-5"></i> Community
                     </h4>
                     <p class="text-gray-300 text-sm">
-                        Join investors who have partnered with us to build sustainable technology solutions across Africa.
+                        Join investors who have partnered with us to serve God, the Church, and society through faith and charity.
                     </p>
                 </div>
 

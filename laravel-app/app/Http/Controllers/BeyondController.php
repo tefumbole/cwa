@@ -48,15 +48,15 @@ class BeyondController extends Controller
             'projects' => [
                 [
                     'url' => 'https://www.tiktok.com/@tefurolandmbole/video/7495818139272301829',
-                    'title' => 'Project Highlight: Professional Installation',
+                    'title' => 'Community Service Highlight',
                 ],
                 [
                     'url' => 'https://www.tiktok.com/@tefurolandmbole/video/7493245944540974341',
-                    'title' => 'Advanced Networking Setup',
+                    'title' => 'Fellowship & Formation',
                 ],
                 [
                     'url' => 'https://www.tiktok.com/@tefurolandmbole/video/7492891748327361797',
-                    'title' => 'Audio-Visual Excellence',
+                    'title' => 'Charity in Action',
                 ],
             ],
         ]);
@@ -82,13 +82,13 @@ class BeyondController extends Controller
     private function servicesList()
     {
         return [
-            ['emoji' => '🤖', 'title' => 'Artificial Intelligence', 'description' => 'Cutting-edge AI solutions for business automation and intelligent decision-making'],
-            ['emoji' => '☁️', 'title' => 'Cloud Computing', 'description' => 'Scalable cloud infrastructure and migration services for modern enterprises'],
-            ['emoji' => '🔒', 'title' => 'Cyber Security', 'description' => 'Comprehensive security solutions to protect your digital assets and data'],
-            ['emoji' => '💼', 'title' => 'General IT Consultancy', 'description' => 'Expert IT guidance and strategic consulting for digital transformation'],
-            ['emoji' => '📞', 'title' => 'VoIP', 'description' => 'Reliable voice over IP solutions for seamless business communication'],
-            ['emoji' => '🌐', 'title' => 'Network Infrastructure Design', 'description' => 'Robust network architecture and infrastructure planning for optimal performance'],
-            ['emoji' => '📹', 'title' => 'CCTV and More', 'description' => 'Advanced surveillance and security systems for comprehensive monitoring'],
+            ['emoji' => '🙏', 'title' => 'Spiritual Growth & Renewal', 'description' => 'Promoting the spiritual growth and renewal of Catholic women'],
+            ['emoji' => '📖', 'title' => 'God\'s Word & Faith', 'description' => 'Deepening knowledge of God\'s Word and strengthening Christian faith'],
+            ['emoji' => '✝️', 'title' => 'Evangelization', 'description' => 'Translating Christian values into action through evangelization and witness'],
+            ['emoji' => '❤️', 'title' => 'Charity & Works of Mercy', 'description' => 'Serving neighbours through charity, mercy, and social development'],
+            ['emoji' => '👨‍👩‍👧‍👦', 'title' => 'Family & Church Support', 'description' => 'Supporting families, the Church, and society through community service'],
+            ['emoji' => '🌱', 'title' => 'Women\'s Well-being', 'description' => 'Uplifting the spiritual, social, and economic well-being of women and families'],
+            ['emoji' => '🌹', 'title' => 'Marian Discipleship', 'description' => 'Modelling our lives after the Blessed Virgin Mary in holiness and service'],
         ];
     }
 }

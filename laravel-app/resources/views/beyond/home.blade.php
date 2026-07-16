@@ -1,44 +1,44 @@
 @extends('beyond.layout')
 
-@section('title', 'IT Consultancy & AV Solutions')
-@section('meta_description', 'Beyond Enterprise — your technology bridge to Kigali. IT consultancy, networking, CCTV security, and professional audio-visual solutions in Rwanda.')
+@section('title', "Catholic Women's Association of Cameroon")
+@section('meta_description', "Catholic Women's Association of Cameroon — To Serve and Not to Be Served (Matthew 20:28). Spiritual growth, evangelization, charity, and community service.")
 
 @section('content')
 
 @php
-    $services = [
-        ['icon' => 'network', 'title' => 'IT Consultancy', 'desc' => 'Enterprise-grade IT solutions and infrastructure planning'],
-        ['icon' => 'share-2', 'title' => 'Networks', 'desc' => 'Professional networking design, deployment, and management'],
-        ['icon' => 'shield', 'title' => 'CCTV & Security', 'desc' => 'Advanced surveillance and security systems'],
-        ['icon' => 'mic', 'title' => 'Sound & Audio', 'desc' => 'Professional audio engineering for events and venues'],
-        ['icon' => 'monitor', 'title' => 'Screens & Lighting', 'desc' => 'LED screens and professional lighting solutions'],
-        ['icon' => 'cable', 'title' => 'Fiber Optics', 'desc' => 'High-speed fiber connectivity and splicing services'],
+    $pillars = [
+        ['icon' => 'heart', 'title' => 'Spiritual Growth', 'desc' => 'Promoting renewal of Catholic women and deepening knowledge of God’s Word'],
+        ['icon' => 'book-open', 'title' => 'Christian Faith', 'desc' => 'Strengthening faith through prayer, formation, and witness'],
+        ['icon' => 'hand-heart', 'title' => 'Evangelization & Charity', 'desc' => 'Translating Christian values into action through service and works of mercy'],
+        ['icon' => 'users', 'title' => 'Family & Church', 'desc' => 'Supporting families, the Church, and society through community service'],
+        ['icon' => 'sparkles', 'title' => 'Women’s Well-being', 'desc' => 'Uplifting the spiritual, social, and economic well-being of women and families'],
+        ['icon' => 'church', 'title' => 'Marian Model', 'desc' => 'Modelling our lives after the Blessed Virgin Mary in holiness and service'],
     ];
     $whyUs = [
-        ['icon' => 'check-circle-2', 'title' => 'Engineering Standards', 'desc' => 'Built with precision and best practices'],
-        ['icon' => 'shield', 'title' => 'Reliability', 'desc' => 'Dependable systems you can trust'],
-        ['icon' => 'zap', 'title' => 'Fast Support', 'desc' => 'Quick response times and expert assistance'],
-        ['icon' => 'trending-up', 'title' => 'Scalable Solutions', 'desc' => 'Systems that grow with your needs'],
+        ['icon' => 'book-open', 'title' => 'Faith First', 'desc' => 'Rooted in the Gospel and the life of the Church'],
+        ['icon' => 'heart-handshake', 'title' => 'Service', 'desc' => 'Living our motto: to serve and not to be served'],
+        ['icon' => 'users', 'title' => 'Sisterhood', 'desc' => 'A community of committed Catholic women across Cameroon'],
+        ['icon' => 'globe', 'title' => 'Society', 'desc' => 'Transforming communities through love, charity, and evangelization'],
     ];
-    $industries = [
-        ['icon' => 'building-2', 'name' => 'Companies'],
-        ['icon' => 'church', 'name' => 'Churches'],
-        ['icon' => 'calendar', 'name' => 'Events'],
-        ['icon' => 'school', 'name' => 'Schools'],
-        ['icon' => 'heart', 'name' => 'NGOs'],
-        ['icon' => 'home', 'name' => 'Homes'],
+    $communities = [
+        ['icon' => 'church', 'name' => 'Parishes'],
+        ['icon' => 'home', 'name' => 'Families'],
+        ['icon' => 'heart', 'name' => 'Women'],
+        ['icon' => 'graduation-cap', 'name' => 'Youth'],
+        ['icon' => 'heart', 'name' => 'The Needy'],
+        ['icon' => 'landmark', 'name' => 'Society'],
     ];
     $testimonials = [
-        ['name' => 'Client A', 'role' => 'CEO, Tech Company', 'content' => 'Beyond Enterprise delivered exceptional networking solutions for our office. Professional and reliable.'],
-        ['name' => 'Client B', 'role' => 'Event Organizer', 'content' => 'Their sound and lighting setup made our event unforgettable. Highly recommended!'],
-        ['name' => 'Client C', 'role' => 'School Administrator', 'content' => 'The CCTV system they installed has greatly improved our campus security.'],
+        ['name' => 'Member', 'role' => 'CWA Cameroon', 'content' => 'Through CWA I have grown in prayer and found sisters who serve God and neighbour with joy.'],
+        ['name' => 'Member', 'role' => 'Parish Group', 'content' => 'Our association helps us live the Gospel through charity, evangelization, and care for families.'],
+        ['name' => 'Member', 'role' => 'CWA Community', 'content' => 'We strive to model our lives after the Blessed Virgin Mary — holy, committed, and ready to serve.'],
     ];
 @endphp
 
 {{-- Hero --}}
 <section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 md:py-0">
     <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('{{ \App\Support\SiteContent::image('home.hero_image', '/branding/beyond-hero.png') }}');">
-        <div class="absolute inset-0 bg-black/15"></div>
+        <div class="absolute inset-0 bg-black/40"></div>
     </div>
 
     @for ($i = 0; $i < 6; $i++)
@@ -50,22 +50,22 @@
         <div class="mb-8 flex flex-col items-center">
             <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}" class="h-20 md:h-24 w-auto object-contain mb-6 drop-shadow-2xl">
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight">
-                {!! \App\Support\SiteContent::html('home.hero_title', 'Your Technology Bridge to <span class="text-brand-gold">Kigali</span>') !!}
+                {!! \App\Support\SiteContent::html('home.hero_title', 'Catholic Women\'s Association <span class="text-brand-gold">of Cameroon</span>') !!}
             </h1>
             <p class="text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto drop-shadow-md">
-                {{ \App\Support\SiteContent::text('home.hero_subtitle', 'Professional IT Consultancy, Enterprise Networking, and Audio-Visual Production, Cloud, AI and Cyber') }}
+                {{ \App\Support\SiteContent::text('home.hero_subtitle', '“To Serve and Not to Be Served” (Matthew 20:28) — Promoting the spiritual, social, and economic well-being of women and families through prayer, evangelization, service, and charity.') }}
             </p>
         </div>
         <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 flex-wrap">
-            <a href="{{ url('/trainings') }}"
+            <a href="{{ url('/about') }}"
                class="bg-brand-gold hover:bg-[#b5952f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
-                {{ \App\Support\SiteContent::text('home.cta_primary', 'Get a Free Quotation') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
+                {{ \App\Support\SiteContent::text('home.cta_primary', 'About CWA') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
             </a>
-            <a href="{{ url('/rentals') }}"
+            <a href="{{ url('/about') }}#contact"
                class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-white/15 hover:bg-white/25 border border-brand-gold/80 backdrop-blur-sm text-brand-gold inline-flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="package" class="w-5 h-5"></i> Rentals
+                <i data-lucide="mail" class="w-5 h-5"></i> Contact Us
             </a>
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
+            <a href="https://wa.me/237683155315" target="_blank" rel="noopener"
                class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-brand-light/40 hover:bg-brand-light/60 border border-white/30 backdrop-blur-sm text-white inline-flex items-center justify-center gap-2 transition-all">
                 <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
             </a>
@@ -73,15 +73,15 @@
     </div>
 </section>
 
-{{-- Services --}}
+{{-- Mission pillars --}}
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.services_heading', 'Our Services') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.services_subheading', 'Comprehensive technology solutions for your needs') }}</p>
+            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.services_heading', 'Our Mission in Action') }}</h2>
+            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.services_subheading', 'Faith, service, and community for Catholic women across Cameroon') }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach ($services as $s)
+            @foreach ($pillars as $s)
                 <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-gray-100">
                     <div class="text-brand-light mb-4"><i data-lucide="{{ $s['icon'] }}" class="w-12 h-12"></i></div>
                     <h3 class="text-2xl font-semibold text-brand-blue mb-3">{{ $s['title'] }}</h3>
@@ -92,12 +92,12 @@
     </div>
 </section>
 
-{{-- Why Beyond --}}
+{{-- Why CWA --}}
 <section class="py-16 bg-brand-blue">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('home.why_heading', 'Why Beyond Enterprise?') }}</h2>
-            <p class="text-xl text-gray-300">{{ \App\Support\SiteContent::text('home.why_subheading', 'Excellence in every solution we deliver') }}</p>
+            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('home.why_heading', "Why the Catholic Women\\'s Association?") }}</h2>
+            <p class="text-xl text-gray-300">{{ \App\Support\SiteContent::text('home.why_subheading', 'Serving God, the Church, and society since 1964') }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach ($whyUs as $f)
@@ -111,15 +111,15 @@
     </div>
 </section>
 
-{{-- Industries --}}
+{{-- Communities --}}
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.industries_heading', 'Industries We Serve') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.industries_subheading', 'Trusted by diverse organizations across Africa and the World') }}</p>
+            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.industries_heading', 'Communities We Serve') }}</h2>
+            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.industries_subheading', 'Walking with women, families, parishes, and society across Cameroon') }}</p>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            @foreach ($industries as $ind)
+            @foreach ($communities as $ind)
                 <div class="bg-white rounded-xl shadow-md p-6 text-center border border-gray-100 hover:shadow-lg transition-shadow">
                     <div class="text-brand-light mb-3 flex justify-center"><i data-lucide="{{ $ind['icon'] }}" class="w-10 h-10"></i></div>
                     <h3 class="text-lg font-semibold text-brand-blue">{{ $ind['name'] }}</h3>
@@ -135,7 +135,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-brand-blue mb-4">Upcoming Events</h2>
-            <p class="text-xl text-gray-600">Highlights and events from Beyond Enterprise</p>
+            <p class="text-xl text-gray-600">Gatherings, formation, and celebrations of the Catholic Women's Association</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($homeEvents as $ev)
@@ -173,12 +173,12 @@
 </section>
 @endif
 
-{{-- Testimonials --}}
+{{-- Member voices --}}
 <section class="py-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'What Our Clients Say') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.testimonials_subheading', 'Trusted by businesses and organizations across Kigali') }}</p>
+            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'Voices from Our Members') }}</h2>
+            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.testimonials_subheading', 'Women living the CWA motto through faith and service') }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach ($testimonials as $t)
@@ -197,14 +197,14 @@
 {{-- CTA --}}
 <section class="py-16 bg-gradient-to-r from-brand-blue via-brand-light to-brand-blue">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-6">{{ \App\Support\SiteContent::text('home.cta_heading', 'Ready to Get Started?') }}</h2>
-        <p class="text-xl text-gray-200 mb-8">{{ \App\Support\SiteContent::text('home.cta_text', 'Contact us today for a consultation and let us bridge your technology needs.') }}</p>
+        <h2 class="text-4xl font-bold text-white mb-6">{{ \App\Support\SiteContent::text('home.cta_heading', 'Join Us in Service') }}</h2>
+        <p class="text-xl text-gray-200 mb-8">{{ \App\Support\SiteContent::text('home.cta_text', "Reach out to the Catholic Women\\'s Association — together we serve God, the Church, and society in the spirit of the Blessed Virgin Mary.") }}</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
+            <a href="https://wa.me/237683155315" target="_blank" rel="noopener"
                class="px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold inline-flex items-center justify-center gap-2">
                 <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
             </a>
-            <a href="mailto:info@beyondtechworld.com"
+            <a href="mailto:info@cwacam.org"
                class="bg-white text-brand-blue hover:bg-gray-100 px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl font-semibold inline-flex items-center justify-center gap-2">
                 <i data-lucide="mail" class="w-5 h-5"></i> Email Us
             </a>

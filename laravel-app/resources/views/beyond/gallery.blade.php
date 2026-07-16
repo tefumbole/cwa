@@ -1,13 +1,13 @@
 @extends('beyond.layout')
 
-@section('title', 'Gallery | Beyond Enterprise')
-@section('meta_description', 'Explore events, projects, and highlights from Beyond Enterprise — photos and videos from our work across Kigali and beyond.')
+@section('title', "Gallery | Catholic Women's Association")
+@section('meta_description', "Photos and moments of prayer, fellowship, and service from the Catholic Women's Association.")
 
 @section('content')
 
 @include('beyond.partials.hero', [
     'title' => \App\Support\SiteContent::html('gallery.hero_title', 'Our <span class="text-brand-gold">Gallery</span>'),
-    'subtitle' => \App\Support\SiteContent::text('gallery.hero_subtitle', 'Events, projects, and moments from Beyond Enterprise'),
+    'subtitle' => \App\Support\SiteContent::text('gallery.hero_subtitle', "Events, projects, and moments from Catholic Women's Association"),
 ])
 
 <section class="py-16 bg-white">

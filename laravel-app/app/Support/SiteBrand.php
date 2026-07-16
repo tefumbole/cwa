@@ -29,6 +29,6 @@ class SiteBrand
 
         return ($setting && ! empty($setting->site_title))
             ? $setting->site_title
-            : 'Beyond Enterprise';
+            : "Catholic Women's Association";
     }
 }

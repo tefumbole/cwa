@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Events & Highlights')
-@section('meta_description', 'Discover upcoming events, workshops, and highlights from Beyond Enterprise.')
+@section('meta_description', "Discover upcoming events and gatherings of the Catholic Women's Association.")
 
 @section('content')
 

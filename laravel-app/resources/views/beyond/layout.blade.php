@@ -18,7 +18,7 @@
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
     @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
-    <meta name="description" content="@yield('meta_description', 'Beyond Enterprise — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions.')">
+    <meta name="description" content="@yield('meta_description', "Catholic Women's Association of Cameroon — To Serve and Not to Be Served (Matthew 20:28). Prayer, evangelization, charity, and community service.")">
     <link rel="icon" href="{{ $siteLogoUrl }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,20 +46,16 @@
 @php
     $navDefs = [
         'home'         => ['label' => 'Home', 'url' => url('/')],
-        'trainings'    => ['label' => 'Training', 'url' => url('/trainings')],
         'events'       => ['label' => 'Events', 'url' => url('/events')],
         'rentals'      => ['label' => 'Rentals', 'url' => url('/rentals')],
-        'register'     => ['label' => 'Register Now', 'url' => url('/register-now')],
-        'apply'        => ['label' => 'Apply Now', 'url' => url('/apply-now'), 'special' => true],
-        'permissions'  => ['label' => 'Permissions', 'url' => url('/permissions')],
         'about'        => ['label' => 'About Us', 'url' => url('/about')],
         'gallery'      => ['label' => 'Gallery', 'url' => url('/gallery')],
         'shareholders' => ['label' => 'Shareholders', 'url' => url('/shareholders')],
     ];
     $navLinks = [];
+    $hiddenNav = \App\Support\SiteMenu::landingHiddenKeys();
     foreach (\App\Support\SiteMenu::landingOrder() as $navKey) {
-        // Legacy saved menus may still include "contact" — skip; contact lives on About Us
-        if ($navKey === 'contact') {
+        if (in_array($navKey, $hiddenNav, true)) {
             continue;
         }
         if (isset($navDefs[$navKey])) {
@@ -96,7 +92,7 @@
                     <a href="#" class="text-white hover:text-brand-gold px-2 py-1 border border-white/20 rounded">FR</a>
                 </div>
 
-                <a href="tel:+237675321739" class="text-white hover:text-brand-gold transition-colors" title="Call Us">
+                <a href="tel:+237683155315" class="text-white hover:text-brand-gold transition-colors" title="Call Us">
                     <i data-lucide="phone" class="w-5 h-5"></i>
                 </a>
                 <a href="https://mail.hostinger.com" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="Webmail">
@@ -200,44 +196,39 @@
                     <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="h-[50px] w-auto object-contain">
                 </a>
                 <div class="text-2xl font-bold"><span class="text-brand-gold">{{ $siteTitle }}</span></div>
-                <p class="text-gray-300 text-sm mt-4">Your Technology Bridge to Kigali. Professional IT, networking, security, and audio-visual solutions.</p>
+                <p class="text-gray-300 text-sm mt-4">“To Serve and Not to Be Served” (Matthew 20:28). A lay association of Catholic women promoting faith, charity, and service across Cameroon since 1964.</p>
             </div>
             <div>
                 <h3 class="text-lg font-semibold text-brand-gold mb-4">Quick Links</h3>
                 <nav class="flex flex-col space-y-2 text-sm">
                     <a href="{{ url('/') }}" class="text-gray-300 hover:text-brand-gold">Home</a>
                     <a href="{{ url('/about') }}" class="text-gray-300 hover:text-brand-gold">About Us</a>
-                    <a href="{{ url('/services') }}" class="text-gray-300 hover:text-brand-gold">Services</a>
-                    <a href="{{ url('/projects') }}" class="text-gray-300 hover:text-brand-gold">Projects</a>
+                    <a href="{{ url('/about') }}#contact" class="text-gray-300 hover:text-brand-gold">Contact</a>
                     <a href="{{ url('/events') }}" class="text-gray-300 hover:text-brand-gold">Events</a>
-                    <a href="{{ url('/shareholders') }}" class="text-gray-300 hover:text-brand-gold">Shareholders Portal</a>
+                    <a href="{{ url('/gallery') }}" class="text-gray-300 hover:text-brand-gold">Gallery</a>
                 </nav>
             </div>
             <div>
                 <h3 class="text-lg font-semibold text-brand-gold mb-4">Contact Us</h3>
                 <div class="space-y-3 text-sm">
-                    <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold px-4 py-2 rounded-md">
+                    <a href="https://wa.me/237683155315" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold px-4 py-2 rounded-md">
                         <i data-lucide="message-circle" class="w-4 h-4"></i> Chat now
                     </a>
-                    <a href="tel:+237675321739" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="phone" class="w-5 h-5"></i> +237 675 321 739</a>
-                    <a href="mailto:info@beyondtechworld.com" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@beyondtechworld.com</a>
-                    <a href="https://www.beyondtechworld.com" target="_blank" rel="noopener" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.beyondtechworld.com</a>
+                    <a href="tel:+237683155315" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="phone" class="w-5 h-5"></i> +237 683 155 315</a>
+                    <a href="mailto:info@cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@cwacam.org</a>
+                    <a href="https://www.cwacmr.org" target="_blank" rel="noopener" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.cwacmr.org</a>
                 </div>
             </div>
         </div>
         <div class="mt-12 pt-8 border-t border-gray-700 text-center">
-            <p class="text-gray-400 text-sm">© {{ date('Y') }} Beyond Enterprise. All rights reserved.</p>
-            <p class="text-gray-500 text-xs mt-2">
-                Developed By: <span class="text-gray-300 font-medium">Sr. Engr. Tefu R. Mbole</span>
-                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="text-[#25D366] hover:underline font-semibold">+237675321739</a>
-            </p>
-            <p class="text-gray-500 text-xs mt-2">Kigali, Rwanda</p>
+            <p class="text-gray-400 text-sm">© {{ date('Y') }} Catholic Women's Association. All rights reserved.</p>
+            <p class="text-gray-500 text-xs mt-2">Cameroon</p>
             <p class="text-gray-600 text-xs mt-1">v{{ \App\Support\AppVersion::label() }}</p>
         </div>
     </div>
 </footer>
 
-<a href="https://wa.me/237675321739" target="_blank" rel="noopener"
+<a href="https://wa.me/237683155315" target="_blank" rel="noopener"
    class="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="Chat on WhatsApp">
     <i data-lucide="message-circle" class="w-6 h-6"></i>

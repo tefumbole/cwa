@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Equipment Rentals')
-@section('meta_description', 'Request equipment rentals from Beyond Enterprise.')
+@section('meta_description', "Request rentals from the Catholic Women's Association.")
 
 @section('content')
 <div class="min-h-screen bg-gray-50 pb-20">

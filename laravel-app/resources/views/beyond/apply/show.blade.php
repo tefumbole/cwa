@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', $job->title.' — Apply')
-@section('meta_description', 'Apply for '.$job->title.' at Beyond Enterprise.')
+@section('meta_description', 'Apply for '.$job->title.' at Catholic Women's Association.')
 
 @section('content')
 @php $isInternship = $job->isInternship(); @endphp

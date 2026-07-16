@@ -10,17 +10,19 @@ use App\SiteSetting;
  */
 class SiteMenu
 {
+    /** Public nav keys removed from the CWA site (still reachable by URL if needed). */
+    public static function landingHiddenKeys()
+    {
+        return ['trainings', 'register', 'apply', 'permissions', 'contact'];
+    }
+
     /** Public site header items: key => label (default order). */
     public static function landingItems()
     {
         return [
             'home'         => 'Home',
-            'trainings'    => 'Training',
             'events'       => 'Events',
             'rentals'      => 'Rentals',
-            'register'     => 'Register Now',
-            'apply'        => 'Apply Now',
-            'permissions'  => 'Permissions',
             'about'        => 'About Us',
             'gallery'      => 'Gallery',
             'shareholders' => 'Shareholders',
@@ -92,7 +94,12 @@ class SiteMenu
 
     public static function landingOrder()
     {
-        return self::ordered('landing_menu_order', self::landingItems());
+        $order = self::ordered('landing_menu_order', self::landingItems());
+        $hidden = self::landingHiddenKeys();
+
+        return array_values(array_filter($order, function ($key) use ($hidden) {
+            return ! in_array($key, $hidden, true);
+        }));
     }
 
     public static function sideOrder()

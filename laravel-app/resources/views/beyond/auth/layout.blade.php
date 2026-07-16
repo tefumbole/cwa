@@ -1,6 +1,6 @@
 @extends('beyond.layout')
 
-@section('title', $title ?? 'Beyond Enterprise')
+@section('title', $title ?? "Catholic Women's Association")
 
 @push('head')
 <style>
