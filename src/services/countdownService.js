@@ -1,15 +1,26 @@
 /**
- * Countdown Service
- * Calculates time remaining until the Official Launch Event
- * Date: April 5th, 2026 at 11:00 AM
+ * Time remaining until the CWACAM public launch.
+ * Default: 1 October 2026, 00:00 Africa/Douala (UTC+1).
  */
 
-// Target date: April 5, 2026 11:00:00
-// We use a specific date string format that creates a Date object in the user's local timezone
-const TARGET_DATE = new Date('April 5, 2026 11:00:00').getTime();
+const DEFAULT_LAUNCH = '2026-10-01T00:00:00+01:00';
+
+const WINDOW_DAYS = Math.max(
+  1,
+  Number(import.meta.env.VITE_LAUNCH_WINDOW_DAYS || 21)
+);
+
+function getTargetMs() {
+  const raw = import.meta.env.VITE_LAUNCH_AT || DEFAULT_LAUNCH;
+  const parsed = new Date(raw).getTime();
+  return Number.isNaN(parsed) ? new Date(DEFAULT_LAUNCH).getTime() : parsed;
+}
+
+export const TARGET_DATE = getTargetMs();
+export const LAUNCH_WINDOW_DAYS = WINDOW_DAYS;
 
 export const getTimeRemaining = () => {
-  const now = new Date().getTime();
+  const now = Date.now();
   const total = TARGET_DATE - now;
 
   if (total <= 0) {
@@ -19,7 +30,8 @@ export const getTimeRemaining = () => {
       hours: 0,
       minutes: 0,
       seconds: 0,
-      isExpired: true
+      isExpired: true,
+      windowDays: WINDOW_DAYS,
     };
   }
 
@@ -34,6 +46,7 @@ export const getTimeRemaining = () => {
     hours,
     minutes,
     seconds,
-    isExpired: false
+    isExpired: false,
+    windowDays: WINDOW_DAYS,
   };
 };

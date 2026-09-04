@@ -6,6 +6,23 @@ use Illuminate\Support\Facades\File;
 
 class BeyondController extends Controller
 {
+    public function comingSoon()
+    {
+        $timezone = config('app.timezone') ?: 'Africa/Douala';
+        $launchAt = \Carbon\Carbon::parse(config('app.launch_at'), $timezone);
+
+        return view('beyond.coming-soon', [
+            'launchAtIso' => $launchAt->toIso8601String(),
+            'windowDays' => (int) config('app.launch_window_days', 21),
+            'heroImage' => asset('branding/cwa-60-years-hero.jpg'),
+        ]);
+    }
+
+    public function redirectHome()
+    {
+        return redirect('/');
+    }
+
     public function home()
     {
         $pubService = app(\App\Services\EventPublicationService::class);

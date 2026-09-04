@@ -63,7 +63,8 @@ return [
             ]) : [],
         ],
 
-        // Node/React invitations + guests + legacy events (separate from Laravel POS DB).
+        // Optional secondary store. For CWACAM this MUST be the same isolated
+        // cwacam database — never u152889834_beyondworld or any Beyond host.
         'beyond_data' => [
             'driver' => 'mysql',
             'host' => env('BEYOND_DATA_DB_HOST', env('DB_HOST', '127.0.0.1')),

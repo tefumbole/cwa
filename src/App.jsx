@@ -13,16 +13,7 @@ import LoginModal from '@/components/LoginModal';
 import SignUpModal from '@/components/SignUpModal';
 
 // Public Pages
-import HomePage from '@/pages/HomePage';
-import AboutPage from '@/pages/AboutPage';
-import ServicesPage from '@/pages/ServicesPage';
-import ContactUsPage from '@/pages/public/ContactUsPage';
-import ProjectsPage from '@/pages/ProjectsPage';
-import TrainingsPage from '@/pages/TrainingsPage';
-import EventsPage from '@/pages/EventsPage';
-import EventDetailsPage from '@/pages/EventDetailsPage';
-import RegistrationPage from '@/pages/RegistrationPage';
-import RegisterNowPage from '@/pages/RegisterNowPage';
+import ComingSoonPage from '@/pages/ComingSoonPage';
 import ShareholdersPage from '@/pages/ShareholdersPage';
 import MenuSelectionPage from '@/pages/public/MenuSelectionPage';
 
@@ -316,15 +307,19 @@ const AppContent = () => {
       <WhatsAppModal />
 
       <Routes>
-        {/* Public Website Routes */}
-        <Route element={<LayoutContextWrapper />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="services" element={<Navigate to="/trainings" replace />} />
-          <Route path="trainings" element={<TrainingsPage />} />
-          <Route path="events" element={<EventsPage />} />
-          <Route path="events/:eventId" element={<EventDetailsPage />} />
-          <Route path="about" element={<AboutPage />} />
+        <Route path="/" element={<ComingSoonPage />} />
+        <Route path="/about" element={<Navigate to="/" replace />} />
+        <Route path="/services" element={<Navigate to="/" replace />} />
+        <Route path="/projects" element={<Navigate to="/" replace />} />
+        <Route path="/gallery" element={<Navigate to="/" replace />} />
+        <Route path="/contact" element={<Navigate to="/" replace />} />
+        <Route path="/events" element={<Navigate to="/" replace />} />
+        <Route path="/events/:eventId" element={<Navigate to="/" replace />} />
+        <Route path="/trainings" element={<Navigate to="/" replace />} />
+        <Route path="/register-now" element={<Navigate to="/" replace />} />
 
+        {/* Remaining public routes (admin and app flows stay reachable) */}
+        <Route element={<LayoutContextWrapper />}>
           <Route path="apply-now" element={<ApplyNowPage />} />
           <Route path="job/:jobId/apply" element={<JobApplicationFormPage />} />
           <Route
@@ -332,8 +327,7 @@ const AppContent = () => {
             element={<ApplicationConfirmationPage />}
           />
 
-          <Route path="registration" element={<RegistrationPage />} />
-          <Route path="register-now" element={<RegisterNowPage />} />
+          <Route path="registration" element={<Navigate to="/" replace />} />
 
           <Route path="shareholders" element={<ShareholdersPage />} />
           <Route path="shares" element={<SharesPage />} />
@@ -343,12 +337,10 @@ const AppContent = () => {
           <Route path="share-purchase" element={<SharePurchasePortal />} />
           <Route 
             path="shareholder-confirmation/:referenceNumber" 
-            element={<ShareholderConfirmationPage />} 
+            element={<ShareholderConfirmationPage />}
           />
 
           <Route path="qr-scanner" element={<QRScannerPage />} />
-          <Route path="projects" element={<ProjectsPage />} />
-          <Route path="contact" element={<ContactUsPage />} />
           <Route path="student/progress" element={<StudentProgressPage />} />
 
           {/* Audio Mixing Assistant User Routes */}

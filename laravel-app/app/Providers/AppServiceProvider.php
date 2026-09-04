@@ -29,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->assertIsolatedDatabase();
+
         /*if( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) {
             URL::forceScheme('https');
         }*/
@@ -87,6 +89,25 @@ class AppServiceProvider extends ServiceProvider
             return Schema::hasTable('general_settings');
         } catch (\Throwable $e) {
             return false;
+        }
+    }
+
+    /**
+     * CWACAM must never share BeyondTechWorld MySQL databases.
+     */
+    private function assertIsolatedDatabase()
+    {
+        $names = [
+            env('DB_DATABASE'),
+            env('BEYOND_DATA_DB_DATABASE'),
+        ];
+        foreach ($names as $name) {
+            if (is_string($name) && preg_match('/beyondworld|beyondtech/i', $name)) {
+                throw new \RuntimeException(
+                    'CWACAM must not use a BeyondTechWorld database ('.$name.'). '.
+                    'Set DB_DATABASE and BEYOND_DATA_DB_DATABASE to the dedicated cwacam database.'
+                );
+            }
         }
     }
 }

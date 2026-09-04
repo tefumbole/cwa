@@ -54,21 +54,21 @@ Route::post('/contracts/sign/{token}', 'ContractSignController@submit')->name('c
 Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')->name('contracts.sign.decline');
 
 
-Route::get('/', 'BeyondController@home')->name('beyond.home');
-Route::get('/about', 'BeyondController@about')->name('beyond.about');
-Route::get('/services', 'BeyondController@services')->name('beyond.services');
-Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
-Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');
-Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
-Route::get('/events', 'PublicEventController@index')->name('beyond.events');
-Route::get('/events/{slug}', 'PublicEventController@show')->name('beyond.event.detail');
+Route::get('/', 'BeyondController@comingSoon')->name('beyond.home');
+Route::get('/about', 'BeyondController@redirectHome')->name('beyond.about');
+Route::get('/services', 'BeyondController@redirectHome')->name('beyond.services');
+Route::get('/projects', 'BeyondController@redirectHome')->name('beyond.projects');
+Route::get('/gallery', 'BeyondController@redirectHome')->name('beyond.gallery');
+Route::get('/contact', 'BeyondController@redirectHome')->name('beyond.contact');
+Route::get('/events', 'BeyondController@redirectHome')->name('beyond.events');
+Route::get('/events/{slug}', 'BeyondController@redirectHome')->name('beyond.event.detail');
 Route::get('/api/public/events', 'PublicEventController@apiList');
 Route::get('/api/public/events/{slug}', 'PublicEventController@apiShow');
-Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
-Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
+Route::get('/trainings', 'BeyondController@redirectHome')->name('beyond.trainings');
+Route::get('/register-now', 'BeyondController@redirectHome')->name('beyond.register');
 Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');
-Route::redirect('/registration', '/register-now');
+Route::redirect('/registration', '/');
 
 // Legacy upload URLs (missing /public/) → correct static path
 Route::get('/uploads/applications/{file}', function ($file) {

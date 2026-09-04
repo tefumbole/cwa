@@ -71,7 +71,13 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => env('APP_TIMEZONE', 'Africa/Douala'),
+
+    /*
+    | Public coming-soon countdown (Africa/Douala).
+    */
+    'launch_at' => env('LAUNCH_AT', '2026-10-01T00:00:00'),
+    'launch_window_days' => (int) env('LAUNCH_WINDOW_DAYS', 21),
 
     /*
     |--------------------------------------------------------------------------

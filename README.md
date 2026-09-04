@@ -1,50 +1,55 @@
-# Beyond Enterprise (BeyondTechWorld)
+# Catholic Women's Association Cameroon (CWACAM)
 
-Web application for **Beyond Enterprise**, deployed at [beyondtechworld.com](https://beyondtechworld.com).
+Public site for [cwacam.org](https://cwacam.org). Until **1 October 2026** the homepage is a coming-soon countdown. Admin and login routes stay reachable.
 
-Alpha Bridge runs separately at [alpha-bridge.net](https://alpha-bridge.net) on the same VPS (port 3003).
+This repository is **not** BeyondTechWorld. Do not point any CWACAM env file at the BeyondTechWorld database or deploy directory.
 
 ## Local development
 
 ```bash
-npm run dev:local
+# Isolated MySQL on port 3308 (separate volume from Alpha Bridge / Beyond)
+# Requires Docker Desktop, or Homebrew MySQL plus MYSQL_ROOT_PASSWORD=...
+bash tools/setup-cwacam-db.sh
+
+# Frontend (coming-soon on / ; admin at /admin/login)
+cp tools/env/cwacam.local.env .env
+npm run dev
 ```
 
-## VPS ports
-
-| Site | Domain | API port | PM2 process | Web root |
-|------|--------|----------|-------------|----------|
-| Alpha Bridge | alpha-bridge.net | 3003 | alphabridge-api | /var/www/alphabridge |
-| Beyond Enterprise | beyondtechworld.com | 3004 | beyondtechworld-api | /var/www/beyondtechworld |
-
-## Deploy
+Laravel (optional, same `cwacam` database):
 
 ```bash
-# Alpha Bridge (Node API)
-ssh myvps "cd /var/www/alphabridge && git pull && bash tools/deploy-alphabridge-vps.sh"
-
-# Beyond Enterprise — live Laravel site (use this for feature deploys)
-ssh myvps "cd /var/www/beyondtechworld && git pull && bash tools/deploy-beyondtechworld-laravel.sh"
-# optional: --migrate-all   or   --migrate-path=database/migrations/….php
-
-# Beyond Enterprise — Node API stack (port 3004 only; not the live Laravel admin)
-ssh myvps "cd /var/www/beyondtechworld && git pull && bash tools/deploy-beyondtechworld-vps.sh"
+cp laravel-app/.env.example laravel-app/.env
+# generate APP_KEY, then:
+# php artisan serve --port=8000
 ```
 
-The Laravel script always restores `www-data` ownership on `storage/` and
-`bootstrap/cache` so admin does not 500 after root-run Artisan.
+`BEYOND_DATA_DB_*` must use the **same** `cwacam` credentials. Never set them to `u152889834_beyondworld` or any Beyond host.
 
-## Beyond Enterprise database (separate from Alpha Bridge)
+## Database isolation
 
-Create in Hostinger hPanel → Databases → MySQL:
+| Site | Database | Port (local) |
+|------|----------|----------------|
+| CWACAM (this repo) | `cwacam` | 3308 |
+| Beyond Enterprise | `u152889834_beyondworld` | production only |
+| Alpha Bridge | `u152889834_alphabridge` / local `alphabridge` | 3307 |
 
-- Database: `beyondtechworld` → `u152889834_beyondtechworld`
-- User: `u152889834_beyondtechworld` with full privileges
-- Remote MySQL: allow VPS IP `187.124.2.238`
+- Node API refuses to start if `DB_NAME` matches `beyondworld` or `beyondtech`
+- Laravel refuses to boot if `DB_DATABASE` or `BEYOND_DATA_DB_DATABASE` matches those names
+- `tools/setup-cwacam-db.sh` runs **fresh migrate + seed only** — it never imports Beyond or Alpha Bridge dumps
 
-Then on VPS: copy `apps/api/.env.beyondtechworld.example` → `apps/api/.env` and run `bash tools/setup-beyondtechworld-db.sh`.
+## Production Hostinger (create later)
 
-## Branding
+1. New database e.g. `u152889834_cwacam` and a user that can access **only** that database
+2. New password — do not reuse the Beyond user
+3. Copy `apps/api/.env.cwacam.example` on the CWACAM host and set those credentials
+4. Fresh migrate/seed — do not import Beyond data
 
-- **Beyond Enterprise**: logo `/branding/beyond-logo.png`, hero `/branding/beyond-hero.png`
-- Override via `.env`: `VITE_COMPANY_NAME`, `VITE_LOGO_URL`, `VITE_HERO_IMAGE_URL`, `VITE_ADMIN_PHONE_NUMBER`
+## Later deploy (do not reuse Beyond paths)
+
+When you are ready to put this on cwacam.org:
+
+1. Clone [tefumbole/cwa](https://github.com/tefumbole/cwa.git) to `/var/www/cwacam` (not `/var/www/beyondtechworld`)
+2. New nginx vhost for `cwacam.org`
+3. Laravel `.env` on the new CWACAM database only
+4. Frontend build env: `tools/env/cwacam.production.env`
