@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\File;
-
 class BeyondController extends Controller
 {
     public function comingSoon()
@@ -13,14 +11,11 @@ class BeyondController extends Controller
 
         return view('beyond.coming-soon', [
             'launchAtIso' => $launchAt->toIso8601String(),
-            'windowDays' => (int) config('app.launch_window_days', 21),
-            'heroImage' => asset('branding/cwa-60-years-hero.jpg'),
+            'windowDays' => (int) config('app.launch_window_days', 31),
+            'launchLabel' => $launchAt->format('j F Y'),
+            'heroImage' => asset('branding/cwa-60-years-hero.webp') . '?v=mary3',
+            'heroImageFallback' => asset('branding/cwa-60-years-hero.jpg') . '?v=mary3',
         ]);
-    }
-
-    public function redirectHome()
-    {
-        return redirect('/');
     }
 
     public function home()

@@ -16,6 +16,44 @@
                         <span class="text-muted small">{{ $envPath }}</span>
                     </div>
                     <div class="card-body">
+                        <h5 class="mb-3">Campay (donations · MTN / Orange / card)</h5>
+                        <p class="text-muted mb-3">Used by the public <strong>Donate</strong> page (MoMo). Paste your Campay app token, or username and password from the Campay dashboard.</p>
+                        {!! Form::open(['route' => 'setting.campayStore', 'method' => 'post']) !!}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>CAMPAY_USERNAME</label>
+                                        <input type="text" name="campay_username" class="form-control" value="{{ old('campay_username', $campayUsername) }}" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>CAMPAY_PASSWORD</label>
+                                        <input type="password" name="campay_password" class="form-control" value="{{ old('campay_password', $campayPassword) }}" autocomplete="new-password">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>CAMPAY_TOKEN (optional if username/password are set)</label>
+                                        <input type="text" name="campay_token" class="form-control" value="{{ old('campay_token', $campayToken) }}" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>CAMPAY_APP_ID</label>
+                                        <input type="text" name="campay_app_id" class="form-control" value="{{ old('campay_app_id', $campayAppId) }}" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>CAMPAY_BASE_URL</label>
+                                        <input type="text" name="campay_base_url" class="form-control" value="{{ old('campay_base_url', $campayBaseUrl) }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-4"><i class="fa fa-save"></i> Save Campay credentials</button>
+                        {!! Form::close() !!}
+                        <hr>
                         <p class="text-muted mb-3">Edit the <code>.env</code> file directly. After saving, run <code>php artisan config:clear</code> on the server. A timestamped backup is created automatically on each save.</p>
                         {!! Form::open(['route' => 'setting.envStore', 'method' => 'post']) !!}
                             <div class="form-group">

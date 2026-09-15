@@ -837,7 +837,7 @@ class CartController extends Controller
         $data['payment_status'] = 2;
         $data['grand_total'] = $amount;
 
-        $token = getenv("MOMO_TOKEN");
+        $token = app(\App\Services\CampayService::class)->token() ?: getenv("MOMO_TOKEN");
         $route = route('donation.payment.check');
         $failure_route = url()->previous();
 

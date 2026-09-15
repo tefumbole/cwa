@@ -55,20 +55,27 @@ Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')
 
 
 Route::get('/', 'BeyondController@comingSoon')->name('beyond.home');
-Route::get('/about', 'BeyondController@redirectHome')->name('beyond.about');
-Route::get('/services', 'BeyondController@redirectHome')->name('beyond.services');
-Route::get('/projects', 'BeyondController@redirectHome')->name('beyond.projects');
-Route::get('/gallery', 'BeyondController@redirectHome')->name('beyond.gallery');
-Route::get('/contact', 'BeyondController@redirectHome')->name('beyond.contact');
-Route::get('/events', 'BeyondController@redirectHome')->name('beyond.events');
-Route::get('/events/{slug}', 'BeyondController@redirectHome')->name('beyond.event.detail');
+Route::get('/home', 'BeyondController@home')->name('beyond.home.full');
+Route::get('/about', 'BeyondController@about')->name('beyond.about');
+Route::get('/services', 'BeyondController@services')->name('beyond.services');
+Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
+Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');
+Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
+Route::get('/events', 'PublicEventController@index')->name('beyond.events');
+Route::get('/events/{slug}', 'PublicEventController@show')->name('beyond.event.detail');
 Route::get('/api/public/events', 'PublicEventController@apiList');
 Route::get('/api/public/events/{slug}', 'PublicEventController@apiShow');
-Route::get('/trainings', 'BeyondController@redirectHome')->name('beyond.trainings');
-Route::get('/register-now', 'BeyondController@redirectHome')->name('beyond.register');
+Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
+Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
 Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
+Route::get('/donate', 'DonateController@show')->name('beyond.donate');
+Route::post('/donate', 'DonateController@store')->name('beyond.donate.store');
+Route::get('/donate/callback', 'DonateController@callback')->name('beyond.donate.callback');
+Route::get('/donate/thank-you', 'DonateController@thanks')->name('beyond.donate.thanks');
+Route::redirect('/support', '/donate');
+Route::redirect('/support/thank-you', '/donate/thank-you');
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');
-Route::redirect('/registration', '/');
+Route::redirect('/registration', '/register-now');
 
 // Legacy upload URLs (missing /public/) → correct static path
 Route::get('/uploads/applications/{file}', function ($file) {
@@ -894,6 +901,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
 	Route::get('setting/env_setting', 'SettingController@envSetting')->name('setting.env');
 	Route::post('setting/env_setting_store', 'SettingController@envSettingStore')->name('setting.envStore');
+	Route::post('setting/campay_store', 'SettingController@campaySettingStore')->name('setting.campayStore');
 
 	Route::get('setting/reward-point-setting', 'SettingController@rewardPointSetting')->name('setting.rewardPoint');
 	Route::post('setting/reward-point-setting_store', 'SettingController@rewardPointSettingStore')->name('setting.rewardPointStore');

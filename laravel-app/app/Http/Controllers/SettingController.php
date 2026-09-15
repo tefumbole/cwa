@@ -82,8 +82,49 @@ class SettingController extends Controller
 
         $envPath = base_path('.env');
         $envContent = is_file($envPath) ? file_get_contents($envPath) : '';
+        $campayToken = \App\Support\EnvFile::get('CAMPAY_TOKEN', \App\Support\EnvFile::get('MOMO_TOKEN', ''));
+        $campayUsername = \App\Support\EnvFile::get('CAMPAY_USERNAME', '');
+        $campayPassword = \App\Support\EnvFile::get('CAMPAY_PASSWORD', '');
+        $campayAppId = \App\Support\EnvFile::get('CAMPAY_APP_ID', '');
+        $campayBaseUrl = \App\Support\EnvFile::get('CAMPAY_BASE_URL', 'https://www.campay.net/api');
 
-        return view('setting.env_setting', compact('envContent', 'envPath'));
+        return view('setting.env_setting', compact(
+            'envContent',
+            'envPath',
+            'campayToken',
+            'campayUsername',
+            'campayPassword',
+            'campayAppId',
+            'campayBaseUrl'
+        ));
+    }
+
+    public function campaySettingStore(Request $request)
+    {
+        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+        if (Auth::user()->role_id > 2 && (!$role || !$role->hasPermissionTo('env_setting'))) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $ok = \App\Support\EnvFile::upsert([
+            'CAMPAY_TOKEN' => trim((string) $request->input('campay_token', '')),
+            'CAMPAY_USERNAME' => trim((string) $request->input('campay_username', '')),
+            'CAMPAY_PASSWORD' => trim((string) $request->input('campay_password', '')),
+            'CAMPAY_APP_ID' => trim((string) $request->input('campay_app_id', '')),
+            'CAMPAY_BASE_URL' => trim((string) $request->input('campay_base_url', 'https://www.campay.net/api')) ?: 'https://www.campay.net/api',
+            'MOMO_TOKEN' => trim((string) $request->input('campay_token', '')),
+        ]);
+
+        if (! $ok) {
+            return redirect()->back()->with('not_permitted', '.env file is missing or not writable.');
+        }
+
+        try {
+            Artisan::call('config:clear');
+        } catch (\Exception $e) {
+        }
+
+        return redirect()->route('setting.env')->with('message', 'Campay credentials saved.');
     }
 
     public function envSettingStore(Request $request)
@@ -208,7 +249,7 @@ class SettingController extends Controller
 
     public function rewardPointSetting()
     {
-        $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
+        $lims_reward_point_setting_data = RewardPointSetting::current();
         return view('setting.reward_point_setting', compact('lims_reward_point_setting_data'));
     }
 
@@ -219,7 +260,7 @@ class SettingController extends Controller
             $data['is_active'] = true;
         else
             $data['is_active'] = false;
-        RewardPointSetting::latest()->first()->update($data);
+        RewardPointSetting::current()->update($data);
         return redirect()->back()->with('message', 'Reward point setting updated successfully');
     }
 
@@ -554,7 +595,7 @@ class SettingController extends Controller
     	$lims_customer_list = Customer::where('is_active', true)->get();
         $lims_warehouse_list = Warehouse::where('is_active', true)->get();
         $lims_biller_list = Biller::where('is_active', true)->get();
-        $lims_pos_setting_data = PosSetting::latest()->first();
+        $lims_pos_setting_data = PosSetting::current();
         $lims_account_all = Account::where('is_active', true)->get();
         $lims_account_default = Account::where('is_default', true)->first();
         $lims_account_default_debit = Account::where('is_default_debit', true)->first();
@@ -586,20 +627,28 @@ class SettingController extends Controller
     	$pos_setting->stripe_secret_key = $data['stripe_secret_key'];
 
         $lims_account_data = Account::where('is_default', true)->first();
-        $lims_account_data->is_default = false;
-        $lims_account_data->save();
+        if ($lims_account_data) {
+            $lims_account_data->is_default = false;
+            $lims_account_data->save();
+        }
 
-        $lims_account_data = Account::find($data['account_id']);
-        $lims_account_data->is_default = true;
-        $lims_account_data->save();
+        $lims_account_data = Account::find($data['account_id'] ?? null);
+        if ($lims_account_data) {
+            $lims_account_data->is_default = true;
+            $lims_account_data->save();
+        }
 
         $lims_account_data = Account::where('is_default_debit', true)->first();
-        $lims_account_data->is_default_debit = false;
-        $lims_account_data->save();
+        if ($lims_account_data) {
+            $lims_account_data->is_default_debit = false;
+            $lims_account_data->save();
+        }
 
-        $lims_account_data = Account::find($data['debit_account_id']);
-        $lims_account_data->is_default_debit = true;
-        $lims_account_data->save();
+        $lims_account_data = Account::find($data['debit_account_id'] ?? null);
+        if ($lims_account_data) {
+            $lims_account_data->is_default_debit = true;
+            $lims_account_data->save();
+        }
 
         if(!isset($data['keybord_active']))
             $pos_setting->keybord_active = false;
