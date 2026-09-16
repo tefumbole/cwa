@@ -18,7 +18,7 @@
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
     @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
-    <meta name="description" content="@yield('meta_description', 'Beyond Enterprise — IT consultancy, networks, CCTV security, and professional sound/screen/lighting solutions.')">
+    <meta name="description" content="@yield('meta_description', 'Catholic Women\'s Association Cameroon — faith, service and sisterhood.')">
     <link rel="icon" href="{{ $siteLogoUrl }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -86,19 +86,19 @@
 
 @php
     $navDefs = [
-        'home'         => ['label' => 'Home', 'url' => url('/')],
-        'trainings'    => ['label' => 'Training', 'url' => url('/trainings')],
-        'events'       => ['label' => 'Events', 'url' => url('/events')],
-        'rentals'      => ['label' => 'Rentals', 'url' => url('/rentals')],
-        'register'     => ['label' => 'Register Now', 'url' => url('/register-now')],
-        'apply'        => ['label' => 'Apply Now', 'url' => url('/apply-now'), 'special' => true],
-        'permissions'  => ['label' => 'Permissions', 'url' => url('/permissions')],
-        'about'        => ['label' => 'About Us', 'url' => url('/about')],
-        'gallery'      => ['label' => 'Gallery', 'url' => url('/gallery')],
-        'shareholders' => ['label' => 'Shareholders', 'url' => url('/shareholders')],
+        'home'         => ['label' => \App\Support\SiteMenu::landingLabel('home'), 'url' => url('/')],
+        'trainings'    => ['label' => \App\Support\SiteMenu::landingLabel('trainings'), 'url' => url('/trainings')],
+        'events'       => ['label' => \App\Support\SiteMenu::landingLabel('events'), 'url' => url('/events')],
+        'rentals'      => ['label' => \App\Support\SiteMenu::landingLabel('rentals'), 'url' => url('/rentals')],
+        'register'     => ['label' => \App\Support\SiteMenu::landingLabel('register'), 'url' => url('/register-now')],
+        'apply'        => ['label' => \App\Support\SiteMenu::landingLabel('apply'), 'url' => url('/apply-now'), 'special' => true],
+        'permissions'  => ['label' => \App\Support\SiteMenu::landingLabel('permissions'), 'url' => url('/permissions')],
+        'about'        => ['label' => \App\Support\SiteMenu::landingLabel('about'), 'url' => url('/about')],
+        'gallery'      => ['label' => \App\Support\SiteMenu::landingLabel('gallery'), 'url' => url('/gallery')],
+        'shareholders' => ['label' => \App\Support\SiteMenu::landingLabel('shareholders'), 'url' => url('/shareholders')],
     ];
     $navLinks = [];
-    foreach (\App\Support\SiteMenu::landingOrder() as $navKey) {
+    foreach (\App\Support\SiteMenu::landingVisibleOrder() as $navKey) {
         // Legacy saved menus may still include "contact" — skip; contact lives on About Us
         if ($navKey === 'contact') {
             continue;
@@ -238,39 +238,39 @@
                     <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="h-[50px] w-auto object-contain">
                 </a>
                 <div class="text-2xl font-bold"><span class="text-brand-gold">{{ $siteTitle }}</span></div>
-                <p class="text-gray-300 text-sm mt-4">Your Technology Bridge to Kigali. Professional IT, networking, security, and audio-visual solutions.</p>
+                <p class="text-gray-300 text-sm mt-4">Catholic Women's Association Cameroon — faith, service and sisterhood.</p>
             </div>
             <div>
                 <h3 class="text-lg font-semibold text-brand-gold mb-4">Quick Links</h3>
                 <nav class="flex flex-col space-y-2 text-sm">
                     <a href="{{ url('/') }}" class="text-gray-300 hover:text-brand-gold">Home</a>
                     <a href="{{ url('/about') }}" class="text-gray-300 hover:text-brand-gold">About Us</a>
-                    <a href="{{ url('/services') }}" class="text-gray-300 hover:text-brand-gold">Services</a>
-                    <a href="{{ url('/projects') }}" class="text-gray-300 hover:text-brand-gold">Projects</a>
                     <a href="{{ url('/events') }}" class="text-gray-300 hover:text-brand-gold">Events</a>
-                    <a href="{{ url('/shareholders') }}" class="text-gray-300 hover:text-brand-gold">Shareholders Portal</a>
+                    <a href="{{ url('/gallery') }}" class="text-gray-300 hover:text-brand-gold">Gallery</a>
+                    <a href="{{ url('/donate') }}" class="text-gray-300 hover:text-brand-gold">Donate</a>
                 </nav>
             </div>
             <div>
                 <h3 class="text-lg font-semibold text-brand-gold mb-4">Contact Us</h3>
                 <div class="space-y-3 text-sm">
-                    <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold px-4 py-2 rounded-md">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i> Chat now
+                    <a href="{{ url('/about') }}#contact" class="inline-flex items-center gap-2 bg-brand-gold hover:bg-yellow-400 text-brand-blue font-semibold px-4 py-2 rounded-md">
+                        Get in touch
                     </a>
-                    <a href="tel:+237675321739" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="phone" class="w-5 h-5"></i> +237 675 321 739</a>
-                    <a href="mailto:info@beyondtechworld.com" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@beyondtechworld.com</a>
-                    <a href="https://www.beyondtechworld.com" target="_blank" rel="noopener" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.beyondtechworld.com</a>
+                    <a href="mailto:info@cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@cwacam.org</a>
+                    <a href="https://cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.cwacam.org</a>
                 </div>
             </div>
         </div>
-        <div class="mt-12 pt-8 border-t border-gray-700 text-center">
-            <p class="text-gray-400 text-sm">© {{ date('Y') }} Beyond Enterprise. All rights reserved.</p>
-            <p class="text-gray-500 text-xs mt-2">
-                Developed By: <span class="text-gray-300 font-medium">Sr. Engr. Tefu R. Mbole</span>
-                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="text-[#25D366] hover:underline font-semibold">+237675321739</a>
-            </p>
-            <p class="text-gray-500 text-xs mt-2">Kigali, Rwanda</p>
-            <p class="text-gray-600 text-xs mt-1">{{ \App\Support\AppVersion::bcl() }}</p>
+        <div class="mt-12 -mx-4 sm:-mx-6 lg:-mx-8">
+            <div class="bg-[#0f3d2e] text-center px-4 py-3 text-xs sm:text-sm text-white/90 tracking-wide">
+                <span>Copyright CWA Cameroon {{ date('Y') }}</span>
+                <span class="mx-1.5 opacity-60">|</span>
+                <span>Developed By</span>
+                <span class="mx-1.5 opacity-60">|</span>
+                <span>Sr. Engr. Tefu R. Mbole</span>
+                <span class="mx-1.5 opacity-60">|</span>
+                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="hover:text-brand-gold underline-offset-2 hover:underline">+237 675-321-739</a>
+            </div>
         </div>
     </div>
 </footer>

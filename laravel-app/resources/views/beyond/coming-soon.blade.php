@@ -386,16 +386,43 @@
     }
     .lp-credo {
         position: absolute;
-        right: 6.5%;
-        top: 18%;
+        right: 4.2%;
+        top: 13%;
         z-index: 2;
-        text-align: right;
-        font-family: "Great Vibes", cursive;
-        font-size: clamp(1.7rem, 2.6vw, 2.35rem);
-        line-height: 1.28;
+        width: min(360px, 38vw);
+        text-align: left;
         color: #fff;
-        text-shadow: 0 8px 24px rgba(4, 16, 40, 0.35);
         pointer-events: none;
+        padding: 1.15rem 1.25rem 1.25rem;
+        border-radius: 18px;
+        background: rgba(4, 16, 40, 0.38);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 16px 40px rgba(4, 16, 40, 0.25);
+    }
+    .lp-credo h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(1.45rem, 2vw, 1.85rem);
+        font-weight: 700;
+        line-height: 1.15;
+        margin: 0 0 0.85rem;
+        text-shadow: 0 6px 18px rgba(4, 16, 40, 0.35);
+    }
+    .lp-credo .label {
+        margin: 0.7rem 0 0.22rem;
+        color: var(--gold-soft);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 0.62rem;
+        font-weight: 800;
+    }
+    .lp-credo p {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.92);
+        text-shadow: 0 4px 14px rgba(4, 16, 40, 0.35);
     }
     .lp-verse {
         position: absolute;
@@ -418,6 +445,30 @@
         font-style: normal;
         font-size: 0.78rem;
         letter-spacing: 0.04em;
+    }
+    .lp-credit {
+        margin-top: auto;
+        width: 100%;
+        background: #0f3d2e;
+        color: rgba(255, 255, 255, 0.92);
+        text-align: center;
+        padding: 0.7rem 1rem;
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+        line-height: 1.5;
+        z-index: 5;
+    }
+    .lp-credit a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .lp-credit a:hover {
+        color: #d4af37;
+        text-decoration: underline;
+    }
+    .lp-credit .sep {
+        margin: 0 0.45rem;
+        opacity: 0.55;
     }
     .launched { display: none; color: var(--gold-soft); font-family: "Playfair Display", Georgia, serif; font-size: 1.25rem; }
     .launched.is-visible { display: block; }
@@ -542,9 +593,25 @@
             </div>
         </div>
 
-        <p class="lp-credo">Faith<br>Service<br>Sisterhood<br>A Brighter Tomorrow</p>
+        <div class="lp-credo">
+            <h2>CWA Cameroon</h2>
+            <p class="label">Vision</p>
+            <p>To bear witness to Christ while committing to the holistic development of Catholic women and families in Cameroon.</p>
+            <p class="label">Mission</p>
+            <p>To empower members spiritually, nurturing stronger faith and promoting evangelization within families and society.</p>
+        </div>
         <p class="lp-verse">“For I know the plans I have for you…”<span>Jeremiah 29:11</span></p>
     </section>
+
+    <div class="lp-credit" role="contentinfo">
+        <span>Copyright CWA Cameroon {{ date('Y') }}</span>
+        <span class="sep">|</span>
+        <span>Developed By</span>
+        <span class="sep">|</span>
+        <span>Sr. Engr. Tefu R. Mbole</span>
+        <span class="sep">|</span>
+        <a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a>
+    </div>
 </div>
 @endsection
 
