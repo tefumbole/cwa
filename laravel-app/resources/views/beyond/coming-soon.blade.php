@@ -494,6 +494,8 @@
         .dial-value { font-size: 1.05rem; }
         .lp-rings { gap: 0.35rem; }
         .lp-copy h1 { font-size: 3rem; }
+        .lp-credit { font-size: 0.68rem; padding: 0.65rem 0.75rem; }
+        .lp-credit .sep { margin: 0 0.28rem; }
     }
 </style>
 @endpush
