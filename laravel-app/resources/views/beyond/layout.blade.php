@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,8 +12,8 @@
         $isAdminSession = (bool) $webUser;
         $headerName = $headerUser ? $headerUser->name : '';
         $headerRole = $isAdminSession
-            ? 'ADMINISTRATOR'
-            : strtoupper(str_replace('_', ' ', optional($beyondUser)->role ?: 'USER'));
+            ? __('cwa.nav.administrator')
+            : (optional($beyondUser)->role ? strtoupper(str_replace('_', ' ', $beyondUser->role)) : __('cwa.nav.user'));
         $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
     @endphp
@@ -85,28 +85,7 @@
 <body class="bg-white text-gray-800 flex flex-col min-h-screen">
 
 @php
-    $navDefs = [
-        'home'         => ['label' => \App\Support\SiteMenu::landingLabel('home'), 'url' => url('/')],
-        'trainings'    => ['label' => \App\Support\SiteMenu::landingLabel('trainings'), 'url' => url('/trainings')],
-        'events'       => ['label' => \App\Support\SiteMenu::landingLabel('events'), 'url' => url('/events')],
-        'rentals'      => ['label' => \App\Support\SiteMenu::landingLabel('rentals'), 'url' => url('/rentals')],
-        'register'     => ['label' => \App\Support\SiteMenu::landingLabel('register'), 'url' => url('/register-now')],
-        'apply'        => ['label' => \App\Support\SiteMenu::landingLabel('apply'), 'url' => url('/apply-now'), 'special' => true],
-        'permissions'  => ['label' => \App\Support\SiteMenu::landingLabel('permissions'), 'url' => url('/permissions')],
-        'about'        => ['label' => \App\Support\SiteMenu::landingLabel('about'), 'url' => url('/about')],
-        'gallery'      => ['label' => \App\Support\SiteMenu::landingLabel('gallery'), 'url' => url('/gallery')],
-        'shareholders' => ['label' => \App\Support\SiteMenu::landingLabel('shareholders'), 'url' => url('/shareholders')],
-    ];
-    $navLinks = [];
-    foreach (\App\Support\SiteMenu::landingVisibleOrder() as $navKey) {
-        // Legacy saved menus may still include "contact" — skip; contact lives on About Us
-        if ($navKey === 'contact') {
-            continue;
-        }
-        if (isset($navDefs[$navKey])) {
-            $navLinks[] = $navDefs[$navKey];
-        }
-    }
+    $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
 @endphp
 
@@ -118,7 +97,7 @@
 
         <nav class="hidden lg:flex items-center gap-x-4 xl:gap-x-6 flex-1 justify-center min-w-0">
             @foreach ($navLinks as $link)
-                @php $active = rtrim($currentUrl,'/') === rtrim($link['url'],'/'); @endphp
+                @php $active = \App\Support\SiteMenu::navLinkIsActive($link, $currentUrl); @endphp
                 <a href="{{ $link['url'] }}"
                    class="text-sm xl:text-base font-medium transition-colors duration-300 whitespace-nowrap
                       @if($active) text-brand-gold border-b-2 border-brand-gold pb-1
@@ -130,15 +109,18 @@
         </nav>
 
         <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-            <div class="flex items-center gap-1 text-xs font-semibold">
-                <span class="bg-brand-gold text-brand-blue px-2 py-1 rounded">EN</span>
-                <a href="#" class="text-white hover:text-brand-gold px-2 py-1 border border-white/20 rounded">FR</a>
-            </div>
+            @include('beyond.partials.lang_switch', ['variant' => 'dark'])
+            <a href="{{ route('beyond.donate') }}" class="hidden xl:inline-flex items-center gap-1.5 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-blue font-semibold rounded-full px-3 py-1.5 text-sm">
+                {{ __('cwa.nav.donate') }}
+            </a>
+            <a href="{{ route('beyond.join') }}" class="inline-flex items-center gap-1.5 bg-brand-gold text-brand-blue hover:bg-yellow-400 font-bold rounded-full px-3.5 py-1.5 text-sm">
+                {{ __('cwa.nav.join') }}
+            </a>
 
-            <a href="tel:+237675321739" class="text-white hover:text-brand-gold transition-colors" title="Call Us">
+            <a href="tel:+237675321739" class="text-white hover:text-brand-gold transition-colors" title="{{ __('cwa.nav.call') }}">
                 <i data-lucide="phone" class="w-5 h-5"></i>
             </a>
-            <a href="https://mail.hostinger.com" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="Webmail">
+            <a href="https://mail.hostinger.com" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="{{ __('cwa.nav.webmail') }}">
                 <i data-lucide="mail" class="w-5 h-5"></i>
             </a>
 
@@ -157,31 +139,31 @@
                     </button>
                     <div x-show="userMenu" x-cloak x-transition
                          class="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-xl border border-gray-100 py-1 z-50">
-                        <div class="px-4 py-2.5 text-sm font-bold text-gray-800">My Account</div>
+                        <div class="px-4 py-2.5 text-sm font-bold text-gray-800">{{ __('cwa.nav.account') }}</div>
                         <div class="border-t border-gray-100"></div>
                         @if ($isAdminSession)
                             <a href="{{ url('/admin') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50">
-                                <i data-lucide="layout-grid" class="w-4 h-4 text-gray-700"></i> Admin Dashboard
+                                <i data-lucide="layout-grid" class="w-4 h-4 text-gray-700"></i> {{ __('cwa.nav.admin') }}
                             </a>
                             <a href="{{ url('/') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50">
-                                <i data-lucide="home" class="w-4 h-4 text-gray-700"></i> Home Page
+                                <i data-lucide="home" class="w-4 h-4 text-gray-700"></i> {{ __('cwa.nav.home_page') }}
                             </a>
                         @else
                             <a href="{{ url('/user/profile') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50">
-                                <i data-lucide="user" class="w-4 h-4 text-gray-700"></i> My Profile
+                                <i data-lucide="user" class="w-4 h-4 text-gray-700"></i> {{ __('cwa.nav.profile') }}
                             </a>
                         @endif
                         <form method="POST" action="{{ $isAdminSession ? route('logout') : route('beyond.logout') }}" @click.stop>
                             @csrf
                             <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
-                                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                                <i data-lucide="log-out" class="w-4 h-4"></i> {{ __('cwa.nav.logout') }}
                             </button>
                         </form>
                     </div>
                 </div>
             @else
                 <a href="{{ url('/login') }}" class="bg-brand-dark border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-blue font-medium transition-all rounded-md px-4 py-2 flex items-center gap-2">
-                    <i data-lucide="log-in" class="w-4 h-4"></i> Login
+                    <i data-lucide="log-in" class="w-4 h-4"></i> {{ __('cwa.nav.login') }}
                 </a>
             @endif
         </div>
@@ -197,6 +179,10 @@
             @foreach ($navLinks as $link)
                 <a href="{{ $link['url'] }}" class="text-lg font-medium {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
             @endforeach
+            <a href="{{ route('beyond.join') }}" class="text-lg font-bold text-brand-gold">{{ __('cwa.nav.join') }}</a>
+            <a href="{{ route('beyond.donate') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.donate') }}</a>
+            <a href="{{ url('/documents') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.resources') }}</a>
+            <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'dark'])</div>
             <div class="pt-3 border-t border-white/10 space-y-2">
                 @if ($headerUser)
                     <div class="flex items-center gap-3 px-1 py-2">
@@ -207,18 +193,18 @@
                         </div>
                     </div>
                     @if ($isAdminSession)
-                        <a href="{{ url('/admin') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">Admin Dashboard</a>
-                        <a href="{{ url('/') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded border border-white/20 text-white">Home Page</a>
+                        <a href="{{ url('/admin') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.admin') }}</a>
+                        <a href="{{ url('/') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded border border-white/20 text-white">{{ __('cwa.nav.home_page') }}</a>
                     @else
-                        <a href="{{ url('/user/profile') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">My Profile</a>
+                        <a href="{{ url('/user/profile') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.profile') }}</a>
                     @endif
                     <form method="POST" action="{{ $isAdminSession ? route('logout') : route('beyond.logout') }}">
                         @csrf
-                        <button type="submit" class="w-full py-2 rounded border border-red-400/50 text-red-300">Logout</button>
+                        <button type="submit" class="w-full py-2 rounded border border-red-400/50 text-red-300">{{ __('cwa.nav.logout') }}</button>
                     </form>
                 @else
                     <a href="{{ url('/login') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded border border-brand-gold text-brand-gold font-medium">
-                        <i data-lucide="log-in" class="w-5 h-5"></i> Login
+                        <i data-lucide="log-in" class="w-5 h-5"></i> {{ __('cwa.nav.login') }}
                     </a>
                 @endif
             </div>
@@ -238,44 +224,46 @@
                     <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="h-[50px] w-auto object-contain">
                 </a>
                 <div class="text-2xl font-bold"><span class="text-brand-gold">{{ $siteTitle }}</span></div>
-                <p class="text-gray-300 text-sm mt-4">Catholic Women's Association Cameroon — faith, service and sisterhood.</p>
+                <p class="text-gray-300 text-sm mt-4">{{ __('cwa.footer.tagline') }}</p>
             </div>
             <div>
-                <h3 class="text-lg font-semibold text-brand-gold mb-4">Quick Links</h3>
+                <h3 class="text-lg font-semibold text-brand-gold mb-4">{{ __('cwa.footer.quick_links') }}</h3>
                 <nav class="flex flex-col space-y-2 text-sm">
-                    <a href="{{ url('/') }}" class="text-gray-300 hover:text-brand-gold">Home</a>
-                    <a href="{{ url('/about') }}" class="text-gray-300 hover:text-brand-gold">About Us</a>
-                    <a href="{{ url('/events') }}" class="text-gray-300 hover:text-brand-gold">Events</a>
-                    <a href="{{ url('/gallery') }}" class="text-gray-300 hover:text-brand-gold">Gallery</a>
-                    <a href="{{ url('/donate') }}" class="text-gray-300 hover:text-brand-gold">Donate</a>
+                    <a href="{{ url('/') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.home') }}</a>
+                    <a href="{{ url('/about') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.about') }}</a>
+                    <a href="{{ url('/calendar') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.events') }}</a>
+                    <a href="{{ url('/gallery') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.gallery') }}</a>
+                    <a href="{{ url('/documents') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.resources') }}</a>
+                    <a href="{{ url('/join') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.join') }}</a>
+                    <a href="{{ url('/donate') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.donate') }}</a>
                 </nav>
             </div>
             <div>
-                <h3 class="text-lg font-semibold text-brand-gold mb-4">Contact Us</h3>
+                <h3 class="text-lg font-semibold text-brand-gold mb-4">{{ __('cwa.footer.contact') }}</h3>
                 <div class="space-y-3 text-sm">
                     <a href="{{ url('/about') }}#contact" class="inline-flex items-center gap-2 bg-brand-gold hover:bg-yellow-400 text-brand-blue font-semibold px-4 py-2 rounded-md">
-                        Get in touch
+                        {{ __('cwa.footer.get_in_touch') }}
                     </a>
                     <a href="mailto:info@cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@cwacam.org</a>
                     <a href="https://cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.cwacam.org</a>
                 </div>
             </div>
         </div>
-        <div class="mt-12 pt-6 border-t border-white/10 text-center text-xs sm:text-sm text-gray-300 tracking-wide">
-            <span>Copyright CWA Cameroon {{ date('Y') }}</span>
-            <span class="mx-1.5 opacity-60">|</span>
-            <span>Developed By</span>
-            <span class="mx-1.5 opacity-60">|</span>
-            <span>Sr. Engr. Tefu R. Mbole</span>
-            <span class="mx-1.5 opacity-60">|</span>
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="hover:text-brand-gold underline-offset-2 hover:underline">+237 675-321-739</a>
+        <div class="mt-12 pt-8 border-t border-gray-700 text-center">
+            <p class="text-gray-400 text-sm">© {{ date('Y') }} {{ __('cwa.home.credo_title') }}. {{ __('cwa.footer.rights') }}</p>
+            <p class="text-gray-500 text-xs mt-2">
+                {{ __('cwa.footer.developed') }} <span class="text-gray-300 font-medium">Sr. Engr. Tefu R. Mbole</span>
+                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="text-[#25D366] hover:underline font-semibold">+237675321739</a>
+            </p>
+            <p class="text-gray-500 text-xs mt-2">{{ __('cwa.footer.country') }}</p>
+            <p class="text-gray-600 text-xs mt-1">{{ \App\Support\AppVersion::bcl() }}</p>
         </div>
     </div>
 </footer>
 
 <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
    class="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
-   title="Chat on WhatsApp">
+   title="{{ __('cwa.footer.whatsapp') }}">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>
 

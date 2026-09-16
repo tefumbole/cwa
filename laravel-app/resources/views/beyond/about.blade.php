@@ -1,62 +1,172 @@
 @extends('beyond.layout')
 
-@section('title', 'About Beyond Enterprise | Our Vision & Team')
-@section('meta_description', 'Learn about Beyond Enterprise — our history, mission, leadership, and commitment to technological excellence in Rwanda and beyond.')
+@section('title', __('cwa.about.title'))
+@section('meta_description', __('cwa.about.meta'))
+
+@php
+    $aboutHero = \App\Support\SiteContent::image('about.about_image', url('public/branding/cwa-about-home.jpg'));
+    $vision = \App\Support\SiteContent::text('about.vision_text', __('cwa.about.vision_text'));
+    $mission = \App\Support\SiteContent::text('about.mission_text', __('cwa.about.mission_text'));
+    $story = \App\Support\SiteContent::text('about.story_text', __('cwa.about.story_text'));
+    $objectives = trans('cwa.about.objectives');
+    $missionCards = trans('cwa.about.mission_cards');
+    $programs = trans('cwa.about.programs');
+    $structure = trans('cwa.about.structure');
+    $identity = trans('cwa.about.identity');
+    $timeline = trans('cwa.about.timeline');
+    $missionIcons = ['church', 'home', 'sparkles', 'heart'];
+    $programIcons = ['book-open', 'home', 'sparkles', 'award', 'activity', 'hand', 'users', 'globe'];
+@endphp
 
 @section('content')
 
-<section class="relative py-20 bg-brand-blue text-white overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');"></div>
-    </div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.hero_title', 'Bridging Technology & Innovation') }}</h1>
-        <p class="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto font-light">
-            {{ \App\Support\SiteContent::text('about.hero_subtitle', 'We are a premier IT consultancy and infrastructure firm dedicated to transforming businesses through cutting-edge technology solutions.') }}
+<section class="relative min-h-[52vh] flex items-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('{{ $aboutHero }}');"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#041830] via-[#041830]/78 to-[#041830]/35"></div>
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <p class="uppercase tracking-[0.28em] text-brand-gold text-xs font-bold mb-4">{{ __('cwa.about.kicker') }}</p>
+        <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+            {{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}
+        </h1>
+        <p class="mt-5 max-w-2xl text-lg md:text-xl text-blue-100 leading-relaxed">
+            {{ \App\Support\SiteContent::text('about.hero_subtitle', __('cwa.about.hero_subtitle')) }}
         </p>
     </div>
 </section>
 
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h2 class="text-3xl font-bold text-brand-blue mb-6">{{ \App\Support\SiteContent::text('about.mission_heading', 'Our Mission') }}</h2>
-                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-                    {{ \App\Support\SiteContent::text('about.mission_text', 'To empower organizations in Africa and beyond with robust, scalable, and secure technology infrastructure. We strive to be the bridge that connects complex technological challenges with simple, effective, and sustainable solutions.') }}
-                </p>
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-blue-100 p-2 rounded-lg"><i data-lucide="target" class="w-6 h-6 text-brand-blue"></i></div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Excellence</h3>
-                            <p class="text-sm text-gray-500">World-class standards</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-blue-100 p-2 rounded-lg"><i data-lucide="globe-2" class="w-6 h-6 text-brand-blue"></i></div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Global Reach</h3>
-                            <p class="text-sm text-gray-500">International partnerships</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img src="{{ \App\Support\SiteContent::image('about.about_image', 'https://horizons-cdn.hostinger.com/81ef3422-3855-479e-bfe8-28a4ceb0df39/513a28b3-47b7-490b-b30a-f9398973361b-a4hCG.png') }}" alt="Team Collaboration" class="w-full h-full object-cover">
-            </div>
+<section class="bg-brand-blue text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+            <p class="text-3xl md:text-4xl font-extrabold text-brand-gold">1964</p>
+            <p class="mt-1 text-sm text-blue-100">{{ __('cwa.about.stat_founded') }}</p>
+        </div>
+        <div>
+            <p class="text-3xl md:text-4xl font-extrabold text-brand-gold">18,000+</p>
+            <p class="mt-1 text-sm text-blue-100">{{ __('cwa.about.stat_members') }}</p>
+        </div>
+        <div>
+            <p class="text-3xl md:text-4xl font-extrabold text-brand-gold">Bamenda</p>
+            <p class="mt-1 text-sm text-blue-100">{{ __('cwa.about.stat_seat') }}</p>
+        </div>
+        <div>
+            <p class="text-3xl md:text-4xl font-extrabold text-brand-gold">60</p>
+            <p class="mt-1 text-sm text-blue-100">{{ __('cwa.about.stat_years') }}</p>
         </div>
     </div>
 </section>
 
-<section class="py-16 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-            @foreach ([['15+','Years Experience'],['500+','Projects Completed'],['50+','Team Members'],['20+','Global Partners']] as [$value, $label])
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-brand-blue mb-2">{{ $value }}</div>
-                    <div class="text-gray-600 font-medium">{{ $label }}</div>
-                </div>
+<section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-10 items-start">
+        <div class="lg:col-span-7">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.story_kicker') }}</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.story_heading', __('cwa.about.story_heading')) }}</h2>
+            <p class="mt-5 text-slate-700 leading-relaxed text-lg">{{ $story }}</p>
+            <div class="mt-6 flex flex-wrap gap-2">
+                @foreach ($identity as $pill)
+                    <span class="px-3 py-1 rounded-full bg-amber-50 text-brand-blue text-sm font-semibold border border-amber-100">{{ $pill }}</span>
+                @endforeach
+            </div>
+        </div>
+        <ol class="lg:col-span-5 space-y-4">
+            @foreach ($timeline as $item)
+                <li class="flex gap-4 bg-slate-50 rounded-2xl border border-slate-100 p-5">
+                    <span class="shrink-0 w-16 text-brand-gold font-extrabold">{{ $item['year'] }}</span>
+                    <p class="text-slate-700">{{ $item['text'] }}</p>
+                </li>
+            @endforeach
+        </ol>
+    </div>
+</section>
+
+<section class="py-16 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-6">
+        <article class="rounded-2xl bg-white border border-slate-100 p-8 shadow-sm">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.motto_label') }}</p>
+            <blockquote class="mt-4 text-2xl font-semibold text-brand-blue leading-snug">
+                “{{ \App\Support\SiteContent::text('about.motto_text', __('cwa.about.motto_text')) }}”
+            </blockquote>
+            <p class="mt-3 text-slate-500 font-medium">{{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}</p>
+        </article>
+        <article class="rounded-2xl bg-brand-blue text-white p-8 shadow-sm">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.patron_label') }}</p>
+            <h3 class="mt-3 text-2xl font-bold">{{ \App\Support\SiteContent::text('about.patron_title', __('cwa.about.patron_title')) }}</h3>
+            <p class="mt-3 text-blue-100">{{ __('cwa.about.patron_text', ['date' => \App\Support\SiteContent::text('about.patron_feast', __('cwa.about.patron_feast'))]) }}</p>
+            <a href="{{ url('/calendar') }}?view=month&amp;year={{ date('Y') }}&amp;month=12" class="inline-flex mt-6 text-brand-gold font-semibold hover:underline">{{ __('cwa.about.patron_link') }}</a>
+        </article>
+    </div>
+</section>
+
+<section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-6">
+        <article class="rounded-2xl border border-slate-100 bg-gradient-to-br from-[#041830] to-brand-blue text-white p-8 shadow-xl">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.home.vision_label') }}</p>
+            <h2 class="mt-2 text-2xl font-bold">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
+            <p class="mt-4 text-blue-100 leading-relaxed text-lg">{{ $vision }}</p>
+        </article>
+        <article class="rounded-2xl border border-amber-100 bg-amber-50 p-8 shadow-xl">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.home.mission_label') }}</p>
+            <h2 class="mt-2 text-2xl font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.mission_heading', __('cwa.about.mission_heading')) }}</h2>
+            <p class="mt-4 text-slate-700 leading-relaxed text-lg">{{ $mission }}</p>
+        </article>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @foreach ($missionCards as $i => $card)
+            <article class="rounded-2xl border border-slate-100 p-6 bg-slate-50">
+                <i data-lucide="{{ $missionIcons[$i] ?? 'heart' }}" class="w-7 h-7 text-brand-gold"></i>
+                <h3 class="mt-3 font-bold text-brand-blue">{{ $card['title'] }}</h3>
+                <p class="mt-2 text-sm text-slate-600 leading-relaxed">{{ $card['text'] }}</p>
+            </article>
+        @endforeach
+    </div>
+</section>
+
+<section class="py-16 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.objectives_kicker') }}</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.objectives_heading', __('cwa.about.objectives_heading')) }}</h2>
+        </div>
+        <ol class="grid md:grid-cols-2 gap-5">
+            @foreach ($objectives as $i => $item)
+                <li class="flex gap-4 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gold text-brand-blue font-extrabold">{{ $i + 1 }}</span>
+                    <p class="text-slate-700 leading-relaxed">{{ $item }}</p>
+                </li>
+            @endforeach
+        </ol>
+    </div>
+</section>
+
+<section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.programs_kicker') }}</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.programs_heading', __('cwa.about.programs_heading')) }}</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            @foreach ($programs as $i => $program)
+                <article class="rounded-2xl border border-slate-100 p-6 hover:border-brand-gold hover:shadow-md transition-all">
+                    <i data-lucide="{{ $programIcons[$i] ?? 'heart' }}" class="w-8 h-8 text-brand-gold"></i>
+                    <h3 class="mt-3 font-bold text-brand-blue">{{ is_array($program) ? $program['title'] : $program }}</h3>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="py-16 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <p class="uppercase tracking-[0.2em] text-brand-gold text-xs font-bold">{{ __('cwa.about.structure_kicker') }}</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.structure_heading', __('cwa.about.structure_heading')) }}</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach ($structure as $i => $node)
+                <article class="relative bg-white rounded-2xl border border-slate-100 p-6">
+                    <span class="text-brand-gold font-extrabold tracking-widest text-sm">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                    <h3 class="mt-2 text-xl font-bold text-brand-blue">{{ $node['title'] }}</h3>
+                    <p class="mt-2 text-slate-600 text-sm">{{ $node['text'] }}</p>
+                </article>
             @endforeach
         </div>
     </div>
@@ -66,9 +176,9 @@
 <section id="leadership" class="py-20 bg-brand-blue">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('about.leadership_heading', 'Our Leadership') }}</h2>
+            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
             <div class="h-1 w-24 bg-brand-gold mx-auto"></div>
-            <p class="mt-4 text-xl text-gray-300">{{ \App\Support\SiteContent::text('about.leadership_subtext', 'The visionaries driving Beyond Enterprise forward') }}</p>
+            <p class="mt-4 text-xl text-gray-300">{{ \App\Support\SiteContent::text('about.leadership_subtext', __('cwa.about.leadership_subtext')) }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             @foreach($leaders as $leader)
@@ -104,33 +214,21 @@
 </section>
 @endif
 
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold text-brand-blue mb-12">{{ \App\Support\SiteContent::text('about.values_heading', 'Our Core Values') }}</h2>
-        <div class="grid md:grid-cols-3 gap-8">
-            @foreach ([
-                ['users', 'Client First', 'We prioritize our clients\' needs and success above all else.'],
-                ['award', 'Integrity', 'We conduct business with transparency, honesty, and ethical standards.'],
-                ['briefcase', 'Innovation', 'We constantly evolve and adapt to the latest technological advancements.'],
-            ] as [$icon, $title, $desc])
-                <div class="p-6 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
-                    <i data-lucide="{{ $icon }}" class="w-12 h-12 text-brand-gold mx-auto mb-4"></i>
-                    <h3 class="text-xl font-bold text-brand-blue mb-2">{{ $title }}</h3>
-                    <p class="text-gray-600">{{ $desc }}</p>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
 <section class="py-16 bg-gradient-to-r from-brand-blue to-brand-dark text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.cta_heading', 'Ready to work with us?') }}</h2>
-        <p class="text-xl mb-8 opacity-90">{{ \App\Support\SiteContent::text('about.cta_text', "Let's build something extraordinary together.") }}</p>
-        <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-2 bg-brand-gold text-brand-blue font-bold text-lg px-8 py-4 rounded-full hover:bg-white hover:scale-105 transition-all">
-            <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
-        </a>
+        <h2 class="text-3xl font-bold mb-4">{{ \App\Support\SiteContent::text('about.cta_heading', __('cwa.about.cta_heading')) }}</h2>
+        <p class="text-xl mb-8 opacity-90">{{ \App\Support\SiteContent::text('about.cta_text', __('cwa.about.cta_text')) }}</p>
+        <div class="flex flex-wrap justify-center gap-3">
+            <a href="{{ route('beyond.join') }}" class="inline-flex items-center gap-2 bg-brand-gold text-brand-blue font-bold text-lg px-8 py-4 rounded-full hover:bg-white transition-all">
+                {{ __('cwa.nav.join') }}
+            </a>
+            <a href="{{ route('beyond.donate') }}" class="inline-flex items-center gap-2 border-2 border-brand-gold text-brand-gold font-bold text-lg px-8 py-4 rounded-full hover:bg-white/10 transition-all">
+                <i data-lucide="heart" class="w-5 h-5"></i> {{ __('cwa.nav.donate') }}
+            </a>
+            <a href="#contact" class="inline-flex items-center gap-2 border-2 border-white/70 text-white font-bold text-lg px-8 py-4 rounded-full hover:bg-white/10 transition-all">
+                {{ __('cwa.about.contact_btn') }}
+            </a>
+        </div>
     </div>
 </section>
 

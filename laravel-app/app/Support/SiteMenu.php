@@ -15,17 +15,24 @@ class SiteMenu
     {
         return [
             'home'         => 'Home',
+            'about'        => 'About Us',
+            'events'       => 'Calendar',
+            'gallery'      => 'Gallery',
+            'resources'    => 'Resources',
             'trainings'    => 'Training',
-            'events'       => 'Events',
             'rentals'      => 'Rentals',
             'register'     => 'Register Now',
             'apply'        => 'Apply Now',
             'permissions'  => 'Permissions',
-            'about'        => 'About Us',
-            'gallery'      => 'Gallery',
             'shareholders' => 'Shareholders',
-            // Contact is merged into About Us (#contact) — not a separate nav item
+            // Contact is merged into About Us (#contact). Join CWA is a header button.
         ];
+    }
+
+    /** Hidden from the public header until an admin unhides them in Site Content. */
+    public static function landingDefaultHidden()
+    {
+        return ['resources', 'trainings', 'rentals', 'register', 'apply', 'permissions', 'shareholders'];
     }
 
     /** Admin sidebar top-level items: key => label (default order). Keys match
@@ -98,7 +105,7 @@ class SiteMenu
         return self::ordered('landing_menu_order', self::landingItems());
     }
 
-    /** Keys hidden from a menu setting. New items default to visible. */
+    /** Keys hidden from the public header. New items default to visible. */
     public static function hiddenKeys($settingKey)
     {
         $raw = SiteSetting::getValue($settingKey, []);
@@ -122,7 +129,67 @@ class SiteMenu
 
     public static function landingHidden()
     {
+        try {
+            $row = SiteSetting::find('landing_menu_hidden');
+        } catch (\Throwable $e) {
+            return self::landingDefaultHidden();
+        }
+        if (! $row) {
+            return self::landingDefaultHidden();
+        }
+
         return self::hiddenKeys('landing_menu_hidden');
+    }
+
+    /** URL + label map for the public header (used by layout and coming-soon). */
+    public static function landingNavDefs()
+    {
+        return [
+            'home'         => ['label' => self::landingLabel('home'), 'url' => url('/')],
+            'about'        => ['label' => self::landingLabel('about'), 'url' => url('/about')],
+            'events'       => ['label' => self::landingLabel('events'), 'url' => url('/calendar'), 'match' => ['/calendar', '/events']],
+            'gallery'      => ['label' => self::landingLabel('gallery'), 'url' => url('/gallery')],
+            'resources'    => ['label' => self::landingLabel('resources'), 'url' => url('/documents')],
+            'trainings'    => ['label' => self::landingLabel('trainings'), 'url' => url('/trainings')],
+            'rentals'      => ['label' => self::landingLabel('rentals'), 'url' => url('/rentals')],
+            'register'     => ['label' => self::landingLabel('register'), 'url' => url('/register-now')],
+            'apply'        => ['label' => self::landingLabel('apply'), 'url' => url('/apply-now'), 'special' => true],
+            'permissions'  => ['label' => self::landingLabel('permissions'), 'url' => url('/permissions')],
+            'shareholders' => ['label' => self::landingLabel('shareholders'), 'url' => url('/shareholders')],
+        ];
+    }
+
+    public static function landingNavLinks()
+    {
+        $defs = self::landingNavDefs();
+        $links = [];
+        foreach (self::landingVisibleOrder() as $key) {
+            if ($key === 'contact') {
+                continue;
+            }
+            if (isset($defs[$key])) {
+                $links[] = $defs[$key];
+            }
+        }
+
+        return $links;
+    }
+
+    public static function navLinkIsActive(array $link, $currentUrl)
+    {
+        $current = rtrim($currentUrl, '/');
+        if ($current === rtrim($link['url'], '/')) {
+            return true;
+        }
+        if (! empty($link['match'])) {
+            foreach ((array) $link['match'] as $needle) {
+                if ($needle !== '' && strpos($currentUrl, $needle) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static function landingVisibleOrder()
@@ -159,6 +226,8 @@ class SiteMenu
 
     /**
      * Saved custom labels for public header tabs. Falls back to landingItems().
+     * Stored as a JSON object string so keys are preserved (setValue() strips
+     * associative keys when given a PHP array).
      */
     public static function landingLabels()
     {
@@ -183,6 +252,11 @@ class SiteMenu
 
     public static function landingLabel($key)
     {
+        $translated = trans('cwa.nav.'.$key);
+        if (is_string($translated) && $translated !== 'cwa.nav.'.$key) {
+            return $translated;
+        }
+
         $labels = self::landingLabels();
         $defaults = self::landingItems();
 

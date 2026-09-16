@@ -26,7 +26,7 @@ class DonateController extends Controller
         $campay = app(CampayService::class);
         $phone = $campay->normalizePhone($request->input('phone'));
         if (strlen($phone) < 12) {
-            return back()->withInput()->with('not_permitted', 'Enter a valid MoMo number (9 digits).');
+            return back()->withInput()->with('not_permitted', __('cwa.donate.invalid_phone'));
         }
 
         $amount = (int) $request->input('amount');
@@ -59,7 +59,7 @@ class DonateController extends Controller
             $order->payment_status = 2;
             $order->save();
 
-            return back()->withInput()->with('not_permitted', 'MoMo payment could not start. Try again.');
+            return back()->withInput()->with('not_permitted', __('cwa.donate.failed'));
         }
 
         return redirect()->away($link);
@@ -73,7 +73,7 @@ class DonateController extends Controller
 
         $order = Order::where('id', $orderId)->where('is_donation', 1)->first();
         if (! $order) {
-            return redirect()->route('beyond.donate')->with('not_permitted', 'We could not find that donation.');
+            return redirect()->route('beyond.donate')->with('not_permitted', __('cwa.donate.not_found'));
         }
 
         $paymentStatus = 0;

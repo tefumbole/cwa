@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Input;
-use Redirect;
-use App\Language;
+use Illuminate\Support\Facades\Cookie;
 
 class LanguageController extends Controller
 {
     public function switchLanguage($locale)
     {
-    	setcookie('language', $locale, time() + (86400 * 365), "/");
-        /*$language = Language::firstOrNew(['id' => 1]);
-        $language->code = $locale;
-        $language->save();*/
-    	return Redirect::back();
+        $locale = is_string($locale) ? $locale : 'en';
+        if (! is_dir(resource_path('lang/'.$locale))) {
+            $locale = 'en';
+        }
+
+        $minutes = 60 * 24 * 365;
+        Cookie::queue('language', $locale, $minutes, '/');
+        setcookie('language', $locale, time() + ($minutes * 60), '/');
+
+        $back = url()->previous();
+        if (! $back || $back === url()->current() || strpos($back, '/lang/') !== false) {
+            $back = url('/');
+        }
+
+        return redirect($back);
     }
 }

@@ -1,32 +1,12 @@
 @extends('beyond.layout')
 
-@section('title', '60 Years')
-@section('meta_description', 'Catholic Women\'s Association Cameroon — 60 years. Official site launching 15 October 2026.')
+@section('title', __('cwa.home.title'))
+@section('meta_description', __('cwa.home.meta'))
 
 @php
-    $navDefs = [
-        'home'         => ['label' => \App\Support\SiteMenu::landingLabel('home'), 'url' => url('/')],
-        'trainings'    => ['label' => \App\Support\SiteMenu::landingLabel('trainings'), 'url' => url('/trainings')],
-        'events'       => ['label' => \App\Support\SiteMenu::landingLabel('events'), 'url' => url('/events')],
-        'rentals'      => ['label' => \App\Support\SiteMenu::landingLabel('rentals'), 'url' => url('/rentals')],
-        'register'     => ['label' => \App\Support\SiteMenu::landingLabel('register'), 'url' => url('/register-now')],
-        'apply'        => ['label' => \App\Support\SiteMenu::landingLabel('apply'), 'url' => url('/apply-now')],
-        'permissions'  => ['label' => \App\Support\SiteMenu::landingLabel('permissions'), 'url' => url('/permissions')],
-        'about'        => ['label' => \App\Support\SiteMenu::landingLabel('about'), 'url' => url('/about')],
-        'gallery'      => ['label' => \App\Support\SiteMenu::landingLabel('gallery'), 'url' => url('/gallery')],
-        'shareholders' => ['label' => \App\Support\SiteMenu::landingLabel('shareholders'), 'url' => url('/shareholders')],
-    ];
-    $navLinks = [];
-    foreach (\App\Support\SiteMenu::landingVisibleOrder() as $navKey) {
-        if ($navKey === 'contact') {
-            continue;
-        }
-        if (isset($navDefs[$navKey])) {
-            $navLinks[] = $navDefs[$navKey];
-        }
-    }
+    $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
-    $logoMark = url('public/branding/cwa-logo-mary.png') . '?v=mary4';
+    $logoMark = url('public/branding/cwa-logo-mary.png') . '?v=mary3';
 @endphp
 
 @push('head')
@@ -150,6 +130,20 @@
         white-space: nowrap;
     }
     .lp-support:hover { background: #fff8e8; }
+    .lp-join {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1.05rem;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #071a38;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .lp-join:hover { background: #e8c96a; }
     .lp-menu-btn {
         width: 2.5rem;
         height: 2.5rem;
@@ -446,32 +440,6 @@
         font-size: 0.78rem;
         letter-spacing: 0.04em;
     }
-    .lp-credit {
-        position: relative;
-        z-index: 5;
-        margin-top: auto;
-        width: 100%;
-        background: transparent;
-        color: rgba(255, 255, 255, 0.78);
-        text-align: center;
-        padding: 0.85rem 1rem 1.1rem;
-        font-size: 0.78rem;
-        letter-spacing: 0.02em;
-        line-height: 1.5;
-        text-shadow: 0 2px 10px rgba(4, 16, 40, 0.55);
-    }
-    .lp-credit a {
-        color: inherit;
-        text-decoration: none;
-    }
-    .lp-credit a:hover {
-        color: var(--gold-soft);
-        text-decoration: underline;
-    }
-    .lp-credit .sep {
-        margin: 0 0.45rem;
-        opacity: 0.55;
-    }
     .launched { display: none; color: var(--gold-soft); font-family: "Playfair Display", Georgia, serif; font-size: 1.25rem; }
     .launched.is-visible { display: block; }
     .lp-rings.is-hidden { display: none; }
@@ -496,8 +464,6 @@
         .dial-value { font-size: 1.05rem; }
         .lp-rings { gap: 0.35rem; }
         .lp-copy h1 { font-size: 3rem; }
-        .lp-credit { font-size: 0.68rem; padding: 0.65rem 0.75rem; }
-        .lp-credit .sep { margin: 0 0.28rem; }
     }
 </style>
 @endpush
@@ -505,73 +471,78 @@
 @section('content')
 <div class="lp" x-data="{ open: false, search: false }">
     <header class="lp-nav">
-        <a href="{{ url('/') }}" class="lp-brand" aria-label="CWACAM home">
+        <a href="{{ url('/') }}" class="lp-brand" aria-label="{{ __('cwa.nav.home') }}">
             <img src="{{ $logoMark }}" alt="CWACAM">
             <span>
                 <span class="lp-brand-name">CWACAM</span>
-                <span class="lp-brand-tag">Catholic Women's Association Cameroon</span>
+                <span class="lp-brand-tag">{{ __('cwa.home.brand_tag') }}</span>
             </span>
         </a>
 
         <nav class="lp-links" aria-label="Primary">
             @foreach ($navLinks as $link)
-                @php $active = rtrim($currentUrl,'/') === rtrim($link['url'],'/'); @endphp
+                @php $active = \App\Support\SiteMenu::navLinkIsActive($link, $currentUrl); @endphp
                 <a href="{{ $link['url'] }}" class="{{ $active ? 'is-active' : '' }}">{{ $link['label'] }}</a>
             @endforeach
         </nav>
 
         <div class="lp-actions">
-            <button type="button" class="lp-search" @click="search = !search; open = false" aria-label="Search">
+            <button type="button" class="lp-search" @click="search = !search; open = false" aria-label="{{ __('cwa.nav.search') }}">
                 <i data-lucide="search" class="w-5 h-5"></i>
             </button>
+            @include('beyond.partials.lang_switch', ['variant' => 'light'])
             <a href="{{ route('beyond.donate') }}" class="lp-support">
                 <i data-lucide="heart" class="w-4 h-4"></i>
-                Donate
+                {{ __('cwa.nav.donate') }}
             </a>
+            <a href="{{ route('beyond.join') }}" class="lp-join">{{ __('cwa.nav.join') }}</a>
         </div>
 
-        <button type="button" class="lp-menu-btn" @click="open = !open; search = false" aria-label="Open menu">
+        <button type="button" class="lp-menu-btn" @click="open = !open; search = false" aria-label="{{ __('cwa.nav.menu') }}">
             <i data-lucide="menu" class="w-6 h-6" x-show="!open"></i>
             <i data-lucide="x" class="w-6 h-6" x-show="open" x-cloak></i>
         </button>
     </header>
 
     <div class="lp-search-bar" :class="{ 'is-open': search }" x-cloak>
-        <form action="{{ url('/events') }}" method="get">
-            <input type="search" name="q" placeholder="Search events, news and pages…" aria-label="Search">
+        <form action="{{ url('/calendar') }}" method="get">
+            <input type="search" name="q" placeholder="{{ __('cwa.home.search_placeholder') }}" aria-label="{{ __('cwa.nav.search') }}">
         </form>
     </div>
     <div class="lp-drawer" :class="{ 'is-open': open }" x-cloak>
         @foreach ($navLinks as $link)
             <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
         @endforeach
-        <a href="{{ route('beyond.donate') }}">Donate</a>
-        <a href="{{ url('/login') }}">Login</a>
+        <a href="{{ route('beyond.join') }}">{{ __('cwa.nav.join') }}</a>
+        <a href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a>
+        <a href="{{ url('/documents') }}">{{ __('cwa.nav.resources') }}</a>
+        <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'light'])</div>
+        <a href="{{ url('/login') }}">{{ __('cwa.nav.login') }}</a>
     </div>
 
-    <section class="lp-hero" aria-label="60 years anniversary">
+    <section class="lp-hero" aria-label="{{ __('cwa.home.hero_aria') }}">
         <div class="lp-copy">
-            <p class="lp-kicker">Catholic Women's Association Cameroon</p>
-            <h1>60 Years<em>A New Home is on the Way</em></h1>
-            <p class="lp-sub">A legacy of faith, service and sisterhood.<br>We are preparing the official CWACAM site.<br>The launch countdown is running to 15 October 2026.</p>
+            <p class="lp-kicker">{{ __('cwa.home.kicker') }}</p>
+            <h1>{{ __('cwa.home.headline') }}<em>{{ __('cwa.home.headline_em') }}</em></h1>
+            <p class="lp-sub">{!! __('cwa.home.sub') !!}</p>
             <blockquote class="lp-quote">
-                “For such a time as this, together we build.”
+                “{{ __('cwa.home.quote') }}”
                 <cite>– CWACAM</cite>
             </blockquote>
             <div class="lp-btns">
-                <a class="lp-btn gold" href="{{ url('/register-now') }}">
-                    <i data-lucide="bell" class="w-4 h-4"></i>
-                    Notify Me at Launch →
+                <a class="lp-btn gold" href="{{ route('beyond.join') }}">
+                    <i data-lucide="heart" class="w-4 h-4"></i>
+                    {{ __('cwa.nav.join') }} →
                 </a>
                 <a class="lp-btn ghost" href="{{ url('/gallery') }}">
                     <i data-lucide="play" class="w-4 h-4"></i>
-                    Watch Our Story
+                    {{ __('cwa.home.watch') }}
                 </a>
             </div>
 
             <div class="lp-meter">
                 <div class="lp-rings" id="rings" data-target="{{ $launchAtIso }}" data-window-days="{{ $windowDays }}">
-                    @foreach (['days' => 'Days', 'hours' => 'Hours', 'mins' => 'Mins', 'secs' => 'Secs'] as $id => $label)
+                    @foreach (['days' => __('cwa.home.days'), 'hours' => __('cwa.home.hours'), 'mins' => __('cwa.home.mins'), 'secs' => __('cwa.home.secs')] as $id => $label)
                         <div class="unit">
                             <div class="dial">
                                 <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -586,11 +557,11 @@
                         </div>
                     @endforeach
                 </div>
-                <p class="launched" id="launched">We have launched!</p>
+                <p class="launched" id="launched">{{ __('cwa.home.launched') }}</p>
                 <div class="lp-launch">
                     <i data-lucide="calendar" class="w-5 h-5"></i>
                     <span>
-                        <small>Launch</small>
+                        <small>{{ __('cwa.home.launch') }}</small>
                         <strong>{{ strtoupper($launchLabel ?? '15 October 2026') }}</strong>
                     </span>
                 </div>
@@ -598,23 +569,13 @@
         </div>
 
         <div class="lp-credo">
-            <h2>CWA Cameroon</h2>
-            <p class="label">Vision</p>
-            <p>To bear witness to Christ while committing to the holistic development of Catholic women and families in Cameroon.</p>
-            <p class="label">Mission</p>
-            <p>To empower members spiritually, nurturing stronger faith and promoting evangelization within families and society.</p>
+            <h2>{{ __('cwa.home.credo_title') }}</h2>
+            <p class="label">{{ __('cwa.home.vision_label') }}</p>
+            <p>{{ __('cwa.about.vision_text') }}</p>
+            <p class="label">{{ __('cwa.home.mission_label') }}</p>
+            <p>{{ __('cwa.about.mission_text') }}</p>
         </div>
-        <p class="lp-verse">“For I know the plans I have for you…”<span>Jeremiah 29:11</span></p>
-
-        <div class="lp-credit" role="contentinfo">
-            <span>Copyright CWA Cameroon {{ date('Y') }}</span>
-            <span class="sep">|</span>
-            <span>Developed By</span>
-            <span class="sep">|</span>
-            <span>Sr. Engr. Tefu R. Mbole</span>
-            <span class="sep">|</span>
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a>
-        </div>
+        <p class="lp-verse">“{{ __('cwa.home.verse') }}”<span>{{ __('cwa.home.verse_ref') }}</span></p>
     </section>
 </div>
 @endsection

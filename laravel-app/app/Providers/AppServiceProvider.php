@@ -35,8 +35,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }*/
         //setting language
-        if(isset($_COOKIE['language'])) {
+        if (isset($_COOKIE['language']) && is_dir(resource_path('lang/'.$_COOKIE['language']))) {
             \App::setLocale($_COOKIE['language']);
+            \Carbon\Carbon::setLocale($_COOKIE['language']);
         } else {
             \App::setLocale('en');
         }
@@ -102,10 +103,21 @@ class AppServiceProvider extends ServiceProvider
             env('BEYOND_DATA_DB_DATABASE'),
         ];
         foreach ($names as $name) {
-            if (is_string($name) && preg_match('/beyondworld|beyondtech/i', $name)) {
+            if (is_string($name) && preg_match('/beyondworld|beyondtech|u152889834_beyond/i', $name)) {
                 throw new \RuntimeException(
                     'CWACAM must not use a BeyondTechWorld database ('.$name.'). '.
                     'Set DB_DATABASE and BEYOND_DATA_DB_DATABASE to the dedicated cwacam database.'
+                );
+            }
+        }
+        $hosts = [
+            env('DB_HOST'),
+            env('BEYOND_DATA_DB_HOST'),
+        ];
+        foreach ($hosts as $host) {
+            if (is_string($host) && preg_match('/beyondtechworld|beyondworld|193\.203\.168\.163/i', $host)) {
+                throw new \RuntimeException(
+                    'CWACAM must not use a BeyondTechWorld database host ('.$host.').'
                 );
             }
         }

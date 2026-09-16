@@ -1,13 +1,13 @@
 @extends('beyond.layout')
 
-@section('title', 'Gallery | Beyond Enterprise')
-@section('meta_description', 'Explore events, projects, and highlights from Beyond Enterprise — photos and videos from our work across Kigali and beyond.')
+@section('title', __('cwa.gallery.title'))
+@section('meta_description', __('cwa.gallery.subtitle'))
 
 @section('content')
 
 @include('beyond.partials.hero', [
-    'title' => \App\Support\SiteContent::html('gallery.hero_title', 'Our <span class="text-brand-gold">Gallery</span>'),
-    'subtitle' => \App\Support\SiteContent::text('gallery.hero_subtitle', 'Events, projects, and moments from Beyond Enterprise'),
+    'title' => \App\Support\SiteContent::html('gallery.hero_title', __('cwa.gallery.title')),
+    'subtitle' => \App\Support\SiteContent::text('gallery.hero_subtitle', __('cwa.gallery.subtitle')),
 ])
 
 <section class="py-16 bg-white">
@@ -15,7 +15,7 @@
         @if ($items->isEmpty())
             <div class="text-center py-20 text-gray-500">
                 <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                <p class="text-lg">Gallery items will appear here once added in Site Content.</p>
+                <p class="text-lg">{{ __('cwa.gallery.empty') }}</p>
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

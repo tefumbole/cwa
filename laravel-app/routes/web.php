@@ -54,6 +54,7 @@ Route::post('/contracts/sign/{token}', 'ContractSignController@submit')->name('c
 Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')->name('contracts.sign.decline');
 
 
+Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('beyond.language');
 Route::get('/', 'BeyondController@comingSoon')->name('beyond.home');
 Route::get('/home', 'BeyondController@home')->name('beyond.home.full');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
@@ -63,8 +64,12 @@ Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');
 Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
 Route::get('/events', 'PublicEventController@index')->name('beyond.events');
 Route::get('/events/{slug}', 'PublicEventController@show')->name('beyond.event.detail');
+Route::get('/calendar', 'PublicEventController@calendar')->name('beyond.calendar');
 Route::get('/api/public/events', 'PublicEventController@apiList');
 Route::get('/api/public/events/{slug}', 'PublicEventController@apiShow');
+Route::get('/documents', 'BeyondController@resources')->name('beyond.resources');
+Route::get('/join', 'JoinController@show')->name('beyond.join');
+Route::post('/join', 'JoinController@store')->name('beyond.join.store');
 Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
 Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
 Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
@@ -72,7 +77,6 @@ Route::get('/donate', 'DonateController@show')->name('beyond.donate');
 Route::post('/donate', 'DonateController@store')->name('beyond.donate.store');
 Route::get('/donate/callback', 'DonateController@callback')->name('beyond.donate.callback');
 Route::get('/donate/thank-you', 'DonateController@thanks')->name('beyond.donate.thanks');
-Route::post('/campay/webhook', 'CampayWebhookController@handle')->name('beyond.campay.webhook');
 Route::redirect('/support', '/donate');
 Route::redirect('/support/thank-you', '/donate/thank-you');
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');

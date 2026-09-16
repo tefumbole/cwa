@@ -7,14 +7,18 @@ class BeyondController extends Controller
     public function comingSoon()
     {
         $timezone = config('app.timezone') ?: 'Africa/Douala';
-        $launchAt = \Carbon\Carbon::parse(config('app.launch_at'), $timezone);
+        $launchAt = \Carbon\Carbon::parse(config('app.launch_at'), $timezone)->locale(app()->getLocale());
+
+        $launchLabel = method_exists($launchAt, 'translatedFormat')
+            ? $launchAt->translatedFormat('j F Y')
+            : $launchAt->isoFormat('D MMMM YYYY');
 
         return view('beyond.coming-soon', [
             'launchAtIso' => $launchAt->toIso8601String(),
             'windowDays' => (int) config('app.launch_window_days', 31),
-            'launchLabel' => $launchAt->format('j F Y'),
-            'heroImage' => url('public/branding/cwa-60-years-hero.webp') . '?v=mary4',
-            'heroImageFallback' => url('public/branding/cwa-60-years-hero.jpg') . '?v=mary4',
+            'launchLabel' => $launchLabel,
+            'heroImage' => url('public/branding/cwa-60-years-hero.webp') . '?v=mary3',
+            'heroImageFallback' => url('public/branding/cwa-60-years-hero.jpg') . '?v=mary3',
         ]);
     }
 
@@ -86,6 +90,33 @@ class BeyondController extends Controller
     public function contact()
     {
         return redirect(url('/about') . '#contact', 301);
+    }
+
+    public function resources()
+    {
+        $dir = public_path('branding');
+        $files = [
+            [
+                'title' => __('cwa.resources.statutes_en'),
+                'lang' => 'EN',
+                'url' => url('public/branding/cwa-statutes-en.pdf'),
+                'exists' => is_file($dir . '/cwa-statutes-en.pdf'),
+            ],
+            [
+                'title' => __('cwa.resources.statutes_fr'),
+                'lang' => 'FR',
+                'url' => url('public/branding/cwa-statutes-fr.pdf'),
+                'exists' => is_file($dir . '/cwa-statutes-fr.pdf'),
+            ],
+            [
+                'title' => __('cwa.resources.sixty'),
+                'lang' => 'EN',
+                'url' => url('public/branding/cwa-60-years.pdf'),
+                'exists' => is_file($dir . '/cwa-60-years.pdf'),
+            ],
+        ];
+
+        return view('beyond.resources', ['files' => $files]);
     }
 
     public function events()
