@@ -188,6 +188,26 @@ class MembershipController extends Controller
             $statutes = [];
         }
         $isBylaws = $kind === 'bylaws';
+        $raw = $isBylaws ? ($statutes['bylaws'] ?? []) : ($statutes['statutes'] ?? []);
+        $articles = [];
+        foreach (array_values($raw) as $i => $article) {
+            $articles[] = [
+                'n' => (string) ($i + 1),
+                'roman' => $article['n'] ?? '',
+                'title' => $article['title'] ?? '',
+                'heading' => \App\Support\CwaStatutesFormatter::heading(
+                    $isBylaws ? 'bylaws' : 'statutes',
+                    $article['n'] ?? '',
+                    $article['title'] ?? ''
+                ),
+                'icon' => \App\Support\CwaStatutesFormatter::iconFor($isBylaws ? 'bylaws' : 'statutes', $i),
+                'body_html' => \App\Support\CwaStatutesFormatter::bodyHtml($article['body'] ?? ''),
+            ];
+        }
+
+        $termsHeading = $isBylaws
+            ? (($statutes['bylaws_kicker'] ?? '').' — '.($statutes['bylaws_title'] ?? ''))
+            : ($statutes['preamble_title'] ?? '');
 
         return [
             'kind' => $kind,
@@ -195,8 +215,8 @@ class MembershipController extends Controller
             'kicker' => $isBylaws ? ($statutes['bylaws_kicker'] ?? '') : ($statutes['statutes_kicker'] ?? ''),
             'title' => $isBylaws ? ($statutes['bylaws_title'] ?? '') : ($statutes['statutes_title'] ?? ''),
             'preamble' => $isBylaws ? '' : ($statutes['preamble'] ?? ''),
-            'preambleTitle' => $statutes['preamble_title'] ?? '',
-            'articles' => $isBylaws ? ($statutes['bylaws'] ?? []) : ($statutes['statutes'] ?? []),
+            'preambleTitle' => $isBylaws ? trim($termsHeading) : ($statutes['preamble_title'] ?? ''),
+            'articles' => $articles,
             'agreeRoute' => $isBylaws ? 'beyond.membership.agree_bylaws' : 'beyond.membership.agree_statutes',
             'acceptPrompt' => $isBylaws ? __('cwa.membership.accept_bylaws') : __('cwa.membership.accept_statutes'),
             'metaKey' => $isBylaws ? 'cwa.membership.bylaws_meta' : 'cwa.membership.statutes_meta',
