@@ -247,7 +247,7 @@ class SiteContent
             ],
             'join' => [
                 'label' => 'Join CWA',
-                'url' => '/join',
+                'url' => '/membership',
                 'fields' => [
                     'page_title'    => ['text', 'Browser tab title', 'Join CWA Cameroon'],
                     'hero_title'    => ['text', 'Page heading', 'Join CWA Cameroon'],

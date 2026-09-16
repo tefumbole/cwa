@@ -1779,6 +1779,22 @@
                             </li>
                         @endif
                         @php
+                            $membership_module_permission = \Spatie\Permission\Models\Permission::where('name', 'membership_module')->first();
+                            $membership_module_active = $role && $membership_module_permission ? \DB::table('role_has_permissions')->where([
+                                ['permission_id', $membership_module_permission->id],
+                                ['role_id', $role->id]
+                            ])->first() : null;
+                        @endphp
+                        @if($membership_module_active)
+                            <li><a href="#membership-module" data-nav-key="membership" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>Membership</span></a>
+                                <ul id="membership-module" class="collapse list-unstyled ">
+                                    <li id="membership-awaiting-menu"><a href="{{ route('membership.awaiting') }}">Awaiting Approvals</a></li>
+                                    <li id="membership-members-menu"><a href="{{ route('membership.members') }}">Members</a></li>
+                                    <li id="membership-rejected-menu"><a href="{{ route('membership.rejected') }}">Rejected</a></li>
+                                </ul>
+                            </li>
+                        @endif
+                        @php
                             $internship_module_permission = \Spatie\Permission\Models\Permission::where('name', 'internship_module')->first();
                             $internship_module_active = $role && $internship_module_permission ? \DB::table('role_has_permissions')->where([
                                 ['permission_id', $internship_module_permission->id],
@@ -2948,6 +2964,7 @@
                     </ul>
                     @php
                         $__sideMenuOrder = \App\Support\SiteMenu::sideOrder();
+                        $__sideMenuHidden = \App\Support\SiteMenu::sideHidden();
                         $__settingsMenuOrder = \App\Support\SiteMenu::settingsOrder();
                         $__settingsLiKeyMap = \App\Support\SiteMenu::settingsLiKeyMap();
                         $__peopleMenuOrder = \App\Support\SiteMenu::peopleOrder();
@@ -2956,6 +2973,7 @@
                     <script>
                     (function () {
                         var order = @json($__sideMenuOrder);
+                        var hidden = @json($__sideMenuHidden);
                         var ul = document.getElementById('side-main-menu');
                         if (!ul || !order || !order.length) return;
                         function keyOf(li) {
@@ -3011,6 +3029,9 @@
                         kids.forEach(function (li) {
                             var k = keyOf(li);
                             if (!k || !used[k]) ul.appendChild(li);
+                        });
+                        (hidden || []).forEach(function (k) {
+                            if (map[k]) map[k].style.display = 'none';
                         });
                     })();
                     (function () {

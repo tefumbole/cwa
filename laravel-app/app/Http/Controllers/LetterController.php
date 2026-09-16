@@ -1131,9 +1131,26 @@ class LetterController extends Controller
         $attachment_path = public_path('letter/attachment/');
         $message = 'Letter notification sent successfully';
         try{
-            $this->wpPDFMessage($path, $lims_customer_data, 'letter.pdf');
+            $membershipCaption = null;
+            $isMembershipLetter = false;
+            try {
+                $admission = app(\App\Services\MembershipAdmissionService::class);
+                $isMembershipLetter = $admission->isAdmissionLetter($letter);
+                if ($isMembershipLetter) {
+                    $membershipCaption = $admission->captionForLetter($letter);
+                }
+            } catch (\Throwable $e) {
+            }
+            $this->wpPDFMessage($path, $lims_customer_data, 'letter.pdf', null, $membershipCaption);
             if ($this->isInternshipAcceptanceLetter($letter)) {
                 $this->sendInternshipLoginGuideWhatsApp($lims_customer_data);
+            }
+            if ($isMembershipLetter) {
+                try {
+                    app(\App\Services\MembershipAdmissionService::class)->onLetterDelivered($letter);
+                } catch (\Throwable $e) {
+                    \Log::warning('Membership letter delivered hook failed: '.$e->getMessage());
+                }
             }
         }
         catch(\Exception $e){

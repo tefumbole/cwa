@@ -140,7 +140,7 @@
             <a href="{{ route('beyond.donate') }}" class="hidden xl:inline-flex items-center gap-1.5 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-blue font-semibold rounded-full px-3 py-1.5 text-sm">
                 {{ __('cwa.nav.donate') }}
             </a>
-            <a href="{{ route('beyond.join') }}" class="inline-flex items-center gap-1.5 bg-brand-gold text-brand-blue hover:bg-yellow-400 font-bold rounded-full px-3.5 py-1.5 text-sm">
+            <a href="{{ route('beyond.membership') }}" class="inline-flex items-center gap-1.5 bg-brand-gold text-brand-blue hover:bg-yellow-400 font-bold rounded-full px-3.5 py-1.5 text-sm">
                 {{ __('cwa.nav.join') }}
             </a>
 
@@ -206,7 +206,7 @@
             @foreach ($navLinks as $link)
                 <a href="{{ $link['url'] }}" class="text-lg font-medium {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
             @endforeach
-            <a href="{{ route('beyond.join') }}" class="text-lg font-bold text-brand-gold">{{ __('cwa.nav.join') }}</a>
+            <a href="{{ route('beyond.membership') }}" class="text-lg font-bold text-brand-gold">{{ __('cwa.nav.join') }}</a>
             <a href="{{ route('beyond.donate') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.donate') }}</a>
             <a href="{{ url('/documents') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.resources') }}</a>
             <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'dark'])</div>

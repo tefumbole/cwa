@@ -495,7 +495,7 @@
                 <i data-lucide="heart" class="w-4 h-4"></i>
                 {{ __('cwa.nav.donate') }}
             </a>
-            <a href="{{ route('beyond.join') }}" class="lp-join">{{ __('cwa.nav.join') }}</a>
+            <a href="{{ route('beyond.membership') }}" class="lp-join">{{ __('cwa.nav.join') }}</a>
         </div>
 
         <button type="button" class="lp-menu-btn" @click="open = !open; search = false" aria-label="{{ __('cwa.nav.menu') }}">
@@ -513,7 +513,7 @@
         @foreach ($navLinks as $link)
             <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
         @endforeach
-        <a href="{{ route('beyond.join') }}">{{ __('cwa.nav.join') }}</a>
+        <a href="{{ route('beyond.membership') }}">{{ __('cwa.nav.join') }}</a>
         <a href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a>
         <a href="{{ url('/documents') }}">{{ __('cwa.nav.resources') }}</a>
         <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'light'])</div>
@@ -530,7 +530,7 @@
                 <cite>– CWACAM</cite>
             </blockquote>
             <div class="lp-btns">
-                <a class="lp-btn gold" href="{{ route('beyond.join') }}">
+                <a class="lp-btn gold" href="{{ route('beyond.membership') }}">
                     <i data-lucide="heart" class="w-4 h-4"></i>
                     {{ __('cwa.nav.join') }} →
                 </a>

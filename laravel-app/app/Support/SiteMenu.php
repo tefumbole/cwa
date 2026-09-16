@@ -16,6 +16,7 @@ class SiteMenu
         return [
             'home'         => 'Home',
             'about'        => 'About Us',
+            'membership'   => 'Membership',
             'events'       => 'Calendar',
             'gallery'      => 'Gallery',
             'resources'    => 'Resources',
@@ -51,6 +52,7 @@ class SiteMenu
             'invitations'  => 'Digital Invitations',
             'tasks'        => 'Task Manager',
             'jobs'         => 'Job Board',
+            'membership'   => 'Membership',
             'contracts'    => 'Contracts',
             'permissions'  => 'Permissions',
             'announcements'=> 'Announcements',
@@ -147,6 +149,7 @@ class SiteMenu
         return [
             'home'         => ['label' => self::landingLabel('home'), 'url' => url('/')],
             'about'        => ['label' => self::landingLabel('about'), 'url' => url('/about')],
+            'membership'   => ['label' => self::landingLabel('membership'), 'url' => url('/membership'), 'match' => ['/membership', '/join']],
             'events'       => ['label' => self::landingLabel('events'), 'url' => url('/calendar'), 'match' => ['/calendar', '/events']],
             'gallery'      => ['label' => self::landingLabel('gallery'), 'url' => url('/gallery')],
             'resources'    => ['label' => self::landingLabel('resources'), 'url' => url('/documents')],

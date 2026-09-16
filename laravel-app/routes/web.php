@@ -68,8 +68,20 @@ Route::get('/calendar', 'PublicEventController@calendar')->name('beyond.calendar
 Route::get('/api/public/events', 'PublicEventController@apiList');
 Route::get('/api/public/events/{slug}', 'PublicEventController@apiShow');
 Route::get('/documents', 'BeyondController@resources')->name('beyond.resources');
-Route::get('/join', 'JoinController@show')->name('beyond.join');
-Route::post('/join', 'JoinController@store')->name('beyond.join.store');
+Route::get('/join', function () {
+    return redirect()->route('beyond.membership');
+})->name('beyond.join');
+Route::post('/join', function () {
+    return redirect()->route('beyond.membership');
+})->name('beyond.join.store');
+Route::get('/membership', 'MembershipController@statutes')->name('beyond.membership');
+Route::post('/membership/agree-statutes', 'MembershipController@agreeStatutes')->name('beyond.membership.agree_statutes');
+Route::get('/membership/bylaws', 'MembershipController@bylaws')->name('beyond.membership.bylaws');
+Route::post('/membership/agree-bylaws', 'MembershipController@agreeBylaws')->name('beyond.membership.agree_bylaws');
+Route::get('/membership/register', 'MembershipController@register')->name('beyond.membership.register');
+Route::get('/membership/holder', 'MembershipController@holder')->middleware('throttle:40,1')->name('beyond.membership.holder');
+Route::post('/membership/register', 'MembershipController@store')->name('beyond.membership.store');
+Route::get('/membership/thank-you', 'MembershipController@thanks')->name('beyond.membership.thanks');
 Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
 Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
 Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
@@ -422,6 +434,13 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/contracts/{id}/reminders', 'ContractController@storeReminder')->name('contracts.reminders.store');
     Route::post('/admin/contracts/{id}/reminders/{reminderId}/delete', 'ContractController@destroyReminder')->name('contracts.reminders.destroy');
     Route::get('/admin/contracts/{id}/documents/{docId}', 'ContractController@download')->name('contracts.download');
+
+    Route::get('/admin/membership', 'AdminMembershipController@awaiting')->name('membership.awaiting');
+    Route::get('/admin/membership/members', 'AdminMembershipController@members')->name('membership.members');
+    Route::get('/admin/membership/rejected', 'AdminMembershipController@rejected')->name('membership.rejected');
+    Route::get('/admin/membership/{id}', 'AdminMembershipController@show')->name('membership.show')->where('id', '[0-9]+');
+    Route::post('/admin/membership/{id}/approve', 'AdminMembershipController@approve')->name('membership.approve')->where('id', '[0-9]+');
+    Route::post('/admin/membership/{id}/reject', 'AdminMembershipController@reject')->name('membership.reject')->where('id', '[0-9]+');
 
     Route::get('/admin/jobs', 'JobBoardController@index')->name('jobs.index');
     Route::get('/admin/jobs/create', 'JobBoardController@create')->name('jobs.create');
