@@ -13,8 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,700;1,600;1,700&display=swap" rel="stylesheet">
 <style>
     body > header.bg-brand-blue,
-    footer,
-    body > a[title="Chat on WhatsApp"] { display: none !important; }
+    body > a.cwa-wa { display: none !important; }
     body { background: #041830; }
     main.flex-1 { display: flex; flex-direction: column; min-height: 100vh; }
     .lp {
@@ -27,6 +26,7 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        padding-bottom: 2.75rem;
         color: #fff;
     }
     .lp-nav {

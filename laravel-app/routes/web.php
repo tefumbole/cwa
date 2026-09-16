@@ -74,6 +74,7 @@ Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings
 Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
 Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
 Route::get('/donate', 'DonateController@show')->name('beyond.donate');
+Route::get('/donate/holder', 'DonateController@holder')->middleware('throttle:40,1')->name('beyond.donate.holder');
 Route::post('/donate', 'DonateController@store')->name('beyond.donate.store');
 Route::get('/donate/callback', 'DonateController@callback')->name('beyond.donate.callback');
 Route::get('/donate/thank-you', 'DonateController@thanks')->name('beyond.donate.thanks');

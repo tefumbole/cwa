@@ -4,14 +4,8 @@
 @section('meta_description', __('cwa.gallery.subtitle'))
 
 @section('content')
-
-@include('beyond.partials.hero', [
-    'title' => \App\Support\SiteContent::html('gallery.hero_title', __('cwa.gallery.title')),
-    'subtitle' => \App\Support\SiteContent::text('gallery.hero_subtitle', __('cwa.gallery.subtitle')),
-])
-
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-extrabold text-brand-blue mb-6">{{ __('cwa.gallery.title') }}</h1>
         @if ($items->isEmpty())
             <div class="text-center py-20 text-gray-500">
                 <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
@@ -25,7 +19,7 @@
             </div>
         @endif
     </div>
-</section>
+</div>
 
 <div id="gallery-lightbox" class="fixed inset-0 z-50 hidden bg-black/90 items-center justify-center p-4" onclick="closeGalleryLightbox(event)">
     <button type="button" class="absolute top-4 right-4 text-white text-3xl leading-none" onclick="closeGalleryLightbox(event)">&times;</button>

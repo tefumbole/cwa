@@ -16,6 +16,7 @@
             : (optional($beyondUser)->role ? strtoupper(str_replace('_', ' ', $beyondUser->role)) : __('cwa.nav.user'));
         $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
+        $isHome = request()->is('/');
     @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
     <meta name="description" content="@yield('meta_description', 'Catholic Women\'s Association Cameroon — faith, service and sisterhood.')">
@@ -76,13 +77,39 @@
         @media (min-width: 1024px) {
             .nav-logo-spin { width: 3.5rem; height: 3.5rem; }
         }
-        @media (prefers-reduced-motion: reduce) {
-            .nav-logo-spin { animation: none; }
+        .cwa-credits {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0.65rem 1rem;
+            background: #0b3d2e;
+            color: rgba(248, 246, 239, 0.82);
+            font-size: 0.78rem;
+            line-height: 1.35;
+            text-align: center;
+        }
+        .cwa-credits > span { padding: 0 0.85rem; }
+        .cwa-credits > span + span { border-left: 1px solid rgba(212, 175, 55, 0.45); }
+        .cwa-credits a { color: inherit; font-weight: 600; }
+        .cwa-credits a:hover { color: #d4af37; }
+        @media (max-width: 640px) {
+            .cwa-credits { flex-direction: column; gap: 0.15rem; }
+            .cwa-credits > span { padding: 0; }
+            .cwa-credits > span + span { border-left: 0; }
+        }
+        body.cwa-home .cwa-credits {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 40;
         }
     </style>
     @stack('head')
 </head>
-<body class="bg-white text-gray-800 flex flex-col min-h-screen">
+<body class="bg-white text-gray-800 flex flex-col min-h-screen {{ !empty($isHome) ? 'cwa-home' : '' }}">
 
 @php
     $navLinks = \App\Support\SiteMenu::landingNavLinks();
@@ -216,53 +243,15 @@
     @yield('content')
 </main>
 
-<footer class="bg-brand-navy text-white mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <a href="{{ url('/') }}" class="inline-block mb-2">
-                    <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="h-[50px] w-auto object-contain">
-                </a>
-                <div class="text-2xl font-bold"><span class="text-brand-gold">{{ $siteTitle }}</span></div>
-                <p class="text-gray-300 text-sm mt-4">{{ __('cwa.footer.tagline') }}</p>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold text-brand-gold mb-4">{{ __('cwa.footer.quick_links') }}</h3>
-                <nav class="flex flex-col space-y-2 text-sm">
-                    <a href="{{ url('/') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.home') }}</a>
-                    <a href="{{ url('/about') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.about') }}</a>
-                    <a href="{{ url('/calendar') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.events') }}</a>
-                    <a href="{{ url('/gallery') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.gallery') }}</a>
-                    <a href="{{ url('/documents') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.resources') }}</a>
-                    <a href="{{ url('/join') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.join') }}</a>
-                    <a href="{{ url('/donate') }}" class="text-gray-300 hover:text-brand-gold">{{ __('cwa.nav.donate') }}</a>
-                </nav>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold text-brand-gold mb-4">{{ __('cwa.footer.contact') }}</h3>
-                <div class="space-y-3 text-sm">
-                    <a href="{{ url('/about') }}#contact" class="inline-flex items-center gap-2 bg-brand-gold hover:bg-yellow-400 text-brand-blue font-semibold px-4 py-2 rounded-md">
-                        {{ __('cwa.footer.get_in_touch') }}
-                    </a>
-                    <a href="mailto:info@cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="mail" class="w-5 h-5"></i> info@cwacam.org</a>
-                    <a href="https://cwacam.org" class="flex items-center gap-3 text-gray-300 hover:text-brand-gold"><i data-lucide="globe" class="w-5 h-5"></i> www.cwacam.org</a>
-                </div>
-            </div>
-        </div>
-        <div class="mt-12 pt-8 border-t border-gray-700 text-center">
-            <p class="text-gray-400 text-sm">© {{ date('Y') }} {{ __('cwa.home.credo_title') }}. {{ __('cwa.footer.rights') }}</p>
-            <p class="text-gray-500 text-xs mt-2">
-                {{ __('cwa.footer.developed') }} <span class="text-gray-300 font-medium">Sr. Engr. Tefu R. Mbole</span>
-                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="text-[#25D366] hover:underline font-semibold">+237675321739</a>
-            </p>
-            <p class="text-gray-500 text-xs mt-2">{{ __('cwa.footer.country') }}</p>
-            <p class="text-gray-600 text-xs mt-1">{{ \App\Support\AppVersion::bcl() }}</p>
-        </div>
-    </div>
+<footer class="cwa-credits mt-auto">
+    <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
+    <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
+    <span><a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a></span>
+    <span>{{ \App\Support\AppVersion::erp() }}</span>
 </footer>
 
 <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-   class="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+   class="cwa-wa fixed bottom-14 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="{{ __('cwa.footer.whatsapp') }}">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>

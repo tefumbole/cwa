@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Increment ERP version (BCL_ERP_Vx.y.z) in frontend + API constants.
+ * Increment ERP version (CWA_ERP_Vx.y.z) in frontend + API constants.
  *
  * Scheme (same as .githooks/pre-commit):
  *   patch 0–9, then next minor (2.3.9 → 2.4.0)
@@ -20,11 +20,11 @@ const VERSION_FILES = [
   path.join(ROOT, 'apps/api/src/constants/appVersion.js'),
 ];
 
-const VERSION_RE = /(?:BCL_ERP_V\.?|ABT_ERP_V\.)(\d+)\.(\d+)\.(\d+)/;
+const VERSION_RE = /(?:CWA_ERP_V\.?|BCL_ERP_V\.?|ABT_ERP_V\.)(\d+)\.(\d+)\.(\d+)/;
 
 function readVersion(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
-  const match = content.match(/export const APP_VERSION = '((?:BCL_ERP_V\.?|ABT_ERP_V\.)\d+\.\d+\.\d+)';/);
+  const match = content.match(/export const APP_VERSION = '((?:CWA_ERP_V\.?|BCL_ERP_V\.?|ABT_ERP_V\.)\d+\.\d+\.\d+)';/);
   if (!match) throw new Error(`Could not read APP_VERSION from ${filePath}`);
   return match[1];
 }
@@ -43,13 +43,13 @@ function bumpVersionString(version) {
     minor = 0;
     major += 1;
   }
-  return `BCL_ERP_V${major}.${minor}.${patch}`;
+  return `CWA_ERP_V${major}.${minor}.${patch}`;
 }
 
 function replaceVersionInFile(filePath, nextVersion) {
   let content = fs.readFileSync(filePath, 'utf8');
   content = content.replace(
-    /export const APP_VERSION = '(?:BCL_ERP_V\.?|ABT_ERP_V\.)\d+\.\d+\.\d+';/,
+    /export const APP_VERSION = '(?:CWA_ERP_V\.?|BCL_ERP_V\.?|ABT_ERP_V\.)\d+\.\d+\.\d+';/,
     `export const APP_VERSION = '${nextVersion}';`
   );
   fs.writeFileSync(filePath, content);
@@ -59,7 +59,7 @@ function readLaravelVersion() {
   const file = path.join(ROOT, 'laravel-app/VERSION');
   if (!fs.existsSync(file)) return null;
   const raw = fs.readFileSync(file, 'utf8').trim();
-  return /^\d+\.\d+\.\d+$/.test(raw) ? `BCL_ERP_V${raw}` : null;
+  return /^\d+\.\d+\.\d+$/.test(raw) ? `CWA_ERP_V${raw}` : null;
 }
 
 function main() {

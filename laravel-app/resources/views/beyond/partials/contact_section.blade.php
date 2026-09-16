@@ -5,15 +5,10 @@
     $email = \App\Support\SiteContent::text('contact.email', 'info@cwacam.org');
 @endphp
 
-<section id="contact" class="py-16 bg-gray-50 scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section id="contact" class="py-10 scroll-mt-24">
+    <div class="max-w-3xl mx-auto px-4">
 
-        <div class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('contact.heading', __('cwa.contact.heading')) }}</h2>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                {{ \App\Support\SiteContent::text('contact.intro', __('cwa.contact.intro')) }}
-            </p>
-        </div>
+        <h2 class="text-2xl font-extrabold text-brand-blue mb-6">{{ \App\Support\SiteContent::text('contact.heading', __('cwa.contact.heading')) }}</h2>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 

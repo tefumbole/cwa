@@ -26,12 +26,12 @@ class AppVersion
     }
 
     /**
-     * Canonical ERP display: BCL_ERP_V2.3.0
+     * Canonical ERP display: CWA_ERP_V2.3.0
      * Bump scheme: patch 0–9 → next minor; minor 0–9 → next major (2.9.9 → 3.0.0).
      */
     public static function erp()
     {
-        return 'BCL_ERP_V'.self::label();
+        return 'CWA_ERP_V'.self::label();
     }
 
     /**
@@ -92,6 +92,7 @@ class AppVersion
     protected static function normalizeSemver($value)
     {
         $value = trim((string) $value);
+        $value = preg_replace('/^CWA_ERP_V\.?/i', '', $value);
         $value = preg_replace('/^BCL_ERP_V\.?/i', '', $value);
         $value = preg_replace('/^ABT_ERP_V\.?/i', '', $value);
         $value = preg_replace('/^BCL\s*V\.?\s*/i', '', $value);

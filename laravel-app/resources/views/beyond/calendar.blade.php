@@ -17,16 +17,9 @@
 @endphp
 
 @section('content')
-<section class="bg-gradient-to-r from-brand-blue via-brand-light to-brand-blue py-16">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p class="uppercase tracking-[0.28em] text-brand-gold text-xs font-bold mb-3">{{ __('cwa.calendar.kicker') }}</p>
-        <h1 class="text-4xl md:text-5xl font-extrabold text-white">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.calendar.heading')) }}</h1>
-        <p class="mt-4 text-lg text-blue-100 max-w-2xl mx-auto">{{ \App\Support\SiteContent::text('events.hero_subtitle', __('cwa.calendar.subtitle')) }}</p>
-    </div>
-</section>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-extrabold text-brand-blue mb-6">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.calendar.heading')) }}</h1>
 
-<section class="py-10 bg-slate-50 min-h-screen">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div class="inline-flex rounded-full bg-white border border-slate-200 p-1">
                 <a href="{{ url('/calendar') }}?view=month&amp;year={{ $year }}&amp;month={{ $month }}"
@@ -120,5 +113,5 @@
             @endif
         @endif
     </div>
-</section>
+</div>
 @endsection

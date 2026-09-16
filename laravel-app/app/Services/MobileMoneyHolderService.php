@@ -70,8 +70,9 @@ class MobileMoneyHolderService
         ], 12);
         $name = $this->extractName($body);
         $address = $this->extractAddress($body);
-        if ($name || $address) {
-            return ['name' => $name, 'address' => $address, 'source' => 'campay'];
+        $operator = $this->extractOperator($body);
+        if ($name || $address || $operator) {
+            return ['name' => $name, 'address' => $address, 'source' => 'campay', 'operator' => $operator];
         }
 
         return null;
@@ -153,6 +154,30 @@ class MobileMoneyHolderService
                 }
 
                 return $name;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractOperator($decoded)
+    {
+        if (! is_array($decoded)) {
+            return null;
+        }
+        $nested = [];
+        foreach (['data', 'result', 'output'] as $key) {
+            if (isset($decoded[$key]) && is_array($decoded[$key])) {
+                $nested[] = $decoded[$key];
+            }
+        }
+        $bags = array_merge([$decoded], $nested);
+        foreach ($bags as $bag) {
+            foreach (['operator', 'network', 'provider', 'mobile_network', 'operator_name'] as $key) {
+                $hit = \App\Support\CameroonMomoNetwork::fromApiValue($bag[$key] ?? null);
+                if ($hit) {
+                    return $hit;
+                }
             }
         }
 
