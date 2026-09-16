@@ -98,6 +98,97 @@ class SiteMenu
         return self::ordered('landing_menu_order', self::landingItems());
     }
 
+    /** Keys hidden from a menu setting. New items default to visible. */
+    public static function hiddenKeys($settingKey)
+    {
+        $raw = SiteSetting::getValue($settingKey, []);
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            $raw = is_array($decoded) ? $decoded : [];
+        }
+        if (! is_array($raw)) {
+            $raw = [];
+        }
+
+        $out = [];
+        foreach ($raw as $k) {
+            if (is_string($k) && $k !== '' && ! in_array($k, $out, true)) {
+                $out[] = $k;
+            }
+        }
+
+        return $out;
+    }
+
+    public static function landingHidden()
+    {
+        return self::hiddenKeys('landing_menu_hidden');
+    }
+
+    public static function landingVisibleOrder()
+    {
+        $hidden = self::landingHidden();
+        $out = [];
+        foreach (self::landingOrder() as $key) {
+            if (! in_array($key, $hidden, true)) {
+                $out[] = $key;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Sidebar items that must stay visible so an admin cannot lock themselves
+     * out of Site Content.
+     */
+    public static function sideLocked()
+    {
+        return ['dashboard', 'site-content'];
+    }
+
+    public static function sideHidden()
+    {
+        $hidden = self::hiddenKeys('side_menu_hidden');
+        $locked = self::sideLocked();
+
+        return array_values(array_filter($hidden, function ($k) use ($locked) {
+            return ! in_array($k, $locked, true);
+        }));
+    }
+
+    /**
+     * Saved custom labels for public header tabs. Falls back to landingItems().
+     */
+    public static function landingLabels()
+    {
+        $defaults = self::landingItems();
+        $raw = SiteSetting::getValue('landing_menu_labels', []);
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            $raw = is_array($decoded) ? $decoded : [];
+        }
+        if (! is_array($raw)) {
+            $raw = [];
+        }
+
+        $out = [];
+        foreach ($defaults as $key => $label) {
+            $custom = isset($raw[$key]) ? trim((string) $raw[$key]) : '';
+            $out[$key] = $custom !== '' ? $custom : $label;
+        }
+
+        return $out;
+    }
+
+    public static function landingLabel($key)
+    {
+        $labels = self::landingLabels();
+        $defaults = self::landingItems();
+
+        return $labels[$key] ?? ($defaults[$key] ?? $key);
+    }
+
     public static function sideOrder()
     {
         return self::ordered('side_menu_order', self::sideItems());
