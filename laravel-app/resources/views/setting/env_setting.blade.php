@@ -17,7 +17,7 @@
                     </div>
                     <div class="card-body">
                         <h5 class="mb-3">Campay (donations · MTN / Orange / card)</h5>
-                        <p class="text-muted mb-3">Used by the public <strong>Donate</strong> page (MoMo). Paste your Campay app token, or username and password from the Campay dashboard.</p>
+                        <p class="text-muted mb-3">Used by the public <strong>Donate</strong> page (MoMo). Paste your Campay app credentials from the Campay dashboard. Webhook URL: <code>https://cwacam.org/campay/webhook</code></p>
                         {!! Form::open(['route' => 'setting.campayStore', 'method' => 'post']) !!}
                             <div class="row">
                                 <div class="col-md-6">
@@ -34,8 +34,14 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>CAMPAY_TOKEN (optional if username/password are set)</label>
+                                        <label>CAMPAY_TOKEN (permanent access code)</label>
                                         <input type="text" name="campay_token" class="form-control" value="{{ old('campay_token', $campayToken) }}" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>CAMPAY_WEBHOOK_SECRET (App Web hook)</label>
+                                        <input type="text" name="campay_webhook_secret" class="form-control" value="{{ old('campay_webhook_secret', $campayWebhookSecret ?? '') }}" autocomplete="off">
                                     </div>
                                 </div>
                                 <div class="col-md-3">

@@ -72,6 +72,7 @@ Route::get('/donate', 'DonateController@show')->name('beyond.donate');
 Route::post('/donate', 'DonateController@store')->name('beyond.donate.store');
 Route::get('/donate/callback', 'DonateController@callback')->name('beyond.donate.callback');
 Route::get('/donate/thank-you', 'DonateController@thanks')->name('beyond.donate.thanks');
+Route::post('/campay/webhook', 'CampayWebhookController@handle')->name('beyond.campay.webhook');
 Route::redirect('/support', '/donate');
 Route::redirect('/support/thank-you', '/donate/thank-you');
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');

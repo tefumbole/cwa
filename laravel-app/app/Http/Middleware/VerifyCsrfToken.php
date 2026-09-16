@@ -21,5 +21,6 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'logout',
         'portal/logout',
+        'campay/webhook',
     ];
 }

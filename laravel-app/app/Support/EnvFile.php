@@ -64,7 +64,7 @@ class EnvFile
             return '';
         }
 
-        if (preg_match('/\s|#|"|\'/', $value)) {
+        if (preg_match('/[\s#"\'~\/\\\\]/', $value)) {
             return '"'.str_replace(['\\', '"'], ['\\\\', '\\"'], $value).'"';
         }
 
