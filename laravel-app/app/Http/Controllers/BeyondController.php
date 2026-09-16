@@ -13,8 +13,8 @@ class BeyondController extends Controller
             'launchAtIso' => $launchAt->toIso8601String(),
             'windowDays' => (int) config('app.launch_window_days', 31),
             'launchLabel' => $launchAt->format('j F Y'),
-            'heroImage' => asset('branding/cwa-60-years-hero.webp') . '?v=mary3',
-            'heroImageFallback' => asset('branding/cwa-60-years-hero.jpg') . '?v=mary3',
+            'heroImage' => url('public/branding/cwa-60-years-hero.webp') . '?v=mary4',
+            'heroImageFallback' => url('public/branding/cwa-60-years-hero.jpg') . '?v=mary4',
         ]);
     }
 

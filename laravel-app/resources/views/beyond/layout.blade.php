@@ -261,16 +261,14 @@
                 </div>
             </div>
         </div>
-        <div class="mt-12 -mx-4 sm:-mx-6 lg:-mx-8">
-            <div class="bg-[#0f3d2e] text-center px-4 py-3 text-xs sm:text-sm text-white/90 tracking-wide">
-                <span>Copyright CWA Cameroon {{ date('Y') }}</span>
-                <span class="mx-1.5 opacity-60">|</span>
-                <span>Developed By</span>
-                <span class="mx-1.5 opacity-60">|</span>
-                <span>Sr. Engr. Tefu R. Mbole</span>
-                <span class="mx-1.5 opacity-60">|</span>
-                <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="hover:text-brand-gold underline-offset-2 hover:underline">+237 675-321-739</a>
-            </div>
+        <div class="mt-12 pt-6 border-t border-white/10 text-center text-xs sm:text-sm text-gray-300 tracking-wide">
+            <span>Copyright CWA Cameroon {{ date('Y') }}</span>
+            <span class="mx-1.5 opacity-60">|</span>
+            <span>Developed By</span>
+            <span class="mx-1.5 opacity-60">|</span>
+            <span>Sr. Engr. Tefu R. Mbole</span>
+            <span class="mx-1.5 opacity-60">|</span>
+            <a href="https://wa.me/237675321739" target="_blank" rel="noopener" class="hover:text-brand-gold underline-offset-2 hover:underline">+237 675-321-739</a>
         </div>
     </div>
 </footer>

@@ -26,7 +26,7 @@
         }
     }
     $currentUrl = url()->current();
-    $logoMark = asset('branding/cwa-logo-mary.png') . '?v=mary3';
+    $logoMark = url('public/branding/cwa-logo-mary.png') . '?v=mary4';
 @endphp
 
 @push('head')
@@ -447,23 +447,25 @@
         letter-spacing: 0.04em;
     }
     .lp-credit {
+        position: relative;
+        z-index: 5;
         margin-top: auto;
         width: 100%;
-        background: #0f3d2e;
-        color: rgba(255, 255, 255, 0.92);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.78);
         text-align: center;
-        padding: 0.7rem 1rem;
+        padding: 0.85rem 1rem 1.1rem;
         font-size: 0.78rem;
         letter-spacing: 0.02em;
         line-height: 1.5;
-        z-index: 5;
+        text-shadow: 0 2px 10px rgba(4, 16, 40, 0.55);
     }
     .lp-credit a {
         color: inherit;
         text-decoration: none;
     }
     .lp-credit a:hover {
-        color: #d4af37;
+        color: var(--gold-soft);
         text-decoration: underline;
     }
     .lp-credit .sep {
@@ -603,17 +605,17 @@
             <p>To empower members spiritually, nurturing stronger faith and promoting evangelization within families and society.</p>
         </div>
         <p class="lp-verse">“For I know the plans I have for you…”<span>Jeremiah 29:11</span></p>
-    </section>
 
-    <div class="lp-credit" role="contentinfo">
-        <span>Copyright CWA Cameroon {{ date('Y') }}</span>
-        <span class="sep">|</span>
-        <span>Developed By</span>
-        <span class="sep">|</span>
-        <span>Sr. Engr. Tefu R. Mbole</span>
-        <span class="sep">|</span>
-        <a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a>
-    </div>
+        <div class="lp-credit" role="contentinfo">
+            <span>Copyright CWA Cameroon {{ date('Y') }}</span>
+            <span class="sep">|</span>
+            <span>Developed By</span>
+            <span class="sep">|</span>
+            <span>Sr. Engr. Tefu R. Mbole</span>
+            <span class="sep">|</span>
+            <a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a>
+        </div>
+    </section>
 </div>
 @endsection
 
