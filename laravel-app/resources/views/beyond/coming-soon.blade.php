@@ -14,7 +14,7 @@
 <style>
     body > header.bg-brand-blue,
     body > a.cwa-wa { display: none !important; }
-    body { background: #041830; }
+    body { background: #003D82; }
     main.flex-1 { display: flex; flex-direction: column; min-height: 100vh; }
     .lp {
         --gold: #d4af37;
@@ -26,7 +26,6 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        padding-bottom: 2.75rem;
         color: #fff;
     }
     .lp-nav {
@@ -192,7 +191,8 @@
         flex-direction: column;
         justify-content: center;
         overflow: hidden;
-        background: #071a38 center right / cover no-repeat;
+        padding-bottom: 2.85rem;
+        background: #003D82 center right / cover no-repeat;
         background-image: url('{{ $heroImageFallback ?? $heroImage }}');
     }
     @supports (background-image: url('x.webp')) {
@@ -204,12 +204,12 @@
         inset: 0;
         background:
             linear-gradient(90deg,
-                rgba(4, 16, 40, 0.96) 0%,
-                rgba(5, 22, 52, 0.88) 24%,
-                rgba(7, 28, 64, 0.42) 46%,
-                rgba(7, 28, 64, 0.08) 62%,
+                rgba(0, 61, 130, 0.96) 0%,
+                rgba(0, 40, 85, 0.88) 24%,
+                rgba(0, 61, 130, 0.42) 46%,
+                rgba(0, 61, 130, 0.08) 62%,
                 transparent 74%),
-            linear-gradient(180deg, rgba(4, 16, 40, 0.18) 0%, transparent 22%, transparent 78%, rgba(4, 16, 40, 0.28) 100%);
+            linear-gradient(180deg, rgba(0, 40, 85, 0.18) 0%, transparent 22%, rgba(0, 61, 130, 0.45) 78%, rgba(0, 61, 130, 0.96) 100%);
         pointer-events: none;
     }
     .lp-copy {
@@ -454,7 +454,7 @@
         .lp-launch { border-left: 0; padding-left: 0; }
         .lp-hero { background-position: 62% 20%; }
         .lp-hero::before {
-            background: linear-gradient(180deg, rgba(4,16,40,0.2) 0%, rgba(4,16,40,0.55) 42%, rgba(4,16,40,0.92) 100%);
+            background: linear-gradient(180deg, rgba(0,40,85,0.2) 0%, rgba(0,61,130,0.55) 42%, rgba(0,61,130,0.96) 100%);
         }
     }
     @media (max-width: 640px) {
@@ -533,10 +533,6 @@
                 <a class="lp-btn gold" href="{{ route('beyond.membership') }}">
                     <i data-lucide="heart" class="w-4 h-4"></i>
                     {{ __('cwa.nav.join') }} →
-                </a>
-                <a class="lp-btn ghost" href="{{ url('/gallery') }}">
-                    <i data-lucide="play" class="w-4 h-4"></i>
-                    {{ __('cwa.home.watch') }}
                 </a>
             </div>
 

@@ -84,11 +84,12 @@
             align-items: center;
             gap: 0;
             padding: 0.65rem 1rem;
-            background: #0b3d2e;
-            color: rgba(248, 246, 239, 0.82);
+            background: #003D82;
+            color: rgba(248, 246, 239, 0.9);
             font-size: 0.78rem;
             line-height: 1.35;
             text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.35);
         }
         .cwa-credits > span { padding: 0 0.85rem; }
         .cwa-credits > span + span { border-left: 1px solid rgba(212, 175, 55, 0.45); }

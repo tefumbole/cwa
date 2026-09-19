@@ -74,7 +74,7 @@ Route::get('/join', function () {
 Route::post('/join', function () {
     return redirect()->route('beyond.membership');
 })->name('beyond.join.store');
-Route::get('/membership', 'MembershipController@statutes')->name('beyond.membership');
+Route::get('/membership', 'MembershipController@index')->name('beyond.membership');
 Route::post('/membership/agree-statutes', 'MembershipController@agreeStatutes')->name('beyond.membership.agree_statutes');
 Route::get('/membership/bylaws', 'MembershipController@bylaws')->name('beyond.membership.bylaws');
 Route::post('/membership/agree-bylaws', 'MembershipController@agreeBylaws')->name('beyond.membership.agree_bylaws');

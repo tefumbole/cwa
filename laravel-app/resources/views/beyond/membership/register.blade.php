@@ -78,21 +78,26 @@
             </div>
         </div>
 
-        <div class="apply-doc-card" data-apply-doc data-facing="user" data-title="{{ __('cwa.membership.selfie') }}">
+        <div class="rounded-xl border-2 border-brand-gold/50 bg-[#003D82]/5 p-5 text-center">
             <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.selfie') }} <span class="text-red-500">*</span></label>
-            <p class="text-xs text-gray-500 mt-1 mb-2">{{ __('cwa.membership.selfie_hint') }}</p>
-            <input type="file" name="selfie" data-doc-target accept="image/*" class="sr-only" tabindex="-1" required>
-            <input type="file" data-doc-attach accept="image/*" class="hidden" id="attach-selfie">
-            <div class="apply-doc-actions">
-                <button type="button" data-doc-snap class="apply-doc-btn primary">
-                    <i data-lucide="camera" class="w-4 h-4"></i> {{ __('cwa.membership.snap') }}
-                </button>
-                <label for="attach-selfie" class="apply-doc-btn">
-                    <i data-lucide="paperclip" class="w-4 h-4"></i> {{ __('cwa.membership.attach') }}
+            <p class="text-xs text-gray-500 mt-1 mb-4">{{ __('cwa.membership.selfie_hint') }}</p>
+            <input type="file" name="selfie" id="membership-selfie-input" accept="image/*" class="sr-only" tabindex="-1" required>
+            <button type="button" data-cwa-selfie-open class="cwa-selfie-preview" aria-label="{{ __('cwa.membership.snap_open') }}">
+                <img id="membership-selfie-preview" alt="" class="hidden">
+                <span id="membership-selfie-placeholder" class="cwa-selfie-placeholder">
+                    <i data-lucide="camera" class="w-8 h-8 mb-2"></i>
+                    {{ __('cwa.membership.snap_open') }}
+                </span>
+            </button>
+            <button type="button" data-cwa-selfie-open class="mt-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-blue font-extrabold rounded-full px-6 py-3 min-h-[3rem]">
+                <i data-lucide="aperture" class="w-5 h-5"></i> {{ __('cwa.membership.snap_button') }}
+            </button>
+            <div class="mt-3">
+                <label for="membership-selfie-input" class="text-sm text-brand-blue font-semibold underline cursor-pointer">
+                    {{ __('cwa.membership.attach_if_have') }}
                 </label>
             </div>
-            <p class="text-xs text-emerald-700 mt-2 min-h-[1rem] mb-0" data-doc-status>{{ __('cwa.membership.no_file') }}</p>
-            <img data-doc-preview alt="" class="hidden mt-2 max-h-40 w-full rounded-lg border border-emerald-200 object-cover">
+            <p class="text-xs text-emerald-700 mt-2 min-h-[1rem] mb-0" id="membership-selfie-status">{{ __('cwa.membership.no_file') }}</p>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -135,6 +140,7 @@
     </form>
 </div>
 @include('beyond.apply.partials.camera_capture')
+@include('beyond.membership.partials.circle_selfie')
 @endsection
 
 @push('scripts')

@@ -13,46 +13,28 @@ use Illuminate\Support\Str;
 
 class MembershipController extends Controller
 {
-    public function statutes()
+    public function index()
     {
-        return view('beyond.membership.chapter', $this->chapterData('statutes'));
+        return view('beyond.membership.index');
     }
 
-    public function agreeStatutes(Request $request)
+    public function agreeStatutes()
     {
-        $request->session()->put('membership_statutes_accepted', true);
-
-        return redirect()->route('beyond.membership.bylaws');
-    }
-
-    public function bylaws(Request $request)
-    {
-        if (! $request->session()->get('membership_statutes_accepted')) {
-            return redirect()->route('beyond.membership')
-                ->with('warning', __('cwa.membership.must_agree'));
-        }
-
-        return view('beyond.membership.chapter', $this->chapterData('bylaws'));
-    }
-
-    public function agreeBylaws(Request $request)
-    {
-        if (! $request->session()->get('membership_statutes_accepted')) {
-            return redirect()->route('beyond.membership')
-                ->with('warning', __('cwa.membership.must_agree'));
-        }
-        $request->session()->put('membership_bylaws_accepted', true);
-
         return redirect()->route('beyond.membership.register');
     }
 
-    public function register(Request $request)
+    public function bylaws()
     {
-        if (! $request->session()->get('membership_bylaws_accepted')) {
-            return redirect()->route('beyond.membership')
-                ->with('warning', __('cwa.membership.must_agree'));
-        }
+        return view('beyond.membership.bylaws', $this->bylawsData());
+    }
 
+    public function agreeBylaws()
+    {
+        return redirect()->route('beyond.membership.register');
+    }
+
+    public function register()
+    {
         return view('beyond.membership.register', [
             'ageRanges' => trans('cwa.join.ages'),
         ]);
@@ -90,11 +72,6 @@ class MembershipController extends Controller
 
     public function store(Request $request)
     {
-        if (! $request->session()->get('membership_bylaws_accepted')) {
-            return redirect()->route('beyond.membership')
-                ->with('warning', __('cwa.membership.must_agree'));
-        }
-
         $data = $request->validate([
             'phone' => 'required|string|max:20',
             'name' => 'required|string|max:160',
@@ -181,46 +158,61 @@ class MembershipController extends Controller
         return view('beyond.membership.thanks', ['name' => $name]);
     }
 
-    protected function chapterData($kind)
+    protected function bylawsData()
     {
-        $statutes = trans('cwa_statutes');
-        if (! is_array($statutes)) {
-            $statutes = [];
+        $doc = trans('cwa_statutes');
+        if (! is_array($doc)) {
+            $doc = [];
         }
-        $isBylaws = $kind === 'bylaws';
-        $raw = $isBylaws ? ($statutes['bylaws'] ?? []) : ($statutes['statutes'] ?? []);
-        $articles = [];
-        foreach (array_values($raw) as $i => $article) {
-            $articles[] = [
-                'n' => (string) ($i + 1),
-                'roman' => $article['n'] ?? '',
-                'title' => $article['title'] ?? '',
+
+        $preambleHtml = $doc['preamble'] ?? '';
+        if ($preambleHtml !== '' && strpos($preambleHtml, '<p>') === false) {
+            $preambleHtml = \App\Support\CwaStatutesFormatter::bodyHtml($preambleHtml);
+        }
+
+        $preamble = [
+            'badge' => 'P',
+            'heading' => $doc['preamble_title'] ?? __('cwa.membership.read_preamble'),
+            'icon' => 'book-open',
+            'body_html' => $preambleHtml,
+        ];
+
+        $statuteItems = [$preamble];
+        foreach (array_values($doc['statutes'] ?? []) as $i => $article) {
+            $statuteItems[] = [
+                'badge' => (string) ($i + 1),
                 'heading' => \App\Support\CwaStatutesFormatter::heading(
-                    $isBylaws ? 'bylaws' : 'statutes',
+                    'statutes',
                     $article['n'] ?? '',
                     $article['title'] ?? ''
                 ),
-                'icon' => \App\Support\CwaStatutesFormatter::iconFor($isBylaws ? 'bylaws' : 'statutes', $i),
+                'icon' => \App\Support\CwaStatutesFormatter::iconFor('statutes', $i),
                 'body_html' => \App\Support\CwaStatutesFormatter::bodyHtml($article['body'] ?? ''),
             ];
         }
 
-        $termsHeading = $isBylaws
-            ? (($statutes['bylaws_kicker'] ?? '').' — '.($statutes['bylaws_title'] ?? ''))
-            : ($statutes['preamble_title'] ?? '');
+        $bylawItems = [];
+        foreach (array_values($doc['bylaws'] ?? []) as $i => $article) {
+            $bylawItems[] = [
+                'badge' => (string) ($i + 1),
+                'heading' => \App\Support\CwaStatutesFormatter::heading(
+                    'bylaws',
+                    $article['n'] ?? '',
+                    $article['title'] ?? ''
+                ),
+                'icon' => \App\Support\CwaStatutesFormatter::iconFor('bylaws', $i),
+                'body_html' => \App\Support\CwaStatutesFormatter::bodyHtml($article['body'] ?? ''),
+            ];
+        }
+
+        $statutesLabel = trim(($doc['statutes_kicker'] ?? '').' — '.($doc['statutes_title'] ?? ''));
+        $bylawsLabel = trim(($doc['bylaws_kicker'] ?? '').' — '.($doc['bylaws_title'] ?? ''));
 
         return [
-            'kind' => $kind,
-            'chapterNum' => $isBylaws ? 2 : 1,
-            'kicker' => $isBylaws ? ($statutes['bylaws_kicker'] ?? '') : ($statutes['statutes_kicker'] ?? ''),
-            'title' => $isBylaws ? ($statutes['bylaws_title'] ?? '') : ($statutes['statutes_title'] ?? ''),
-            'preamble' => $isBylaws ? '' : ($statutes['preamble'] ?? ''),
-            'preambleTitle' => $isBylaws ? trim($termsHeading) : ($statutes['preamble_title'] ?? ''),
-            'articles' => $articles,
-            'agreeRoute' => $isBylaws ? 'beyond.membership.agree_bylaws' : 'beyond.membership.agree_statutes',
-            'acceptPrompt' => $isBylaws ? __('cwa.membership.accept_bylaws') : __('cwa.membership.accept_statutes'),
-            'metaKey' => $isBylaws ? 'cwa.membership.bylaws_meta' : 'cwa.membership.statutes_meta',
-            'pdfUrl' => asset('branding/cwa-statutes-'.(app()->getLocale() === 'fr' ? 'fr' : 'en').'.pdf'),
+            'groups' => [
+                ['label' => $statutesLabel, 'items' => $statuteItems],
+                ['label' => $bylawsLabel, 'items' => $bylawItems],
+            ],
         ];
     }
 
