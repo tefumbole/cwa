@@ -83,93 +83,40 @@
             .nav-logo-spin { width: 3.5rem; height: 3.5rem; }
         }
         .cwa-foot {
-            background:
-                linear-gradient(90deg, rgba(212,175,55,0.22), transparent 18%, transparent 82%, rgba(212,175,55,0.18)),
-                linear-gradient(180deg, #0a2a5c 0%, #003D82 55%, #071a38 100%);
-            color: rgba(255,255,255,0.88);
-            border-top-left-radius: 1.35rem;
-            border-top-right-radius: 1.35rem;
-            box-shadow: 0 -8px 24px rgba(7, 26, 56, 0.18);
+            background: linear-gradient(180deg, #0a2a5c 0%, #003D82 70%, #071a38 100%);
+            color: #D4AF37;
+            border-top-left-radius: 1.1rem;
+            border-top-right-radius: 1.1rem;
+            box-shadow: 0 -4px 16px rgba(7, 26, 56, 0.16);
             position: relative;
         }
         .cwa-foot::before {
             content: "";
             position: absolute;
-            left: 8%;
-            right: 8%;
+            left: 10%;
+            right: 10%;
             top: 0;
-            height: 3px;
+            height: 2px;
             border-radius: 999px;
-            background: linear-gradient(90deg, transparent, #D4AF37 20%, #f0d56a 50%, #D4AF37 80%, transparent);
+            background: linear-gradient(90deg, transparent, #D4AF37 18%, #f0d56a 50%, #D4AF37 82%, transparent);
         }
-        .cwa-foot-inner {
-            display: grid;
-            grid-template-columns: auto 1fr 1fr 1.15fr;
-            gap: 1.1rem 1.6rem;
-            align-items: start;
-            max-width: 72rem;
-            margin: 0 auto;
-            padding: 0.7rem 1.15rem 0.35rem;
-        }
-        .cwa-foot-qr {
-            width: 3.35rem;
-            height: 3.35rem;
-            padding: 0.22rem;
-            background: #fff;
-            border-radius: 0.4rem;
-            border: 2px solid #D4AF37;
-        }
-        .cwa-foot-qr img { width: 100%; height: 100%; display: block; }
-        .cwa-foot h3 {
-            margin: 0 0 0.28rem;
-            color: #E8C96A;
-            font-size: 0.62rem;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-        }
-        .cwa-foot ul { list-style: none; margin: 0; padding: 0; }
-        .cwa-foot li { margin: 0 0 0.12rem; }
-        .cwa-foot a, .cwa-foot p {
-            color: rgba(255,255,255,0.86);
-            font-size: 0.72rem;
-            line-height: 1.3;
-            text-decoration: none;
-            margin: 0;
-        }
-        .cwa-foot a:hover { color: #E8C96A; }
-        .cwa-foot-row {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            margin: 0 0 0.14rem;
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.86);
-        }
-        .cwa-foot-row i { width: 0.85rem; height: 0.85rem; color: #D4AF37; flex-shrink: 0; }
         .cwa-foot-copy {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 0.15rem 0;
-            padding: 0.28rem 1rem 0.4rem;
-            color: #D4AF37;
-            font-size: 0.68rem;
+            gap: 0;
+            padding: 0.42rem 1rem;
+            font-size: 0.72rem;
+            line-height: 1.3;
             text-align: center;
         }
-        .cwa-foot-copy span { padding: 0 0.7rem; }
+        .cwa-foot-copy span { padding: 0 0.8rem; }
         .cwa-foot-copy span + span { border-left: 1px solid rgba(212,175,55,0.4); }
         .cwa-foot-copy a { color: #D4AF37; font-weight: 600; }
         .cwa-foot-copy a:hover { color: #f0d56a; }
-        @media (max-width: 800px) {
-            .cwa-foot-inner { grid-template-columns: auto 1fr 1fr; }
-            .cwa-foot-contact { grid-column: 2 / -1; }
-        }
         @media (max-width: 640px) {
-            .cwa-foot-inner { grid-template-columns: 1fr 1fr; padding: 0.65rem 0.9rem 0.3rem; }
-            .cwa-foot-qr { display: none; }
-            .cwa-foot-copy { flex-direction: column; }
+            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0.45rem 0.75rem; }
             .cwa-foot-copy span { padding: 0; }
             .cwa-foot-copy span + span { border-left: 0; }
         }
@@ -317,47 +264,7 @@
     @yield('content')
 </main>
 
-@php
-    $footEmail = \App\Support\SiteContent::text('contact.email', 'info@cwacam.org');
-    $footWeb = \App\Support\SiteContent::text('contact.website', 'www.cwacam.org');
-    $footQr = '';
-    try {
-        $footQr = \DNS2D::getBarcodePNG(url('/'), 'QRCODE');
-    } catch (\Throwable $e) {
-        $footQr = '';
-    }
-@endphp
 <footer class="cwa-foot mt-auto">
-    <div class="cwa-foot-inner">
-        <div class="cwa-foot-qr" aria-hidden="true">
-            @if ($footQr)
-                <img src="data:image/png;base64,{{ $footQr }}" alt="">
-            @endif
-        </div>
-        <div>
-            <h3>{{ __('cwa.footer.association') }}</h3>
-            <ul>
-                <li><a href="{{ url('/about') }}">{{ __('cwa.nav.about') }}</a></li>
-                <li><a href="{{ route('beyond.membership') }}">{{ __('cwa.nav.membership') }}</a></li>
-                <li><a href="{{ route('beyond.membership') }}">{{ __('cwa.nav.join') }}</a></li>
-            </ul>
-        </div>
-        <div>
-            <h3>{{ __('cwa.footer.community') }}</h3>
-            <ul>
-                <li><a href="{{ url('/events') }}">{{ __('cwa.nav.events') }}</a></li>
-                <li><a href="{{ url('/gallery') }}">{{ __('cwa.nav.gallery') }}</a></li>
-                <li><a href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a></li>
-            </ul>
-        </div>
-        <div class="cwa-foot-contact">
-            <h3>{{ __('cwa.footer.contact') }}</h3>
-            <p class="cwa-foot-row"><i data-lucide="mail"></i><a href="mailto:{{ $footEmail }}">{{ $footEmail }}</a></p>
-            <p class="cwa-foot-row"><i data-lucide="phone"></i><a href="https://wa.me/237675321739" target="_blank" rel="noopener">+237 675-321-739</a></p>
-            <p class="cwa-foot-row"><i data-lucide="globe"></i><a href="{{ url('/') }}">{{ $footWeb }}</a></p>
-            <p class="cwa-foot-row"><i data-lucide="map-pin"></i>{{ __('cwa.footer.seat') }}</p>
-        </div>
-    </div>
     <div class="cwa-foot-copy">
         <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
         <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
@@ -367,7 +274,7 @@
 </footer>
 
 <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-   class="cwa-wa fixed bottom-20 right-5 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+   class="cwa-wa fixed bottom-12 right-5 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="{{ __('cwa.footer.whatsapp') }}">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>
