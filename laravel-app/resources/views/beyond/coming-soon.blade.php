@@ -12,6 +12,7 @@
 @push('head')
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,700;1,600;1,700&display=swap" rel="stylesheet">
 <style>
+    body > header.site-header,
     body > header.bg-brand-blue,
     body > a.cwa-wa { display: none !important; }
     body { background: #003D82; }
@@ -78,16 +79,17 @@
         display: none;
         align-items: center;
         justify-content: center;
-        gap: 1.35rem;
+        gap: 2.4rem;
         flex: 1;
     }
     .lp-links a {
         color: #1f2a44;
-        font-size: 0.92rem;
+        font-size: 1.15rem;
         font-weight: 600;
+        letter-spacing: 0.01em;
         text-decoration: none;
         white-space: nowrap;
-        padding: 0.2rem 0;
+        padding: 0.25rem 0.15rem;
         border-bottom: 2px solid transparent;
     }
     .lp-links a:hover,
@@ -162,8 +164,9 @@
     .lp-drawer.is-open { display: block; }
     .lp-drawer a {
         display: block;
-        padding: 0.55rem 0;
+        padding: 0.7rem 0;
         color: #1f2a44;
+        font-size: 1.12rem;
         font-weight: 600;
         text-decoration: none;
         border-bottom: 1px solid #f3f4f6;

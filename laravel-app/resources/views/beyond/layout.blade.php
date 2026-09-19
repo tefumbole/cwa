@@ -33,9 +33,14 @@
             },
         };
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; }
+        :root {
+            --cwa-paper: #F6F3EC;
+            --cwa-ink: #1A1F2E;
+            --cwa-gold: #D4AF37;
+        }
         @keyframes floaty { 0%,100% { transform: translateY(0); opacity:.4 } 50% { transform: translateY(-20px); opacity:.9 } }
         .floaty { animation: floaty 4s ease-in-out infinite; }
         [x-cloak] { display:none !important; }
@@ -83,16 +88,16 @@
             justify-content: center;
             align-items: center;
             gap: 0;
-            padding: 0.65rem 1rem;
-            background: #003D82;
-            color: rgba(248, 246, 239, 0.9);
+            padding: 0.7rem 1rem;
+            background: #16181f;
+            color: rgba(248, 246, 239, 0.82);
             font-size: 0.78rem;
             line-height: 1.35;
             text-align: center;
-            border-top: 1px solid rgba(212, 175, 55, 0.35);
+            border-top: 1px solid rgba(212, 175, 55, 0.28);
         }
         .cwa-credits > span { padding: 0 0.85rem; }
-        .cwa-credits > span + span { border-left: 1px solid rgba(212, 175, 55, 0.45); }
+        .cwa-credits > span + span { border-left: 1px solid rgba(212, 175, 55, 0.35); }
         .cwa-credits a { color: inherit; font-weight: 600; }
         .cwa-credits a:hover { color: #d4af37; }
         @media (max-width: 640px) {
@@ -106,49 +111,56 @@
             right: 0;
             bottom: 0;
             z-index: 40;
+            background: transparent;
+            border-top: 0;
+            color: #D4AF37;
+            text-shadow: 0 1px 8px rgba(4, 16, 40, 0.45);
         }
+        body.cwa-home .cwa-credits > span + span { border-left-color: rgba(212, 175, 55, 0.45); }
+        body.cwa-home .cwa-credits a { color: #D4AF37; }
+        body.cwa-home .cwa-credits a:hover { color: #f0d56a; }
     </style>
     @stack('head')
 </head>
-<body class="bg-white text-gray-800 flex flex-col min-h-screen {{ !empty($isHome) ? 'cwa-home' : '' }}">
+<body class="bg-[#F6F3EC] text-[#1A1F2E] flex flex-col min-h-screen {{ !empty($isHome) ? 'cwa-home' : '' }}">
 
 @php
     $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
 @endphp
 
-<header class="bg-brand-blue sticky top-0 z-40 shadow-lg" x-data="{ open: false, userMenu: false }" @keydown.escape.window="userMenu = false">
+<header class="site-header sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200/80" x-data="{ open: false, userMenu: false }" @keydown.escape.window="userMenu = false">
     <div class="w-full flex items-center justify-between h-14 sm:h-16 pl-1 pr-3 sm:pl-2 sm:pr-6 lg:pl-3 lg:pr-8">
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
             <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-spin">
         </a>
 
-        <nav class="hidden lg:flex items-center gap-x-4 xl:gap-x-6 flex-1 justify-center min-w-0">
+        <nav class="hidden lg:flex items-center gap-x-7 xl:gap-x-10 flex-1 justify-center min-w-0">
             @foreach ($navLinks as $link)
                 @php $active = \App\Support\SiteMenu::navLinkIsActive($link, $currentUrl); @endphp
                 <a href="{{ $link['url'] }}"
-                   class="text-sm xl:text-base font-medium transition-colors duration-300 whitespace-nowrap
-                      @if($active) text-brand-gold border-b-2 border-brand-gold pb-1
-                      @elseif(!empty($link['special'])) text-brand-gold hover:text-white font-bold
-                      @else text-white hover:text-brand-gold @endif">
+                   class="text-[1.05rem] xl:text-[1.15rem] font-semibold transition-colors duration-300 whitespace-nowrap
+                      @if($active) text-brand-blue border-b-2 border-brand-gold pb-1
+                      @elseif(!empty($link['special'])) text-brand-blue hover:text-brand-gold font-bold
+                      @else text-stone-600 hover:text-brand-blue @endif">
                     {{ $link['label'] }}
                 </a>
             @endforeach
         </nav>
 
         <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-            @include('beyond.partials.lang_switch', ['variant' => 'dark'])
-            <a href="{{ route('beyond.donate') }}" class="hidden xl:inline-flex items-center gap-1.5 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-blue font-semibold rounded-full px-3 py-1.5 text-sm">
+            @include('beyond.partials.lang_switch', ['variant' => 'light'])
+            <a href="{{ route('beyond.donate') }}" class="hidden xl:inline-flex items-center gap-1.5 border border-stone-300 text-stone-700 hover:border-brand-gold hover:text-brand-blue font-semibold rounded-full px-3 py-1.5 text-sm">
                 {{ __('cwa.nav.donate') }}
             </a>
-            <a href="{{ route('beyond.membership') }}" class="inline-flex items-center gap-1.5 bg-brand-gold text-brand-blue hover:bg-yellow-400 font-bold rounded-full px-3.5 py-1.5 text-sm">
+            <a href="{{ route('beyond.membership') }}" class="inline-flex items-center gap-1.5 bg-brand-gold text-brand-blue hover:bg-[#c4a030] font-bold rounded-full px-3.5 py-1.5 text-sm">
                 {{ __('cwa.nav.join') }}
             </a>
 
-            <a href="tel:+237675321739" class="text-white hover:text-brand-gold transition-colors" title="{{ __('cwa.nav.call') }}">
+            <a href="tel:+237675321739" class="text-stone-500 hover:text-brand-blue transition-colors" title="{{ __('cwa.nav.call') }}">
                 <i data-lucide="phone" class="w-5 h-5"></i>
             </a>
-            <a href="https://mail.hostinger.com" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="{{ __('cwa.nav.webmail') }}">
+            <a href="https://mail.hostinger.com" target="_blank" rel="noopener" class="text-stone-500 hover:text-brand-blue transition-colors" title="{{ __('cwa.nav.webmail') }}">
                 <i data-lucide="mail" class="w-5 h-5"></i>
             </a>
 
@@ -160,10 +172,10 @@
                             {{ $headerInitial }}
                         </span>
                         <span class="hidden xl:flex flex-col leading-tight min-w-0">
-                            <span class="text-white font-semibold text-sm truncate max-w-[140px]">{{ $shortName }}</span>
-                            <span class="text-brand-gold text-[11px] font-bold tracking-wide uppercase">{{ $headerRole }}</span>
+                            <span class="text-stone-800 font-semibold text-sm truncate max-w-[140px]">{{ $shortName }}</span>
+                            <span class="text-brand-blue text-[11px] font-bold tracking-wide uppercase">{{ $headerRole }}</span>
                         </span>
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-sky-200/90 shrink-0"></i>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-stone-400 shrink-0"></i>
                     </button>
                     <div x-show="userMenu" x-cloak x-transition
                          class="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-xl border border-gray-100 py-1 z-50">
@@ -190,34 +202,34 @@
                     </div>
                 </div>
             @else
-                <a href="{{ url('/login') }}" class="bg-brand-dark border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-blue font-medium transition-all rounded-md px-4 py-2 flex items-center gap-2">
+                <a href="{{ url('/login') }}" class="border border-stone-300 text-stone-700 hover:border-brand-blue hover:text-brand-blue font-medium transition-all rounded-full px-4 py-2 flex items-center gap-2">
                     <i data-lucide="log-in" class="w-4 h-4"></i> {{ __('cwa.nav.login') }}
                 </a>
             @endif
         </div>
 
-        <button @click="open = !open" class="lg:hidden text-white hover:text-brand-gold transition-colors">
+        <button @click="open = !open" class="lg:hidden text-stone-700 hover:text-brand-blue transition-colors">
             <i data-lucide="menu" class="w-6 h-6" x-show="!open"></i>
             <i data-lucide="x" class="w-6 h-6" x-show="open" x-cloak></i>
         </button>
     </div>
 
-    <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-brand-blue border-t border-white/10">
+    <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-white border-t border-stone-200">
         <nav class="flex flex-col space-y-3 pt-4">
             @foreach ($navLinks as $link)
-                <a href="{{ $link['url'] }}" class="text-lg font-medium {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
+                <a href="{{ $link['url'] }}" class="text-lg font-medium {{ !empty($link['special']) ? 'text-brand-blue' : 'text-stone-700 hover:text-brand-blue' }}">{{ $link['label'] }}</a>
             @endforeach
-            <a href="{{ route('beyond.membership') }}" class="text-lg font-bold text-brand-gold">{{ __('cwa.nav.join') }}</a>
-            <a href="{{ route('beyond.donate') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.donate') }}</a>
-            <a href="{{ url('/documents') }}" class="text-lg font-medium text-white hover:text-brand-gold">{{ __('cwa.nav.resources') }}</a>
-            <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'dark'])</div>
-            <div class="pt-3 border-t border-white/10 space-y-2">
+            <a href="{{ route('beyond.membership') }}" class="text-lg font-bold text-brand-blue">{{ __('cwa.nav.join') }}</a>
+            <a href="{{ route('beyond.donate') }}" class="text-lg font-medium text-stone-700 hover:text-brand-blue">{{ __('cwa.nav.donate') }}</a>
+            <a href="{{ url('/documents') }}" class="text-lg font-medium text-stone-700 hover:text-brand-blue">{{ __('cwa.nav.resources') }}</a>
+            <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'light'])</div>
+            <div class="pt-3 border-t border-stone-200 space-y-2">
                 @if ($headerUser)
                     <div class="flex items-center gap-3 px-1 py-2">
                         <span class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-brand-gold bg-brand-gold text-brand-blue font-bold">{{ $headerInitial }}</span>
                         <div>
-                            <div class="text-white font-semibold text-sm">{{ $headerName }}</div>
-                            <div class="text-brand-gold text-xs font-bold uppercase">{{ $headerRole }}</div>
+                            <div class="text-stone-800 font-semibold text-sm">{{ $headerName }}</div>
+                            <div class="text-brand-blue text-xs font-bold uppercase">{{ $headerRole }}</div>
                         </div>
                     </div>
                     @if ($isAdminSession)
