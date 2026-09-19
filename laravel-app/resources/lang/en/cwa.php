@@ -35,11 +35,14 @@ return [
     'footer' => [
         'tagline' => 'Catholic Women\'s Association Cameroon — faith, service and sisterhood.',
         'quick_links' => 'Quick Links',
-        'contact' => 'Contact Us',
+        'association' => 'Association',
+        'community' => 'Community',
+        'contact' => 'Contact',
         'get_in_touch' => 'Get in touch',
         'rights' => 'All rights reserved.',
         'developed' => 'Developed By:',
         'country' => 'Cameroon',
+        'seat' => 'National Seat, Bamenda',
         'whatsapp' => 'Chat on WhatsApp',
     ],
     'home' => [

@@ -35,11 +35,14 @@ return [
     'footer' => [
         'tagline' => 'Association des Femmes Catholiques du Cameroun — foi, service et sororité.',
         'quick_links' => 'Liens rapides',
+        'association' => 'Association',
+        'community' => 'Communauté',
         'contact' => 'Contact',
         'get_in_touch' => 'Nous écrire',
         'rights' => 'Tous droits réservés.',
         'developed' => 'Développé par :',
         'country' => 'Cameroun',
+        'seat' => 'Siège national, Bamenda',
         'whatsapp' => 'Discuter sur WhatsApp',
     ],
     'home' => [

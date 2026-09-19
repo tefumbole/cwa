@@ -13,8 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,700;1,600;1,700&display=swap" rel="stylesheet">
 <style>
     body > header.site-header,
-    body > header.bg-brand-blue,
-    body > a.cwa-wa { display: none !important; }
+    body > header.bg-brand-blue { display: none !important; }
     body { background: #003D82; }
     main.flex-1 { display: flex; flex-direction: column; min-height: 100vh; }
     .lp {
@@ -26,7 +25,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        min-height: calc(100vh - 4.5rem);
         color: #fff;
     }
     .lp-nav {
