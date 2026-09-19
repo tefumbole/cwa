@@ -17,7 +17,7 @@ class SiteMenu
             'home'         => 'Home',
             'about'        => 'About Us',
             'membership'   => 'Membership',
-            'events'       => 'Calendar',
+            'events'       => 'Events',
             'gallery'      => 'Gallery',
             'resources'    => 'Resources',
             'trainings'    => 'Training',
@@ -150,7 +150,7 @@ class SiteMenu
             'home'         => ['label' => self::landingLabel('home'), 'url' => url('/')],
             'about'        => ['label' => self::landingLabel('about'), 'url' => url('/about')],
             'membership'   => ['label' => self::landingLabel('membership'), 'url' => url('/membership'), 'match' => ['/membership', '/join']],
-            'events'       => ['label' => self::landingLabel('events'), 'url' => url('/calendar'), 'match' => ['/calendar', '/events']],
+            'events'       => ['label' => self::landingLabel('events'), 'url' => url('/events'), 'match' => ['/events', '/calendar']],
             'gallery'      => ['label' => self::landingLabel('gallery'), 'url' => url('/gallery')],
             'resources'    => ['label' => self::landingLabel('resources'), 'url' => url('/documents')],
             'trainings'    => ['label' => self::landingLabel('trainings'), 'url' => url('/trainings')],
@@ -197,12 +197,23 @@ class SiteMenu
 
     public static function landingVisibleOrder()
     {
-        $hidden = self::landingHidden();
+        $hidden = array_values(array_filter(self::landingHidden(), function ($k) {
+            return $k !== 'events';
+        }));
         $out = [];
         foreach (self::landingOrder() as $key) {
             if (! in_array($key, $hidden, true)) {
                 $out[] = $key;
             }
+        }
+        if (! in_array('events', $out, true) && isset(self::landingItems()['events'])) {
+            $homeAt = array_search('home', $out, true);
+            $insertAt = $homeAt === false ? 0 : $homeAt + 1;
+            $aboutAt = array_search('about', $out, true);
+            if ($aboutAt !== false) {
+                $insertAt = $aboutAt + 1;
+            }
+            array_splice($out, $insertAt, 0, ['events']);
         }
 
         return $out;

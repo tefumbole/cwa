@@ -1,30 +1,61 @@
 @extends('beyond.layout')
 
 @section('title', __('cwa.membership.page_title'))
-@section('meta_description', __('cwa.membership.page_meta'))
+@section('meta_description', __('cwa.membership.page_title'))
 
 @section('content')
+@php
+    $readArticles = !empty($readArticles);
+    $readBylaws = !empty($readBylaws);
+    $openDocs = $readArticles || $readBylaws || request()->boolean('open');
+@endphp
 <div class="bg-brand-blue text-white" style="min-height: calc(100vh - 5rem);">
-    <div class="max-w-3xl mx-auto px-4 py-14 md:py-20 text-center">
-        <p class="text-brand-gold text-xs font-bold uppercase tracking-widest mb-3">{{ __('cwa.join.kicker') }}</p>
-        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">{{ __('cwa.membership.page_title') }}</h1>
-        <p class="text-blue-100 text-base md:text-lg max-w-xl mx-auto mb-10">{{ __('cwa.membership.page_meta') }}</p>
+    <div class="max-w-3xl mx-auto px-4 py-16 md:py-24 text-center"
+         x-data="membershipGate({{ $openDocs ? 'true' : 'false' }}, {{ $readArticles ? 'true' : 'false' }}, {{ $readBylaws ? 'true' : 'false' }})">
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-10">{{ __('cwa.membership.page_title') }}</h1>
 
-        <a href="{{ route('beyond.membership.register') }}"
-           class="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[3.25rem] px-10 py-3.5 rounded-full bg-brand-gold text-brand-blue font-extrabold text-lg shadow-lg shadow-brand-gold/25 hover:bg-[#b5952f]">
+        <button type="button" @click="onSubscribe()"
+                class="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[3.25rem] px-10 py-3.5 rounded-full bg-brand-gold text-brand-blue font-extrabold text-lg shadow-lg shadow-brand-gold/25 hover:bg-[#b5952f]">
             <i data-lucide="heart" class="w-5 h-5"></i>
             {{ __('cwa.membership.subscribe') }}
-        </a>
+        </button>
 
-        <div class="mt-6">
+        <div x-show="docs" x-cloak class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="{{ route('beyond.membership.bylaws') }}"
-               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] px-6 py-2.5 rounded-full border border-white/40 text-white font-semibold hover:border-brand-gold hover:text-brand-gold">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-                {{ __('cwa.membership.read_bylaws') }}
+               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-white text-white font-extrabold hover:bg-white hover:text-brand-blue">
+                {{ __('cwa.membership.bylaws_btn') }}
+            </a>
+            <a href="{{ route('beyond.membership.articles') }}"
+               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-white text-white font-extrabold hover:bg-white hover:text-brand-blue">
+                {{ __('cwa.membership.articles_btn') }}
             </a>
         </div>
-
-        <p class="mt-8 text-sm text-blue-200/90 max-w-md mx-auto mb-0">{{ __('cwa.membership.intro') }}</p>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function membershipGate(startOpen, readArticles, readBylaws) {
+    return {
+        docs: !!startOpen,
+        readArticles: !!readArticles,
+        readBylaws: !!readBylaws,
+        registerUrl: @json(route('beyond.membership.register')),
+        agreeMsg: @json(__('cwa.membership.agree_unread')),
+        onSubscribe: function () {
+            if (!this.docs) {
+                this.docs = true;
+                return;
+            }
+            if (!this.readArticles || !this.readBylaws) {
+                if (!window.confirm(this.agreeMsg)) {
+                    return;
+                }
+            }
+            window.location.href = this.registerUrl;
+        }
+    };
+}
+</script>
+@endpush

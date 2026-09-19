@@ -76,10 +76,17 @@ Route::post('/join', function () {
 })->name('beyond.join.store');
 Route::get('/membership', 'MembershipController@index')->name('beyond.membership');
 Route::post('/membership/agree-statutes', 'MembershipController@agreeStatutes')->name('beyond.membership.agree_statutes');
+Route::get('/membership/articles', 'MembershipController@articles')->name('beyond.membership.articles');
 Route::get('/membership/bylaws', 'MembershipController@bylaws')->name('beyond.membership.bylaws');
 Route::post('/membership/agree-bylaws', 'MembershipController@agreeBylaws')->name('beyond.membership.agree_bylaws');
 Route::get('/membership/register', 'MembershipController@register')->name('beyond.membership.register');
 Route::get('/membership/holder', 'MembershipController@holder')->middleware('throttle:40,1')->name('beyond.membership.holder');
+Route::post('/membership/ocr', 'MembershipController@ocrDocument')->middleware('throttle:30,1')->name('beyond.membership.ocr');
+Route::post('/membership/handoff', 'MembershipController@createHandoff')->middleware('throttle:40,1')->name('beyond.membership.handoff.create');
+Route::get('/membership/continue/{token}', 'MembershipController@continueHandoff')->name('beyond.membership.handoff');
+Route::get('/membership/continue/{token}/status', 'MembershipController@handoffStatus')->middleware('throttle:120,1')->name('beyond.membership.handoff.status');
+Route::post('/membership/continue/{token}/file', 'MembershipController@handoffFile')->middleware('throttle:30,1')->name('beyond.membership.handoff.file');
+Route::post('/membership/continue/{token}/sign', 'MembershipController@handoffSign')->middleware('throttle:30,1')->name('beyond.membership.handoff.sign');
 Route::post('/membership/register', 'MembershipController@store')->name('beyond.membership.store');
 Route::get('/membership/thank-you', 'MembershipController@thanks')->name('beyond.membership.thanks');
 Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
