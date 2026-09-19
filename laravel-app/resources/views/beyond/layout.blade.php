@@ -84,7 +84,7 @@
         }
         .cwa-foot {
             position: relative;
-            background: #000;
+            background: #fff;
             overflow: hidden;
             color: #D4AF37;
         }
@@ -265,7 +265,7 @@
 </main>
 
 <footer class="cwa-foot mt-auto">
-    <img class="cwa-foot-art" src="{{ url('branding/cwa-footer-wave.png') }}?v=3" alt="">
+    <img class="cwa-foot-art" src="{{ url('branding/cwa-footer-wave.png') }}?v=4" alt="">
     <div class="cwa-foot-copy">
         <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
         <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
