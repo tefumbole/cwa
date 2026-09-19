@@ -25,7 +25,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - 4.4rem);
+        min-height: calc(100vh - 9.25rem);
         color: #fff;
     }
     .lp-nav {

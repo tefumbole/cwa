@@ -83,29 +83,43 @@
             .nav-logo-spin { width: 3.5rem; height: 3.5rem; }
         }
         .cwa-foot {
-            background: #003D82 url('{{ url('branding/cwa-footer-wave.png') }}') center / 100% 100% no-repeat;
+            position: relative;
+            background: #000;
+            overflow: hidden;
             color: #D4AF37;
-            min-height: 4.35rem;
+        }
+        .cwa-foot-art {
+            display: block;
+            width: 100%;
+            height: 9.25rem;
+            object-fit: cover;
+            object-position: center 70%;
         }
         .cwa-foot-copy {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             gap: 0;
-            min-height: 4.35rem;
-            padding: 0.7rem 1rem;
+            padding: 2.1rem 1rem 0.55rem;
             font-size: 0.72rem;
             line-height: 1.3;
             text-align: center;
-            text-shadow: 0 1px 8px rgba(4, 16, 40, 0.45);
+            text-shadow: 0 1px 8px rgba(4, 16, 40, 0.55);
+            pointer-events: none;
         }
         .cwa-foot-copy span { padding: 0 0.8rem; }
         .cwa-foot-copy span + span { border-left: 1px solid rgba(212,175,55,0.4); }
-        .cwa-foot-copy a { color: #D4AF37; font-weight: 600; }
+        .cwa-foot-copy a { color: #D4AF37; font-weight: 600; pointer-events: auto; }
         .cwa-foot-copy a:hover { color: #f0d56a; }
         @media (max-width: 640px) {
-            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0.45rem 0.75rem; }
+            .cwa-foot-art { height: 8rem; }
+            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 1.8rem 0.75rem 0.4rem; }
             .cwa-foot-copy span { padding: 0; }
             .cwa-foot-copy span + span { border-left: 0; }
         }
@@ -254,6 +268,7 @@
 </main>
 
 <footer class="cwa-foot mt-auto">
+    <img class="cwa-foot-art" src="{{ url('branding/cwa-footer-wave.png') }}" alt="">
     <div class="cwa-foot-copy">
         <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
         <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
