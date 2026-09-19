@@ -83,22 +83,9 @@
             .nav-logo-spin { width: 3.5rem; height: 3.5rem; }
         }
         .cwa-foot {
-            background: linear-gradient(180deg, #0a2a5c 0%, #003D82 70%, #071a38 100%);
+            background: #003D82 url('{{ url('branding/cwa-footer-wave.png') }}') center / 100% 100% no-repeat;
             color: #D4AF37;
-            border-top-left-radius: 1.1rem;
-            border-top-right-radius: 1.1rem;
-            box-shadow: 0 -4px 16px rgba(7, 26, 56, 0.16);
-            position: relative;
-        }
-        .cwa-foot::before {
-            content: "";
-            position: absolute;
-            left: 10%;
-            right: 10%;
-            top: 0;
-            height: 2px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, transparent, #D4AF37 18%, #f0d56a 50%, #D4AF37 82%, transparent);
+            min-height: 4.35rem;
         }
         .cwa-foot-copy {
             display: flex;
@@ -106,10 +93,12 @@
             justify-content: center;
             align-items: center;
             gap: 0;
-            padding: 0.42rem 1rem;
+            min-height: 4.35rem;
+            padding: 0.7rem 1rem;
             font-size: 0.72rem;
             line-height: 1.3;
             text-align: center;
+            text-shadow: 0 1px 8px rgba(4, 16, 40, 0.45);
         }
         .cwa-foot-copy span { padding: 0 0.8rem; }
         .cwa-foot-copy span + span { border-left: 1px solid rgba(212,175,55,0.4); }
@@ -274,7 +263,7 @@
 </footer>
 
 <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-   class="cwa-wa fixed bottom-12 right-5 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+   class="cwa-wa fixed bottom-16 right-5 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="{{ __('cwa.footer.whatsapp') }}">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>
