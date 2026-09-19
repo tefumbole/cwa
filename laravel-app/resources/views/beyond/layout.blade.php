@@ -91,9 +91,7 @@
         .cwa-foot-art {
             display: block;
             width: 100%;
-            height: 9.25rem;
-            object-fit: cover;
-            object-position: center 70%;
+            height: auto;
         }
         .cwa-foot-copy {
             position: absolute;
@@ -106,7 +104,7 @@
             justify-content: center;
             align-items: center;
             gap: 0;
-            padding: 2.1rem 1rem 0.55rem;
+            padding: 0.85rem 1rem 0.4rem;
             font-size: 0.72rem;
             line-height: 1.3;
             text-align: center;
@@ -118,8 +116,7 @@
         .cwa-foot-copy a { color: #D4AF37; font-weight: 600; pointer-events: auto; }
         .cwa-foot-copy a:hover { color: #f0d56a; }
         @media (max-width: 640px) {
-            .cwa-foot-art { height: 8rem; }
-            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 1.8rem 0.75rem 0.4rem; }
+            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0.7rem 0.75rem 0.35rem; }
             .cwa-foot-copy span { padding: 0; }
             .cwa-foot-copy span + span { border-left: 0; }
         }
@@ -268,7 +265,7 @@
 </main>
 
 <footer class="cwa-foot mt-auto">
-    <img class="cwa-foot-art" src="{{ url('branding/cwa-footer-wave.png') }}" alt="">
+    <img class="cwa-foot-art" src="{{ url('branding/cwa-footer-wave.png') }}?v=3" alt="">
     <div class="cwa-foot-copy">
         <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
         <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
