@@ -17,7 +17,7 @@
 
     <div class="mt-10 space-y-5">
         <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
-            <h2 class="text-xl font-extrabold text-brand-gold">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
+            <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $vision }}</p>
         </section>
 
@@ -26,20 +26,18 @@
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $mission }}</p>
         </section>
 
-        <section class="rounded-2xl bg-[#003D82] text-white p-6 md:p-7">
-            <h2 class="text-sm font-extrabold tracking-[0.16em] uppercase text-brand-gold">{{ \App\Support\SiteContent::text('about.motto_label', __('cwa.about.motto_label')) }}</h2>
-            <p class="mt-3 text-lg md:text-xl font-medium leading-snug mb-0">
+        <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+            <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.motto_label', __('cwa.about.motto_label')) }}</h2>
+            <p class="mt-2 text-slate-600 leading-relaxed mb-0">
                 “{{ \App\Support\SiteContent::text('about.motto_text', __('cwa.about.motto_text')) }}”
+                — {{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}
             </p>
-            <p class="mt-2 text-brand-gold text-sm font-semibold mb-0">{{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}</p>
         </section>
 
-        <section class="rounded-2xl bg-white border border-brand-gold/40 shadow-sm p-6 md:p-7">
+        <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
             <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.patron_title', __('cwa.about.patron_title')) }}</h2>
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ __('cwa.about.patron_text', ['date' => \App\Support\SiteContent::text('about.patron_feast', __('cwa.about.patron_feast'))]) }}</p>
         </section>
     </div>
 </div>
-
-@include('beyond.partials.contact_section')
 @endsection
