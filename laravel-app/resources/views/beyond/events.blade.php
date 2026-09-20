@@ -12,12 +12,10 @@
         'past' => __('cwa.event.past'),
     ];
 @endphp
-<section class="py-12 md:py-16 min-h-[70vh]">
+<section class="pt-6 md:pt-8 pb-12 min-h-[70vh]">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <div class="text-center mb-10">
-            <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">CWA Cameroon</p>
+        <div class="text-center mb-6">
             <h1 class="text-3xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.event.page_title')) }}</h1>
-            <p class="text-slate-500 mt-3 max-w-xl mx-auto text-lg">{{ \App\Support\SiteContent::text('events.hero_subtitle', __('cwa.event.subtitle')) }}</p>
         </div>
 
         <form method="GET" action="{{ url('/events') }}" class="mb-12 rounded-2xl bg-white border border-stone-200/80 shadow-sm p-4 md:p-5">
