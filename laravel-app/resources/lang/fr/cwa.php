@@ -368,6 +368,8 @@ return [
         'next' => 'Continuer',
         'prev' => 'Retour',
         'country' => 'Pays',
+        'country_search' => 'Rechercher un pays…',
+        'country_empty' => 'Aucun pays trouvé',
         'whatsapp_opt' => 'Numéro WhatsApp pour les notifications (facultatif)',
         'whatsapp_same' => 'Utiliser le même numéro',
         'id_step_title' => 'Passeport ou carte nationale',

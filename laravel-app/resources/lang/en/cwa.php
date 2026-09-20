@@ -368,6 +368,8 @@ return [
         'next' => 'Continue',
         'prev' => 'Back',
         'country' => 'Country',
+        'country_search' => 'Search country…',
+        'country_empty' => 'No country matches',
         'whatsapp_opt' => 'WhatsApp number for notifications (optional)',
         'whatsapp_same' => 'Use the same number',
         'id_step_title' => 'Passport or National ID',

@@ -31,16 +31,32 @@
         {{-- Phone --}}
         <div x-show="step === 'phone'" x-cloak>
             <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.phone') }} <span class="text-red-500">*</span></label>
-            <div class="mt-1 flex rounded-md border border-gray-200 overflow-hidden">
-                <select name="country_code" x-model="countryCode" @change="scheduleLookup()"
-                        class="bg-slate-50 text-slate-700 text-sm font-bold border-r border-gray-200 px-2 max-w-[11rem]">
-                    @foreach ($countryCodes as $code => $label)
-                        <option value="{{ $code }}" @if($code === '+237') selected @endif>{{ $label }}</option>
-                    @endforeach
-                </select>
+            <div class="mt-1 flex rounded-xl border border-gray-200 overflow-visible relative">
+                <input type="hidden" name="country_code" x-model="countryCode">
+                <div class="relative shrink-0" @click.outside="ccOpen = false">
+                    <button type="button" @click="ccOpen = !ccOpen; ccQuery = ''; $nextTick(() => { var el = $refs.ccSearch; if (el) el.focus(); })"
+                            class="h-full min-h-[2.75rem] px-3 bg-stone-50 text-sm font-semibold text-stone-700 border-r border-gray-200 whitespace-nowrap">
+                        <span x-text="countryLabel(countryCode)"></span>
+                    </button>
+                    <div x-show="ccOpen" x-cloak class="absolute left-0 top-full z-30 mt-1 w-72 max-h-64 overflow-hidden rounded-xl bg-white border border-stone-200 shadow-xl">
+                        <input x-ref="ccSearch" x-model="ccQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}"
+                               class="w-full px-3 py-2 text-sm border-b outline-none">
+                        <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                            <template x-for="c in filteredCountries(ccQuery)" :key="c.code">
+                                <li>
+                                    <button type="button" @click="pickCountry(c.code)"
+                                            class="w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
+                                            :class="countryCode === c.code ? 'font-bold text-brand-blue bg-brand-gold/15' : 'text-stone-700'"
+                                            x-text="c.label"></button>
+                                </li>
+                            </template>
+                        </ul>
+                        <p x-show="filteredCountries(ccQuery).length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.membership.country_empty') }}</p>
+                    </div>
+                </div>
                 <input required name="phone" x-model="phone" @input="normalizePhone(); scheduleLookup()" type="tel"
                        inputmode="numeric" autocomplete="tel-national"
-                       class="w-full px-3 py-2 outline-none" placeholder="6XX XXX XXX">
+                       class="w-full px-3 py-2 outline-none rounded-r-xl" placeholder="6XX XXX XXX">
             </div>
             <p class="text-xs text-slate-500 mt-1">{{ __('cwa.membership.phone_hint') }}</p>
             <p x-show="looking" x-cloak class="text-sm text-slate-500 mt-2">{{ __('cwa.membership.checking') }}</p>
@@ -58,12 +74,28 @@
             <label class="flex items-center gap-2 text-sm text-slate-600 mt-1">
                 <input type="checkbox" x-model="waSame"> {{ __('cwa.membership.whatsapp_same') }}
             </label>
-            <div class="mt-2 flex rounded-md border border-gray-200 overflow-hidden" x-show="!waSame" x-cloak>
-                <select name="whatsapp_country" x-model="waCountry" class="bg-slate-50 text-sm font-bold px-2 border-r max-w-[11rem]">
-                    @foreach ($countryCodes as $code => $label)
-                        <option value="{{ $code }}" @if($code === '+237') selected @endif>{{ $label }}</option>
-                    @endforeach
-                </select>
+            <div class="mt-2 flex rounded-xl border border-gray-200 overflow-visible relative" x-show="!waSame" x-cloak>
+                <input type="hidden" name="whatsapp_country" x-model="waCountry">
+                <div class="relative shrink-0" @click.outside="waOpen = false">
+                    <button type="button" @click="waOpen = !waOpen; waQuery = ''"
+                            class="h-full min-h-[2.75rem] px-3 bg-stone-50 text-sm font-semibold text-stone-700 border-r border-gray-200 whitespace-nowrap">
+                        <span x-text="countryLabel(waCountry)"></span>
+                    </button>
+                    <div x-show="waOpen" x-cloak class="absolute left-0 top-full z-30 mt-1 w-72 max-h-64 overflow-hidden rounded-xl bg-white border border-stone-200 shadow-xl">
+                        <input x-model="waQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}"
+                               class="w-full px-3 py-2 text-sm border-b outline-none">
+                        <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                            <template x-for="c in filteredCountries(waQuery)" :key="'wa-'+c.code">
+                                <li>
+                                    <button type="button" @click="waCountry = c.code; waOpen = false"
+                                            class="w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
+                                            :class="waCountry === c.code ? 'font-bold text-brand-blue bg-brand-gold/15' : 'text-stone-700'"
+                                            x-text="c.label"></button>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
                 <input name="whatsapp_phone" x-model="waPhone" type="tel" inputmode="numeric" class="w-full px-3 py-2 outline-none">
             </div>
 
@@ -180,6 +212,11 @@ function membershipWizard() {
     return {
         step: 'phone',
         countryCode: '+237',
+        countries: @json(collect($countryCodes)->map(function ($label, $code) { return ['code' => $code, 'label' => $label]; })->values()),
+        ccOpen: false,
+        ccQuery: '',
+        waOpen: false,
+        waQuery: '',
         phone: @json(old('phone', '')),
         fullName: @json(old('name', '')),
         donorName: '',
@@ -220,6 +257,28 @@ function membershipWizard() {
         csrf: function () {
             var el = document.querySelector('#membership-registration-form input[name=_token]');
             return el ? el.value : '';
+        },
+        countryLabel: function (code) {
+            var list = this.countries || [];
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].code === code) return list[i].label;
+            }
+            return code || '+237';
+        },
+        filteredCountries: function (q) {
+            var query = String(q || '').toLowerCase().trim();
+            var list = this.countries || [];
+            if (!query) return list;
+            return list.filter(function (c) {
+                return (c.label + ' ' + c.code).toLowerCase().indexOf(query) !== -1;
+            });
+        },
+        pickCountry: function (code) {
+            this.countryCode = code;
+            this.ccOpen = false;
+            this.ccQuery = '';
+            this.last = '';
+            this.scheduleLookup();
         },
         isMobile: function () {
             return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);

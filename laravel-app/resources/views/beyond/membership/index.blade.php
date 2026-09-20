@@ -9,24 +9,23 @@
     $readBylaws = !empty($readBylaws);
     $openDocs = $readArticles || $readBylaws || request()->boolean('open');
 @endphp
-<div class="bg-brand-blue text-white" style="min-height: calc(100vh - 5rem);">
-    <div class="max-w-3xl mx-auto px-4 py-16 md:py-24 text-center"
-         x-data="membershipGate({{ $openDocs ? 'true' : 'false' }}, {{ $readArticles ? 'true' : 'false' }}, {{ $readBylaws ? 'true' : 'false' }})">
-        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-10">{{ __('cwa.membership.page_title') }}</h1>
-
+<div class="min-h-[70vh] px-4 py-16 md:py-24" x-data="membershipGate({{ $openDocs ? 'true' : 'false' }}, {{ $readArticles ? 'true' : 'false' }}, {{ $readBylaws ? 'true' : 'false' }})">
+    <div class="max-w-xl mx-auto text-center">
+        <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-4">CWA Cameroon</p>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.membership.page_title') }}</h1>
         <button type="button" @click="onSubscribe()"
-                class="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[3.25rem] px-10 py-3.5 rounded-full bg-brand-gold text-brand-blue font-extrabold text-lg shadow-lg shadow-brand-gold/25 hover:bg-[#b5952f]">
+                class="mt-10 inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[3.25rem] px-10 py-3.5 rounded-full bg-brand-gold text-brand-blue font-extrabold text-lg hover:bg-[#c4a030] shadow-sm">
             <i data-lucide="heart" class="w-5 h-5"></i>
             {{ __('cwa.membership.subscribe') }}
         </button>
 
         <div x-show="docs" x-cloak class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="{{ route('beyond.membership.bylaws') }}"
-               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-white text-white font-extrabold hover:bg-white hover:text-brand-blue">
+               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-brand-blue text-brand-blue font-extrabold hover:bg-brand-blue hover:text-white">
                 {{ __('cwa.membership.bylaws_btn') }}
             </a>
             <a href="{{ route('beyond.membership.articles') }}"
-               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-white text-white font-extrabold hover:bg-white hover:text-brand-blue">
+               class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-brand-gold text-brand-blue font-extrabold hover:bg-brand-gold">
                 {{ __('cwa.membership.articles_btn') }}
             </a>
         </div>

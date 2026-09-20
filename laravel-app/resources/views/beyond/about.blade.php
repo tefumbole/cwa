@@ -7,60 +7,38 @@
     $vision = \App\Support\SiteContent::text('about.vision_text', __('cwa.about.vision_text'));
     $mission = \App\Support\SiteContent::text('about.mission_text', __('cwa.about.mission_text'));
     $story = \App\Support\SiteContent::text('about.story_text', __('cwa.about.story_text'));
-    $objectives = trans('cwa.about.objectives');
-    $programs = trans('cwa.about.programs');
-    $structure = trans('cwa.about.structure');
 @endphp
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
-    <p class="mt-3 text-slate-700 leading-relaxed">{{ $story }}</p>
+<div class="max-w-3xl mx-auto px-4 py-12 md:py-16">
+    <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.about.kicker') }}</p>
+    <h1 class="text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
+    <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem]">{{ $story }}</p>
 
-    <h2 class="mt-10 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
-    <p class="mt-2 text-slate-700 leading-relaxed">{{ $vision }}</p>
+    <div class="mt-10 space-y-5">
+        <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+            <h2 class="text-xl font-extrabold text-brand-gold">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
+            <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $vision }}</p>
+        </section>
 
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.mission_heading', __('cwa.about.mission_heading')) }}</h2>
-    <p class="mt-2 text-slate-700 leading-relaxed">{{ $mission }}</p>
+        <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+            <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.mission_heading', __('cwa.about.mission_heading')) }}</h2>
+            <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $mission }}</p>
+        </section>
 
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.motto_label', __('cwa.about.motto_label')) }}</h2>
-    <p class="mt-2 text-slate-700">“{{ \App\Support\SiteContent::text('about.motto_text', __('cwa.about.motto_text')) }}” — {{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}</p>
+        <section class="rounded-2xl bg-[#003D82] text-white p-6 md:p-7">
+            <h2 class="text-sm font-extrabold tracking-[0.16em] uppercase text-brand-gold">{{ \App\Support\SiteContent::text('about.motto_label', __('cwa.about.motto_label')) }}</h2>
+            <p class="mt-3 text-lg md:text-xl font-medium leading-snug mb-0">
+                “{{ \App\Support\SiteContent::text('about.motto_text', __('cwa.about.motto_text')) }}”
+            </p>
+            <p class="mt-2 text-brand-gold text-sm font-semibold mb-0">{{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}</p>
+        </section>
 
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.patron_title', __('cwa.about.patron_title')) }}</h2>
-    <p class="mt-2 text-slate-700">{{ __('cwa.about.patron_text', ['date' => \App\Support\SiteContent::text('about.patron_feast', __('cwa.about.patron_feast'))]) }}</p>
-
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.objectives_heading', __('cwa.about.objectives_heading')) }}</h2>
-    <ol class="mt-3 list-decimal pl-5 space-y-2 text-slate-700">
-        @foreach ($objectives as $item)
-            <li>{{ $item }}</li>
-        @endforeach
-    </ol>
-
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.programs_heading', __('cwa.about.programs_heading')) }}</h2>
-    <ul class="mt-3 list-disc pl-5 space-y-1 text-slate-700">
-        @foreach ($programs as $program)
-            <li>{{ is_array($program) ? $program['title'] : $program }}</li>
-        @endforeach
-    </ul>
-
-    <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.structure_heading', __('cwa.about.structure_heading')) }}</h2>
-    <ul class="mt-3 space-y-2 text-slate-700">
-        @foreach ($structure as $node)
-            <li><strong>{{ $node['title'] }}.</strong> {{ $node['text'] }}</li>
-        @endforeach
-    </ul>
-
-    @if(isset($leaders) && $leaders->count())
-        <h2 class="mt-8 text-lg font-bold text-brand-blue">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
-        <ul class="mt-3 space-y-3">
-            @foreach($leaders as $leader)
-                <li>
-                    <strong>{{ $leader->name }}</strong>
-                    @if($leader->title)<span class="text-slate-600"> — {{ $leader->title }}</span>@endif
-                </li>
-            @endforeach
-        </ul>
-    @endif
+        <section class="rounded-2xl bg-white border border-brand-gold/40 shadow-sm p-6 md:p-7">
+            <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.patron_title', __('cwa.about.patron_title')) }}</h2>
+            <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ __('cwa.about.patron_text', ['date' => \App\Support\SiteContent::text('about.patron_feast', __('cwa.about.patron_feast'))]) }}</p>
+        </section>
+    </div>
 </div>
 
 @include('beyond.partials.contact_section')

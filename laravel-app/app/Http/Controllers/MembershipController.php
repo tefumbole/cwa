@@ -50,10 +50,7 @@ class MembershipController extends Controller
 
     public function register()
     {
-        $countryCodes = app(ApplicationService::class)->countryCodes();
-        if (isset($countryCodes['+237'])) {
-            $countryCodes = ['+237' => $countryCodes['+237']] + $countryCodes;
-        }
+        $countryCodes = \App\Support\CountryDialCodes::all();
 
         return view('beyond.membership.register', [
             'ageRanges' => trans('cwa.join.ages'),
