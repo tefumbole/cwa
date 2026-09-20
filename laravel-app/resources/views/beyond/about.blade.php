@@ -33,11 +33,6 @@
                 — {{ \App\Support\SiteContent::text('about.motto_ref', __('cwa.about.motto_ref')) }}
             </p>
         </section>
-
-        <section class="rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
-            <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.patron_title', __('cwa.about.patron_title')) }}</h2>
-            <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ __('cwa.about.patron_text', ['date' => \App\Support\SiteContent::text('about.patron_feast', __('cwa.about.patron_feast'))]) }}</p>
-        </section>
     </div>
 </div>
 @endsection
