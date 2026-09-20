@@ -17,10 +17,14 @@
         $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
         $isHome = request()->is('/');
+        $pageBgJpg = url('public/branding/cwa-page-bg.jpg') . '?v=1';
+        $pageBgWebp = url('public/branding/cwa-page-bg.webp') . '?v=1';
     @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
     <meta name="description" content="@yield('meta_description', 'Catholic Women\'s Association Cameroon — faith, service and sisterhood.')">
     <link rel="icon" href="{{ $siteLogoUrl }}">
+    <link rel="preload" as="image" href="{{ $pageBgWebp }}" type="image/webp">
+    <link rel="preload" as="image" href="{{ $pageBgJpg }}" type="image/jpeg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -35,11 +39,60 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; background-color: #e8f3ff; }
+        html, body { min-height: 100%; min-height: 100dvh; }
         :root {
             --cwa-paper: #F6F3EC;
             --cwa-ink: #1A1F2E;
             --cwa-gold: #D4AF37;
+            --cwa-page-bg: url('{{ $pageBgJpg }}');
+        }
+        @supports (background-image: url('x.webp')) {
+            :root { --cwa-page-bg: url('{{ $pageBgWebp }}'); }
+        }
+        .cwa-scene {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .cwa-scene-top,
+        .cwa-scene-mid,
+        .cwa-scene-bot {
+            width: 100%;
+            background-image: var(--cwa-page-bg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            image-rendering: auto;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+        .cwa-scene-top {
+            flex: 0 0 clamp(10.5rem, 30vh, 20rem);
+            background-color: #1d6fbf;
+            background-position: center 10%;
+        }
+        .cwa-scene-mid {
+            flex: 1 1 auto;
+            min-height: 12rem;
+            background-color: #eef7ff;
+            background-position: center 58%;
+        }
+        .cwa-scene-bot {
+            flex: 0 0 clamp(5.25rem, 15vh, 9.5rem);
+            background-color: #003D82;
+            background-position: center 100%;
+        }
+        @media (max-width: 640px) {
+            .cwa-scene-top { flex-basis: clamp(8.5rem, 26vh, 13rem); }
+            .cwa-scene-bot { flex-basis: clamp(4.5rem, 14vh, 7.25rem); }
+        }
+        @media (min-width: 1280px) {
+            .cwa-scene-top { flex-basis: clamp(12rem, 28vh, 22rem); }
+            .cwa-scene-bot { flex-basis: clamp(6rem, 16vh, 10.5rem); }
         }
         @keyframes floaty { 0%,100% { transform: translateY(0); opacity:.4 } 50% { transform: translateY(-20px); opacity:.9 } }
         .floaty { animation: floaty 4s ease-in-out infinite; }
@@ -106,17 +159,11 @@
             overflow: visible;
             color: #D4AF37;
             max-height: none;
-            margin-top: -3.5rem;
+            margin-top: 0;
+            min-height: clamp(5.25rem, 15vh, 9.5rem);
         }
         .cwa-foot-art {
-            display: block;
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            object-position: center bottom;
-            position: relative;
-            z-index: 1;
-            pointer-events: none;
+            display: none;
         }
         .cwa-foot-copy {
             position: absolute;
@@ -177,9 +224,8 @@
             margin-top: 0;
             pointer-events: none;
         }
-        body.cwa-home .cwa-foot-art {
-            height: auto;
-            width: 100%;
+        body.cwa-home .cwa-foot {
+            min-height: clamp(5.25rem, 15vh, 9.5rem);
         }
         body.cwa-home .cwa-foot-copy {
             pointer-events: none;
@@ -194,14 +240,19 @@
     </style>
     @stack('head')
 </head>
-<body class="bg-[#F6F3EC] text-[#1A1F2E] flex flex-col min-h-screen {{ !empty($isHome) ? 'cwa-home' : '' }}">
+<body class="relative text-[#1A1F2E] flex flex-col min-h-screen {{ !empty($isHome) ? 'cwa-home' : '' }}">
+<div class="cwa-scene" aria-hidden="true">
+    <div class="cwa-scene-top"></div>
+    <div class="cwa-scene-mid"></div>
+    <div class="cwa-scene-bot"></div>
+</div>
 
 @php
     $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
 @endphp
 
-<header class="site-header sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200/80" x-data="{ open: false, userMenu: false }" @keydown.escape.window="userMenu = false">
+<header class="site-header sticky top-0 z-40 bg-white/55 backdrop-blur-xl border-b border-white/40" x-data="{ open: false, userMenu: false }" @keydown.escape.window="userMenu = false">
     <div class="w-full flex items-center justify-between h-14 sm:h-16 pl-1 pr-3 sm:pl-2 sm:pr-6 lg:pl-3 lg:pr-8">
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
             <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-spin">

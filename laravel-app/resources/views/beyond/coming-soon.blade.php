@@ -14,19 +14,19 @@
 <style>
     body > header.site-header,
     body > header.bg-brand-blue { display: none !important; }
-    body { background: #003D82; }
+    body { background: transparent; }
     main.flex-1 { display: flex; flex-direction: column; min-height: 100vh; }
     .lp {
         --gold: #d4af37;
-        --gold-soft: #e8c96a;
+        --gold-soft: #b8922a;
         --navy: #071a38;
         --ink: #0a1c3d;
-        --muted: rgba(255, 255, 255, 0.86);
+        --muted: #334155;
         flex: 1;
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        color: #fff;
+        color: #0a1c3d;
     }
     .lp-nav {
         position: relative;
@@ -37,7 +37,9 @@
         gap: 1rem;
         min-height: 5.15rem;
         padding: 0.7rem 1.6rem 0.7rem 1.15rem;
-        background: #fff;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         box-shadow: 0 8px 24px rgba(7, 26, 56, 0.08);
     }
     .lp-brand {
@@ -194,26 +196,11 @@
         justify-content: center;
         overflow: hidden;
         padding-bottom: 9.5rem;
-        z-index: 0;
-        background: #003D82 center right / cover no-repeat;
-        background-image: url('{{ $heroImageFallback ?? $heroImage }}');
-    }
-    @supports (background-image: url('x.webp')) {
-        .lp-hero { background-image: url('{{ $heroImage }}'); }
+        z-index: 1;
+        background: transparent;
     }
     .lp-hero::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(90deg,
-                rgba(0, 61, 130, 0.96) 0%,
-                rgba(0, 40, 85, 0.88) 24%,
-                rgba(0, 61, 130, 0.42) 46%,
-                rgba(0, 61, 130, 0.08) 62%,
-                transparent 74%),
-            linear-gradient(180deg, rgba(0, 40, 85, 0.18) 0%, transparent 22%, rgba(0, 61, 130, 0.45) 78%, rgba(0, 61, 130, 0.96) 100%);
-        pointer-events: none;
+        display: none;
     }
     .lp-copy {
         position: relative;
@@ -226,7 +213,7 @@
         text-transform: uppercase;
         font-size: 0.68rem;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.78);
+        color: #b8922a;
         margin-bottom: 0.85rem;
     }
     .lp-copy h1 {
@@ -234,8 +221,9 @@
         font-size: clamp(3.1rem, 6.2vw, 5.15rem);
         line-height: 0.92;
         font-weight: 700;
-        color: #fff;
+        color: #003D82;
         letter-spacing: -0.02em;
+        text-shadow: 0 1px 0 rgba(255,255,255,0.65);
     }
     .lp-copy h1 em {
         display: block;
@@ -259,7 +247,7 @@
         margin-top: 1.05rem;
         padding-left: 0.9rem;
         border-left: 2px solid var(--gold);
-        color: rgba(255, 255, 255, 0.88);
+        color: #1e293b;
         font-style: italic;
         font-size: 0.92rem;
         line-height: 1.45;
@@ -270,7 +258,7 @@
         margin-top: 0.15rem;
         font-style: normal;
         font-size: 0.82rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: #64748b;
     }
     .lp-btns {
         display: flex;
@@ -297,10 +285,10 @@
     .lp-btn.gold:hover { background: #e0c05a; }
     .lp-btn.ghost {
         background: transparent;
-        color: #fff;
-        border: 1.5px solid rgba(255, 255, 255, 0.55);
+        color: #003D82;
+        border: 1.5px solid rgba(0, 61, 130, 0.45);
     }
-    .lp-btn.ghost:hover { border-color: var(--gold); color: var(--gold-soft); }
+    .lp-btn.ghost:hover { border-color: var(--gold); color: #8a6d1a; }
     .lp-meter {
         display: flex;
         align-items: center;
@@ -455,10 +443,6 @@
         .lp-credo, .lp-verse { display: none; }
         .lp-meter { width: 100%; max-width: 100%; flex-wrap: wrap; }
         .lp-launch { border-left: 0; padding-left: 0; }
-        .lp-hero { background-position: 62% 20%; }
-        .lp-hero::before {
-            background: linear-gradient(180deg, rgba(0,40,85,0.2) 0%, rgba(0,61,130,0.55) 42%, rgba(0,61,130,0.96) 100%);
-        }
     }
     @media (max-width: 640px) {
         .lp-brand-tag { display: none; }
