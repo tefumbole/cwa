@@ -117,6 +117,9 @@
             position: relative;
             z-index: 1;
             pointer-events: none;
+            image-rendering: auto;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
         .cwa-foot-copy {
             position: absolute;
@@ -329,7 +332,17 @@
 </main>
 
 <footer class="cwa-foot mt-auto">
-    <img class="cwa-foot-art" src="{{ url('public/branding/cwa-footer-wave.png') }}?v=5" alt="">
+    <picture>
+        <source type="image/webp" srcset="{{ url('public/branding/cwa-footer-wave.webp') }}?v=hd1 4096w" sizes="100vw">
+        <img class="cwa-foot-art"
+             src="{{ url('public/branding/cwa-footer-wave-hd.png') }}?v=hd1"
+             srcset="{{ url('public/branding/cwa-footer-wave-hd.png') }}?v=hd1 4096w"
+             sizes="100vw"
+             width="4096"
+             height="444"
+             alt=""
+             decoding="async">
+    </picture>
     <div class="cwa-foot-copy">
         <span>© {{ date('Y') }} CWA Cameroon. {{ __('cwa.footer.rights') }}</span>
         <span>{{ __('cwa.footer.developed') }} Sr. Engr. Tefu R. Mbole</span>
