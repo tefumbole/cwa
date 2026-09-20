@@ -193,7 +193,8 @@
         flex-direction: column;
         justify-content: center;
         overflow: hidden;
-        padding-bottom: 2.85rem;
+        padding-bottom: 9.5rem;
+        z-index: 0;
         background: #003D82 center right / cover no-repeat;
         background-image: url('{{ $heroImageFallback ?? $heroImage }}');
     }

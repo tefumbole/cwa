@@ -82,12 +82,26 @@
         @media (min-width: 1024px) {
             .nav-logo-spin { width: 3.5rem; height: 3.5rem; }
         }
+        @keyframes cwaCopyIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cwaCopyShine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        @keyframes cwaCopyFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
         .cwa-foot {
             position: relative;
+            z-index: 80;
             background: transparent;
             overflow: hidden;
             color: #D4AF37;
             max-height: 7rem;
+            isolation: isolate;
         }
         .cwa-foot-art {
             display: block;
@@ -95,6 +109,8 @@
             height: 6.75rem;
             object-fit: cover;
             object-position: center bottom;
+            position: relative;
+            z-index: 1;
         }
         .cwa-foot-copy {
             position: absolute;
@@ -102,6 +118,7 @@
             right: 0;
             bottom: 0;
             top: 0;
+            z-index: 2;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -113,15 +130,35 @@
             text-align: center;
             text-shadow: 0 1px 8px rgba(4, 16, 40, 0.55);
             pointer-events: none;
+            animation: cwaCopyIn 1.1s ease-out both, cwaCopyFloat 3.4s ease-in-out 1.1s infinite;
         }
-        .cwa-foot-copy span { padding: 0 0.8rem; }
+        .cwa-foot-copy span {
+            padding: 0 0.8rem;
+            background-image: linear-gradient(90deg, #b8922a 0%, #fff6cc 42%, #D4AF37 50%, #8a6d1a 100%);
+            background-size: 220% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            animation: cwaCopyShine 4.8s linear infinite;
+        }
         .cwa-foot-copy span + span { border-left: 1px solid rgba(212,175,55,0.4); }
-        .cwa-foot-copy a { color: #D4AF37; font-weight: 600; pointer-events: auto; }
-        .cwa-foot-copy a:hover { color: #f0d56a; }
+        .cwa-foot-copy a {
+            color: #D4AF37;
+            font-weight: 600;
+            pointer-events: auto;
+            background: none;
+            -webkit-text-fill-color: #D4AF37;
+        }
+        .cwa-foot-copy a:hover { color: #f0d56a; -webkit-text-fill-color: #f0d56a; }
         @media (max-width: 640px) {
             .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0 0.75rem 0.7rem; font-size: 0.82rem; }
             .cwa-foot-copy span { padding: 0; }
             .cwa-foot-copy span + span { border-left: 0; }
+        }
+        body.cwa-home main.flex-1 {
+            position: relative;
+            z-index: 1;
         }
         body.cwa-home .cwa-foot {
             position: fixed;
@@ -129,8 +166,22 @@
             right: 0;
             bottom: 0;
             top: auto;
-            z-index: 40;
-            max-height: 6.75rem;
+            z-index: 80;
+            max-height: none;
+            overflow: visible;
+            pointer-events: none;
+        }
+        body.cwa-home .cwa-foot-art {
+            height: 9.5rem;
+        }
+        body.cwa-home .cwa-foot-copy {
+            height: 9.5rem;
+            top: auto;
+            pointer-events: none;
+        }
+        body.cwa-home .cwa-wa {
+            bottom: 6.75rem;
+            z-index: 90;
         }
     </style>
     @stack('head')
