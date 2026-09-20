@@ -304,7 +304,7 @@ return [
     'membership' => [
         'page_title' => 'Become a Member',
         'page_meta' => 'Subscribe to CWA Cameroon. You may also read the Preamble and Bylaws first.',
-        'subscribe' => 'Subscribe',
+        'subscribe' => 'Register',
         'read_docs' => 'Read Articles & Bylaws',
         'read_bylaws' => 'Read the Bylaws',
         'read_preamble' => 'Preamble',
