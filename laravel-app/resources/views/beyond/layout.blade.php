@@ -94,30 +94,35 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
         }
+        header.site-header { z-index: 40; }
+        main.flex-1 {
+            position: relative;
+            z-index: 1;
+        }
         .cwa-foot {
             position: relative;
             z-index: 80;
             background: transparent;
-            overflow: hidden;
+            overflow: visible;
             color: #D4AF37;
-            max-height: 7rem;
-            isolation: isolate;
+            max-height: none;
+            margin-top: -3.5rem;
         }
         .cwa-foot-art {
             display: block;
             width: 100%;
-            height: 6.75rem;
-            object-fit: cover;
+            height: auto;
+            object-fit: contain;
             object-position: center bottom;
             position: relative;
             z-index: 1;
+            pointer-events: none;
         }
         .cwa-foot-copy {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
-            top: 0;
             z-index: 2;
             display: flex;
             flex-wrap: wrap;
@@ -169,15 +174,18 @@
             z-index: 80;
             max-height: none;
             overflow: visible;
+            margin-top: 0;
             pointer-events: none;
         }
         body.cwa-home .cwa-foot-art {
-            height: 9.5rem;
+            height: auto;
+            width: 100%;
         }
         body.cwa-home .cwa-foot-copy {
-            height: 9.5rem;
-            top: auto;
             pointer-events: none;
+        }
+        .cwa-wa {
+            z-index: 90;
         }
         body.cwa-home .cwa-wa {
             bottom: 6.75rem;
@@ -331,7 +339,7 @@
 </footer>
 
 <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-   class="cwa-wa fixed bottom-16 right-5 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+   class="cwa-wa fixed bottom-16 right-5 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-3 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="{{ __('cwa.footer.whatsapp') }}">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>
