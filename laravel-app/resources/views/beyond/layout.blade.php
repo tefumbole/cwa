@@ -105,11 +105,11 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end;
             gap: 0;
-            padding: 0.85rem 1rem 0.4rem;
-            font-size: 0.72rem;
-            line-height: 1.3;
+            padding: 0 1rem 0.85rem;
+            font-size: 0.9rem;
+            line-height: 1.35;
             text-align: center;
             text-shadow: 0 1px 8px rgba(4, 16, 40, 0.55);
             pointer-events: none;
@@ -119,7 +119,7 @@
         .cwa-foot-copy a { color: #D4AF37; font-weight: 600; pointer-events: auto; }
         .cwa-foot-copy a:hover { color: #f0d56a; }
         @media (max-width: 640px) {
-            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0.7rem 0.75rem 0.35rem; }
+            .cwa-foot-copy { flex-direction: column; gap: 0.12rem; padding: 0 0.75rem 0.7rem; font-size: 0.82rem; }
             .cwa-foot-copy span { padding: 0; }
             .cwa-foot-copy span + span { border-left: 0; }
         }
