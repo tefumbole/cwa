@@ -13,6 +13,7 @@
 <div class="cwa-doc" x-data="{
         q: '',
         toc: false,
+        active: 1,
         headings: {{ json_encode(array_column($items, 'heading')) }},
         hit: function (heading) {
             if (!this.q) return true;
@@ -21,8 +22,43 @@
         none: function () {
             var self = this;
             return this.headings.filter(function (h) { return self.hit(h); }).length === 0;
+        },
+        spy: function () {
+            var self = this;
+            var ticking = false;
+            var update = function () {
+                ticking = false;
+                var cards = self.$el.querySelectorAll('.cwa-doc-card');
+                if (!cards.length) return;
+                var marker = 150;
+                var current = 1;
+                for (var i = 0; i < cards.length; i++) {
+                    if (cards[i].offsetParent === null) continue;
+                    if (cards[i].getBoundingClientRect().top <= marker) {
+                        var id = cards[i].id || '';
+                        var n = parseInt(id.replace('doc-', ''), 10);
+                        if (n) current = n;
+                    }
+                }
+                if (self.active !== current) {
+                    self.active = current;
+                    self.$nextTick(function () {
+                        var link = self.$el.querySelector('.cwa-doc-toc a.is-active');
+                        if (link && link.scrollIntoView) {
+                            link.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                        }
+                    });
+                }
+            };
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    ticking = true;
+                    window.requestAnimationFrame(update);
+                }
+            }, { passive: true });
+            update();
         }
-    }">
+    }" x-init="spy()">
     <a href="{{ route('beyond.membership', ['open' => 1]) }}" class="cwa-doc-float-close" title="{{ __('cwa.membership.close') }}">
         <i data-lucide="x" class="w-5 h-5"></i>
         <span>{{ __('cwa.membership.close') }}</span>
@@ -45,7 +81,7 @@
             <button type="button" class="cwa-doc-toc-btn" @click="toc = !toc">
                 <i data-lucide="list" class="w-4 h-4"></i>
                 {{ __('cwa.membership.doc_contents') }}
-                <span>{{ __('cwa.membership.doc_of', ['current' => $total, 'total' => $total]) }}</span>
+                <span x-text="active + ' / {{ $total }}'"></span>
             </button>
             <div class="cwa-doc-toc" :class="{ 'is-open': toc }">
                 <label class="sr-only" for="cwa-doc-search">{{ __('cwa.membership.doc_search') }}</label>
@@ -53,7 +89,9 @@
                 <nav aria-label="{{ __('cwa.membership.doc_contents') }}">
                     @foreach ($items as $i => $item)
                         <a href="#doc-{{ $i + 1 }}"
-                           @click="toc = false"
+                           class="cwa-doc-toc-link"
+                           :class="{ 'is-active': active === {{ $i + 1 }} }"
+                           @click="toc = false; active = {{ $i + 1 }}"
                            x-show="hit({{ json_encode($item['heading']) }})"
                            x-cloak>
                             <span>{{ $item['badge'] }}</span>
@@ -203,6 +241,11 @@
     }
     .cwa-doc-toc a:hover, .cwa-doc-card:target { }
     .cwa-doc-toc a:hover { background: #F6F3EC; color: #003D82; }
+    .cwa-doc-toc a.is-active {
+        background: #003D82;
+        color: #fff;
+    }
+    .cwa-doc-toc a.is-active span { color: #D4AF37; }
     .cwa-doc-toc a span {
         flex-shrink: 0;
         min-width: 1.4rem;
