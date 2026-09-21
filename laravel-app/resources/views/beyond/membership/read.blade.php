@@ -23,6 +23,10 @@
             return this.headings.filter(function (h) { return self.hit(h); }).length === 0;
         }
     }">
+    <a href="{{ route('beyond.membership', ['open' => 1]) }}" class="cwa-doc-float-close" title="{{ __('cwa.membership.close') }}">
+        <i data-lucide="x" class="w-5 h-5"></i>
+        <span>{{ __('cwa.membership.close') }}</span>
+    </a>
     <div class="cwa-doc-top">
         <a href="{{ route('beyond.membership', ['open' => 1]) }}" class="cwa-doc-back">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
@@ -308,6 +312,35 @@
         position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
         overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
-    [x-cloak] { display: none !important; }
+    .cwa-doc-float-close {
+        position: fixed;
+        top: 5.15rem;
+        right: 0.85rem;
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        min-height: 2.6rem;
+        padding: 0.45rem 0.95rem 0.45rem 0.7rem;
+        border-radius: 999px;
+        background: #003D82;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.88rem;
+        text-decoration: none;
+        box-shadow: 0 10px 24px rgba(0, 40, 85, 0.28);
+    }
+    .cwa-doc-float-close:hover { background: #002855; color: #D4AF37; }
+    @media (max-width: 640px) {
+        .cwa-doc-float-close span { display: none; }
+        .cwa-doc-float-close {
+            width: 2.7rem;
+            height: 2.7rem;
+            min-height: 0;
+            padding: 0;
+            justify-content: center;
+            right: 0.7rem;
+        }
+    }
 </style>
 @endsection
