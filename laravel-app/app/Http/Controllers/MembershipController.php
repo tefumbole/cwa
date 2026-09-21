@@ -312,6 +312,7 @@ class MembershipController extends Controller
             'meta' => $isBylaws ? __('cwa.membership.bylaws_meta') : __('cwa.membership.articles_meta'),
             'hint' => $isBylaws ? __('cwa.membership.bylaws_hint') : __('cwa.membership.articles_hint'),
             'icon' => $isBylaws ? 'scroll-text' : 'file-text',
+            'kind' => $isBylaws ? 'bylaws' : 'articles',
             'items' => $this->documentItems($kind),
         ];
     }
