@@ -3,12 +3,155 @@
 @section('title', __('cwa.membership.page_title'))
 @section('meta_description', __('cwa.membership.page_title'))
 
+@push('head')
+<style>
+    .mship-page { max-width: 38rem; margin: 0 auto; padding: 1.35rem 1rem 4.5rem; }
+    .mship-back {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        color: #003D82; font-weight: 700; font-size: 0.88rem; text-decoration: none; margin-bottom: 0.85rem;
+    }
+    .mship-back:hover { color: #D4AF37; }
+    .mship-page h1 {
+        margin: 0 0 1.15rem;
+        font-size: clamp(1.7rem, 4vw, 2.15rem);
+        font-weight: 800;
+        color: #003D82;
+        letter-spacing: -0.03em;
+    }
+    .mship-steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.4rem;
+        list-style: none;
+        margin: 0 0 1.35rem;
+        padding: 0 0 1.05rem;
+        border-bottom: 1px solid #f0ebe1;
+    }
+    .mship-steps li {
+        display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+        font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+        color: #94a3b8;
+    }
+    .mship-steps i {
+        width: 1.85rem; height: 1.85rem; border-radius: 999px;
+        display: flex; align-items: center; justify-content: center;
+        background: #fff; border: 1.5px solid #e7e0d4; color: #94a3b8;
+        font-style: normal; font-size: 0.75rem;
+    }
+    .mship-steps li.is-on { color: #003D82; }
+    .mship-steps li.is-on i { background: #003D82; border-color: #003D82; color: #D4AF37; }
+    .mship-steps li.is-done { color: #003D82; }
+    .mship-steps li.is-done i { background: #D4AF37; border-color: #D4AF37; color: #003D82; }
+    .mship-card {
+        background: #fff;
+        border: 1px solid #ece6db;
+        border-radius: 1.5rem;
+        padding: 1.4rem 1.25rem 1.55rem;
+        box-shadow: 0 20px 50px rgba(26, 31, 46, 0.07);
+    }
+    @media (min-width: 640px) { .mship-card { padding: 1.7rem 1.7rem 1.8rem; } }
+    .mship-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.68rem; font-weight: 800; letter-spacing: 0.16em;
+        text-transform: uppercase; color: #D4AF37;
+    }
+    .mship-card h2 { margin: 0 0 0.35rem; font-size: 1.25rem; font-weight: 800; color: #003D82; }
+    .mship-lead { margin: 0 0 1.15rem; color: #64748b; font-size: 0.9rem; line-height: 1.5; }
+    .mship-field { margin-top: 1.15rem; }
+    .mship-label {
+        display: block; margin-bottom: 0.4rem;
+        font-size: 0.8rem; font-weight: 800; color: #003D82;
+    }
+    .mship-label em { color: #dc2626; font-style: normal; }
+    .mship-hint { margin: 0.4rem 0 0; font-size: 0.78rem; color: #64748b; line-height: 1.45; }
+    .mship-input {
+        width: 100%;
+        border-radius: 0.9rem;
+        border: 1.5px solid #e7e0d4;
+        background: #fbfaf7;
+        padding: 0.78rem 0.95rem;
+        font-size: 1rem;
+        color: #1A1F2E;
+        transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .mship-input:focus {
+        outline: none; border-color: #D4AF37; background: #fff;
+        box-shadow: 0 0 0 4px rgba(212,175,55,0.2);
+    }
+    .mship-combo {
+        display: flex; align-items: stretch;
+        border-radius: 0.9rem; border: 1.5px solid #e7e0d4; background: #fbfaf7;
+        overflow: visible; position: relative;
+    }
+    .mship-combo:focus-within {
+        border-color: #D4AF37; background: #fff;
+        box-shadow: 0 0 0 4px rgba(212,175,55,0.2);
+    }
+    .mship-combo .mship-cc {
+        min-height: 3rem; padding: 0 0.85rem;
+        background: transparent; border: 0; border-right: 1px solid #e7e0d4;
+        font-size: 0.82rem; font-weight: 800; color: #003D82; white-space: nowrap;
+    }
+    .mship-combo input[type="tel"] {
+        width: 100%; border: 0; background: transparent; outline: none;
+        padding: 0.78rem 0.95rem; font-size: 1rem;
+    }
+    .mship-menu {
+        position: absolute; left: 0; top: calc(100% + 0.35rem); z-index: 30;
+        width: 18rem; max-height: 16rem; overflow: hidden;
+        background: #fff; border: 1px solid #e7e0d4; border-radius: 1rem;
+        box-shadow: 0 16px 40px rgba(26,31,46,0.12);
+    }
+    .mship-menu input { width: 100%; padding: 0.65rem 0.85rem; border: 0; border-bottom: 1px solid #f0ebe1; outline: none; font-size: 0.88rem; }
+    .mship-menu button { width: 100%; text-align: left; padding: 0.5rem 0.85rem; font-size: 0.85rem; border: 0; background: transparent; color: #334155; }
+    .mship-menu button:hover, .mship-menu button.is-on { background: rgba(212,175,55,0.16); color: #003D82; font-weight: 800; }
+    .mship-check {
+        display: flex; align-items: center; gap: 0.55rem;
+        margin-top: 0.45rem; color: #475569; font-size: 0.9rem; cursor: pointer;
+    }
+    .mship-check input { width: 1.05rem; height: 1.05rem; accent-color: #003D82; }
+    .mship-grid { display: grid; gap: 0.85rem; margin-top: 1.15rem; }
+    @media (min-width: 640px) { .mship-grid { grid-template-columns: 1fr 1fr; } }
+    .mship-choices { display: grid; gap: 0.7rem; }
+    @media (min-width: 520px) { .mship-choices { grid-template-columns: 1fr 1fr; } }
+    .mship-choice {
+        display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem;
+        padding: 1rem 1rem 1.05rem; border-radius: 1rem;
+        border: 1.5px solid #e7e0d4; background: #fbfaf7;
+        text-align: left; font-weight: 800; color: #003D82;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+    }
+    .mship-choice:hover { border-color: #D4AF37; }
+    .mship-choice.is-on {
+        border-color: #D4AF37; background: rgba(212,175,55,0.14);
+        box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
+    }
+    .mship-choice small { font-weight: 600; color: #64748b; font-size: 0.75rem; }
+    .mship-actions { display: flex; gap: 0.7rem; margin-top: 1.4rem; }
+    .mship-btn {
+        flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+        min-height: 3.1rem; padding: 0.7rem 1.1rem; border-radius: 999px;
+        font-weight: 800; text-decoration: none; border: 0; cursor: pointer;
+    }
+    .mship-btn.gold { background: #D4AF37; color: #003D82; box-shadow: 0 10px 22px rgba(212,175,55,0.28); }
+    .mship-btn.gold:hover { background: #c4a030; }
+    .mship-btn.ghost { background: #fff; color: #003D82; border: 1.5px solid #d6deea; }
+    .mship-btn.ghost:hover { border-color: #003D82; }
+    .mship-error { margin-bottom: 1rem; border-radius: 1rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; padding: 0.75rem 1rem; font-size: 0.88rem; }
+    .mship-chip { display: inline-flex; border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.7rem; font-weight: 800; }
+</style>
+@endpush
+
 @section('content')
-<div class="max-w-xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-extrabold text-brand-blue mb-6">{{ __('cwa.membership.page_title') }}</h1>
+<div class="mship-page">
+    <a href="{{ route('beyond.membership', ['open' => 1]) }}" class="mship-back">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        {{ __('cwa.membership.back') }}
+    </a>
+    <h1>{{ __('cwa.membership.page_title') }}</h1>
 
     @if ($errors->any())
-        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-800 px-3 py-2 text-sm">
+        <div class="mship-error">
             <ul class="list-disc pl-5 space-y-1 mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -18,9 +161,15 @@
     @endif
 
     <form method="POST" action="{{ route('beyond.membership.store') }}" enctype="multipart/form-data"
-          class="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 sm:p-8" id="membership-registration-form"
+          class="mship-card" id="membership-registration-form"
           x-data="membershipWizard()">
         @csrf
+        <ol class="mship-steps" aria-hidden="true">
+            <li :class="{ 'is-on': stage() === 1, 'is-done': stage() > 1 }"><i>1</i>{{ __('cwa.membership.step_details') }}</li>
+            <li :class="{ 'is-on': stage() === 2, 'is-done': stage() > 2 }"><i>2</i>{{ __('cwa.membership.step_id') }}</li>
+            <li :class="{ 'is-on': stage() === 3, 'is-done': stage() > 3 }"><i>3</i>{{ __('cwa.membership.step_photo') }}</li>
+            <li :class="{ 'is-on': stage() === 4, 'is-done': stage() > 4 }"><i>4</i>{{ __('cwa.membership.step_sign') }}</li>
+        </ol>
         <input type="hidden" name="id_stored_path" x-model="idPath">
         <input type="hidden" name="selfie_stored" x-model="selfiePath">
         <input type="hidden" name="signature" id="membership_signature_input" x-model="signature">
@@ -30,141 +179,155 @@
 
         {{-- Phone --}}
         <div x-show="step === 'phone'" x-cloak>
-            <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.phone') }} <span class="text-red-500">*</span></label>
-            <div class="mt-1 flex rounded-xl border border-gray-200 overflow-visible relative">
-                <input type="hidden" name="country_code" x-model="countryCode">
-                <div class="relative shrink-0" @click.outside="ccOpen = false">
-                    <button type="button" @click="ccOpen = !ccOpen; ccQuery = ''; $nextTick(() => { var el = $refs.ccSearch; if (el) el.focus(); })"
-                            class="h-full min-h-[2.75rem] px-3 bg-stone-50 text-sm font-semibold text-stone-700 border-r border-gray-200 whitespace-nowrap">
-                        <span x-text="countryLabel(countryCode)"></span>
-                    </button>
-                    <div x-show="ccOpen" x-cloak class="absolute left-0 top-full z-30 mt-1 w-72 max-h-64 overflow-hidden rounded-xl bg-white border border-stone-200 shadow-xl">
-                        <input x-ref="ccSearch" x-model="ccQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}"
-                               class="w-full px-3 py-2 text-sm border-b outline-none">
-                        <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
-                            <template x-for="c in filteredCountries(ccQuery)" :key="c.code">
-                                <li>
-                                    <button type="button" @click="pickCountry(c.code)"
-                                            class="w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
-                                            :class="countryCode === c.code ? 'font-bold text-brand-blue bg-brand-gold/15' : 'text-stone-700'"
-                                            x-text="c.label"></button>
-                                </li>
-                            </template>
-                        </ul>
-                        <p x-show="filteredCountries(ccQuery).length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.membership.country_empty') }}</p>
+            <p class="mship-kicker">{{ __('cwa.membership.step_details') }}</p>
+            <div class="mship-field" style="margin-top:0">
+                <label class="mship-label">{{ __('cwa.membership.phone') }} <em>*</em></label>
+                <div class="mship-combo">
+                    <input type="hidden" name="country_code" x-model="countryCode">
+                    <div class="relative shrink-0" @click.outside="ccOpen = false">
+                        <button type="button" class="mship-cc" @click="ccOpen = !ccOpen; ccQuery = ''; $nextTick(() => { var el = $refs.ccSearch; if (el) el.focus(); })">
+                            <span x-text="countryLabel(countryCode)"></span>
+                        </button>
+                        <div x-show="ccOpen" x-cloak class="mship-menu">
+                            <input x-ref="ccSearch" x-model="ccQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}">
+                            <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                                <template x-for="c in filteredCountries(ccQuery)" :key="c.code">
+                                    <li>
+                                        <button type="button" @click="pickCountry(c.code)"
+                                                :class="countryCode === c.code ? 'is-on' : ''"
+                                                x-text="c.label"></button>
+                                    </li>
+                                </template>
+                            </ul>
+                            <p x-show="filteredCountries(ccQuery).length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.membership.country_empty') }}</p>
+                        </div>
                     </div>
+                    <input required name="phone" x-model="phone" @input="normalizePhone(); scheduleLookup()" type="tel"
+                           inputmode="numeric" autocomplete="tel-national" placeholder="6XX XXX XXX">
                 </div>
-                <input required name="phone" x-model="phone" @input="normalizePhone(); scheduleLookup()" type="tel"
-                       inputmode="numeric" autocomplete="tel-national"
-                       class="w-full px-3 py-2 outline-none rounded-r-xl" placeholder="6XX XXX XXX">
-            </div>
-            <p class="text-xs text-slate-500 mt-1">{{ __('cwa.membership.phone_hint') }}</p>
-            <p x-show="looking" x-cloak class="text-sm text-slate-500 mt-2">{{ __('cwa.membership.checking') }}</p>
-            <div x-show="!looking && (operator || donorName)" x-cloak class="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                <span x-show="operator === 'mtn'" class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold bg-[#ffcc00]">{{ __('cwa.donate.mtn') }}</span>
-                <span x-show="operator === 'orange'" class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold bg-[#ff6600] text-white">{{ __('cwa.donate.orange') }}</span>
-                <span class="font-semibold text-brand-blue" x-text="donorName"></span>
+                <p class="mship-hint">{{ __('cwa.membership.phone_hint') }}</p>
+                <p x-show="looking" x-cloak class="mship-hint">{{ __('cwa.membership.checking') }}</p>
+                <div x-show="!looking && (operator || donorName)" x-cloak class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                    <span x-show="operator === 'mtn'" class="mship-chip bg-[#ffcc00] text-[#1A1F2E]">{{ __('cwa.donate.mtn') }}</span>
+                    <span x-show="operator === 'orange'" class="mship-chip bg-[#ff6600] text-white">{{ __('cwa.donate.orange') }}</span>
+                    <span class="font-semibold text-brand-blue" x-text="donorName"></span>
+                </div>
             </div>
 
-            <label class="text-sm font-semibold text-gray-700 mt-5 block">{{ __('cwa.membership.name') }} <span class="text-red-500">*</span></label>
-            <input required name="name" x-model="fullName" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
-            <p class="text-xs text-slate-500 mt-1">{{ __('cwa.membership.name_hint') }}</p>
+            <div class="mship-field">
+                <label class="mship-label">{{ __('cwa.membership.name') }} <em>*</em></label>
+                <input required name="name" x-model="fullName" class="mship-input">
+                <p class="mship-hint">{{ __('cwa.membership.name_hint') }}</p>
+            </div>
 
-            <label class="text-sm font-semibold text-gray-700 mt-5 block">{{ __('cwa.membership.whatsapp_opt') }}</label>
-            <label class="flex items-center gap-2 text-sm text-slate-600 mt-1">
-                <input type="checkbox" x-model="waSame"> {{ __('cwa.membership.whatsapp_same') }}
-            </label>
-            <div class="mt-2 flex rounded-xl border border-gray-200 overflow-visible relative" x-show="!waSame" x-cloak>
-                <input type="hidden" name="whatsapp_country" x-model="waCountry">
-                <div class="relative shrink-0" @click.outside="waOpen = false">
-                    <button type="button" @click="waOpen = !waOpen; waQuery = ''"
-                            class="h-full min-h-[2.75rem] px-3 bg-stone-50 text-sm font-semibold text-stone-700 border-r border-gray-200 whitespace-nowrap">
-                        <span x-text="countryLabel(waCountry)"></span>
-                    </button>
-                    <div x-show="waOpen" x-cloak class="absolute left-0 top-full z-30 mt-1 w-72 max-h-64 overflow-hidden rounded-xl bg-white border border-stone-200 shadow-xl">
-                        <input x-model="waQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}"
-                               class="w-full px-3 py-2 text-sm border-b outline-none">
-                        <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
-                            <template x-for="c in filteredCountries(waQuery)" :key="'wa-'+c.code">
-                                <li>
-                                    <button type="button" @click="waCountry = c.code; waOpen = false"
-                                            class="w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
-                                            :class="waCountry === c.code ? 'font-bold text-brand-blue bg-brand-gold/15' : 'text-stone-700'"
-                                            x-text="c.label"></button>
-                                </li>
-                            </template>
-                        </ul>
+            <div class="mship-field">
+                <label class="mship-label">{{ __('cwa.membership.whatsapp_opt') }}</label>
+                <label class="mship-check">
+                    <input type="checkbox" x-model="waSame"> {{ __('cwa.membership.whatsapp_same') }}
+                </label>
+                <div class="mship-combo mt-2" x-show="!waSame" x-cloak>
+                    <input type="hidden" name="whatsapp_country" x-model="waCountry">
+                    <div class="relative shrink-0" @click.outside="waOpen = false">
+                        <button type="button" class="mship-cc" @click="waOpen = !waOpen; waQuery = ''">
+                            <span x-text="countryLabel(waCountry)"></span>
+                        </button>
+                        <div x-show="waOpen" x-cloak class="mship-menu">
+                            <input x-model="waQuery" type="search" placeholder="{{ __('cwa.membership.country_search') }}">
+                            <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                                <template x-for="c in filteredCountries(waQuery)" :key="'wa-'+c.code">
+                                    <li>
+                                        <button type="button" @click="waCountry = c.code; waOpen = false"
+                                                :class="waCountry === c.code ? 'is-on' : ''"
+                                                x-text="c.label"></button>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
                     </div>
+                    <input name="whatsapp_phone" x-model="waPhone" type="tel" inputmode="numeric">
                 </div>
-                <input name="whatsapp_phone" x-model="waPhone" type="tel" inputmode="numeric" class="w-full px-3 py-2 outline-none">
             </div>
 
-            <div class="grid sm:grid-cols-2 gap-3 mt-5">
+            <div class="mship-grid">
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">{{ __('cwa.join.diocese') }} <span class="text-red-500">*</span></label>
-                    <input required name="diocese" x-model="diocese" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                    <label class="mship-label">{{ __('cwa.join.diocese') }} <em>*</em></label>
+                    <input required name="diocese" x-model="diocese" class="mship-input">
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">{{ __('cwa.join.parish') }} <span class="text-red-500">*</span></label>
-                    <input required name="parish" x-model="parish" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                    <label class="mship-label">{{ __('cwa.join.parish') }} <em>*</em></label>
+                    <input required name="parish" x-model="parish" class="mship-input">
                 </div>
             </div>
-            <button type="button" @click="goIdType()" class="mt-6 w-full bg-brand-gold text-brand-blue font-extrabold rounded-full py-3">{{ __('cwa.membership.next') }}</button>
+            <div class="mship-actions">
+                <button type="button" @click="goIdType()" class="mship-btn gold">{{ __('cwa.membership.next') }}</button>
+            </div>
         </div>
 
         {{-- ID type --}}
         <div x-show="step === 'idtype'" x-cloak>
-            <h2 class="text-xl font-extrabold text-gray-900 mb-1">{{ __('cwa.membership.id_step_title') }}</h2>
-            <p class="text-sm text-slate-500 mb-5">{{ __('cwa.membership.id_step_hint') }}</p>
-            <p class="text-sm font-semibold text-gray-800 mb-3">{{ __('cwa.membership.id_which') }}</p>
-            <div class="flex flex-wrap gap-2">
-                <button type="button" @click="idType = 'national_id'"
-                        :class="idType === 'national_id' ? 'bg-brand-gold text-brand-blue border-brand-gold' : 'bg-white'"
-                        class="px-5 py-2.5 rounded-full border font-semibold">{{ __('cwa.membership.id_national') }}</button>
-                <button type="button" @click="idType = 'passport'"
-                        :class="idType === 'passport' ? 'bg-brand-gold text-brand-blue border-brand-gold' : 'bg-white'"
-                        class="px-5 py-2.5 rounded-full border font-semibold">{{ __('cwa.membership.id_passport') }}</button>
+            <p class="mship-kicker">{{ __('cwa.membership.step_id') }}</p>
+            <h2>{{ __('cwa.membership.id_step_title') }}</h2>
+            <p class="mship-lead">{{ __('cwa.membership.id_step_hint') }}</p>
+            <p class="mship-label">{{ __('cwa.membership.id_which') }}</p>
+            <div class="mship-choices">
+                <button type="button" @click="idType = 'national_id'" class="mship-choice" :class="{ 'is-on': idType === 'national_id' }">
+                    {{ __('cwa.membership.id_national') }}
+                </button>
+                <button type="button" @click="idType = 'passport'" class="mship-choice" :class="{ 'is-on': idType === 'passport' }">
+                    {{ __('cwa.membership.id_passport') }}
+                </button>
             </div>
-            <div class="flex gap-3 mt-6">
-                <button type="button" @click="step = 'phone'" class="flex-1 border rounded-full py-3 font-semibold">{{ __('cwa.membership.prev') }}</button>
-                <button type="button" @click="idType && (step = 'idhow')" class="flex-1 bg-brand-gold text-brand-blue font-extrabold rounded-full py-3">{{ __('cwa.membership.next') }}</button>
+            <div class="mship-actions">
+                <button type="button" @click="step = 'phone'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
+                <button type="button" @click="idType && (step = 'idhow')" class="mship-btn gold">{{ __('cwa.membership.next') }}</button>
             </div>
         </div>
 
         {{-- Upload or scan --}}
         <div x-show="step === 'idhow'" x-cloak>
-            <p class="text-sm font-semibold text-gray-800 mb-3">{{ __('cwa.membership.id_how') }}</p>
-            <div class="flex flex-wrap gap-2">
-                <button type="button" @click="chooseUpload()" class="px-5 py-2.5 rounded-full border font-semibold">{{ __('cwa.membership.id_upload') }}</button>
-                <button type="button" @click="chooseScan()" class="px-5 py-2.5 rounded-full border font-semibold bg-brand-gold/15">{{ __('cwa.membership.id_scan') }}</button>
+            <p class="mship-kicker">{{ __('cwa.membership.step_id') }}</p>
+            <p class="mship-label">{{ __('cwa.membership.id_how') }}</p>
+            <div class="mship-choices">
+                <button type="button" @click="chooseUpload()" class="mship-choice">{{ __('cwa.membership.id_upload') }}</button>
+                <button type="button" @click="chooseScan()" class="mship-choice is-on">{{ __('cwa.membership.id_scan') }}</button>
             </div>
             <div x-show="qrSrc || handoffUrl" x-cloak class="mt-6 text-center">
-                <p class="text-sm text-slate-600 mb-3">{{ __('cwa.membership.id_qr_hint') }}</p>
+                <p class="mship-hint mb-3">{{ __('cwa.membership.id_qr_hint') }}</p>
                 <img x-show="qrSrc" :src="qrSrc" alt="" class="mx-auto w-48 h-48 bg-white p-2 rounded-xl border">
                 <p class="text-xs text-slate-400 mt-2 break-all" x-text="handoffUrl"></p>
                 <p class="text-sm text-brand-blue mt-3" x-text="waitingId ? '{{ __('cwa.membership.id_waiting') }}' : ''"></p>
             </div>
-            <p x-show="reading" class="text-sm text-slate-500 mt-4">{{ __('cwa.membership.id_reading') }}</p>
-            <button type="button" @click="step = 'idtype'" class="mt-6 w-full border rounded-full py-3 font-semibold">{{ __('cwa.membership.prev') }}</button>
+            <p x-show="reading" class="mship-hint mt-4">{{ __('cwa.membership.id_reading') }}</p>
+            <div class="mship-actions">
+                <button type="button" @click="step = 'idtype'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
+            </div>
         </div>
 
         {{-- ID fields --}}
         <div x-show="step === 'idfields'" x-cloak>
-            <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.id_name') }}</label>
-            <input name="ocr_name" x-model="idName" @input="if (idName) fullName = idName" class="w-full mt-1 mb-3 rounded-md border px-3 py-2">
-            <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.id_issue_date') }}</label>
-            <input name="id_issue_date" x-model="issueDate" class="w-full mt-1 mb-3 rounded-md border px-3 py-2">
-            <label class="text-sm font-semibold text-gray-700">{{ __('cwa.membership.id_issue_place') }}</label>
-            <input name="id_issue_place" x-model="issuePlace" class="w-full mt-1 rounded-md border px-3 py-2">
-            <div class="flex gap-3 mt-6">
-                <button type="button" @click="step = 'idhow'" class="flex-1 border rounded-full py-3 font-semibold">{{ __('cwa.membership.prev') }}</button>
-                <button type="button" @click="step = 'selfie'" class="flex-1 bg-brand-gold text-brand-blue font-extrabold rounded-full py-3">{{ __('cwa.membership.next') }}</button>
+            <p class="mship-kicker">{{ __('cwa.membership.step_id') }}</p>
+            <div class="mship-field" style="margin-top:0">
+                <label class="mship-label">{{ __('cwa.membership.id_name') }}</label>
+                <input name="ocr_name" x-model="idName" @input="if (idName) fullName = idName" class="mship-input">
+            </div>
+            <div class="mship-field">
+                <label class="mship-label">{{ __('cwa.membership.id_issue_date') }}</label>
+                <input name="id_issue_date" x-model="issueDate" class="mship-input">
+            </div>
+            <div class="mship-field">
+                <label class="mship-label">{{ __('cwa.membership.id_issue_place') }}</label>
+                <input name="id_issue_place" x-model="issuePlace" class="mship-input">
+            </div>
+            <div class="mship-actions">
+                <button type="button" @click="step = 'idhow'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
+                <button type="button" @click="step = 'selfie'" class="mship-btn gold">{{ __('cwa.membership.next') }}</button>
             </div>
         </div>
 
         {{-- Selfie --}}
         <div x-show="step === 'selfie'" x-cloak class="text-center">
-            <button type="button" data-cwa-selfie-open class="inline-flex items-center justify-center gap-2 min-h-[3rem] px-8 py-3 rounded-full bg-brand-gold text-brand-blue font-extrabold">
+            <p class="mship-kicker">{{ __('cwa.membership.step_photo') }}</p>
+            <button type="button" data-cwa-selfie-open class="mship-btn gold" style="width:auto; margin: 0 auto;">
                 {{ __('cwa.membership.selfie_btn') }}
             </button>
             <p class="text-sm text-emerald-700 mt-3" id="membership-selfie-status">{{ __('cwa.membership.no_file') }}</p>
@@ -172,31 +335,32 @@
                 <img id="membership-selfie-preview" alt="" class="hidden">
                 <span id="membership-selfie-placeholder" class="cwa-selfie-placeholder hidden"></span>
             </div>
-            <div class="flex gap-3 mt-6">
-                <button type="button" @click="step = 'idfields'" class="flex-1 border rounded-full py-3 font-semibold">{{ __('cwa.membership.prev') }}</button>
-                <button type="button" @click="goSign()" class="flex-1 bg-brand-gold text-brand-blue font-extrabold rounded-full py-3">{{ __('cwa.membership.next') }}</button>
+            <div class="mship-actions">
+                <button type="button" @click="step = 'idfields'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
+                <button type="button" @click="goSign()" class="mship-btn gold">{{ __('cwa.membership.next') }}</button>
             </div>
         </div>
 
         {{-- Sign --}}
         <div x-show="step === 'sign'" x-cloak>
-            <p class="font-semibold text-gray-800" x-text="fullName"></p>
-            <button type="button" @click="openSign()" class="mt-4 w-full inline-flex items-center justify-center gap-2 min-h-[3rem] px-8 py-3 rounded-full bg-brand-gold text-brand-blue font-extrabold">
+            <p class="mship-kicker">{{ __('cwa.membership.step_sign') }}</p>
+            <p class="font-extrabold text-brand-blue text-lg" x-text="fullName"></p>
+            <button type="button" @click="openSign()" class="mship-btn gold mt-4" style="width:100%">
                 {{ __('cwa.membership.sign_btn') }}
             </button>
-            <div x-show="signPanel" x-cloak class="mt-4 border-2 border-dashed border-brand-blue rounded-xl p-3">
+            <div x-show="signPanel" x-cloak class="mt-4 border-2 border-dashed border-brand-blue/40 rounded-xl p-3 bg-[#fbfaf7]">
                 <canvas id="membership-signature-pad" width="500" height="160" class="w-full bg-white rounded-lg touch-none"></canvas>
-                <button type="button" @click="clearPad()" class="mt-2 text-sm underline">Clear</button>
+                <button type="button" @click="clearPad()" class="mt-2 text-sm font-semibold text-brand-blue underline">Clear</button>
             </div>
             <div x-show="signQr" x-cloak class="mt-6 text-center">
-                <p class="text-sm text-slate-600 mb-3">{{ __('cwa.membership.sign_qr_hint') }}</p>
+                <p class="mship-hint mb-3">{{ __('cwa.membership.sign_qr_hint') }}</p>
                 <img :src="signQr" alt="" class="mx-auto w-48 h-48 bg-white p-2 rounded-xl border">
             </div>
             <p x-show="signature" class="text-sm text-emerald-700 mt-3">{{ __('cwa.membership.sign_ready') }}</p>
             <img x-show="signature" :src="signature" alt="" class="mt-2 max-h-20 border rounded">
-            <div class="flex gap-3 mt-6">
-                <button type="button" @click="step = 'selfie'" class="flex-1 border rounded-full py-3 font-semibold">{{ __('cwa.membership.prev') }}</button>
-                <button type="submit" class="flex-1 bg-brand-gold text-brand-blue font-extrabold rounded-full py-3">{{ __('cwa.membership.submit') }}</button>
+            <div class="mship-actions">
+                <button type="button" @click="step = 'selfie'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
+                <button type="submit" class="mship-btn gold">{{ __('cwa.membership.submit') }}</button>
             </div>
         </div>
     </form>
@@ -211,6 +375,12 @@
 function membershipWizard() {
     return {
         step: 'phone',
+        stage: function () {
+            if (this.step === 'phone') return 1;
+            if (this.step === 'selfie') return 3;
+            if (this.step === 'sign') return 4;
+            return 2;
+        },
         countryCode: '+237',
         countries: @json(collect($countryCodes)->map(function ($label, $code) { return ['code' => $code, 'label' => $label]; })->values()),
         ccOpen: false,
