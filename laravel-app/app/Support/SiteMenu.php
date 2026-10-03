@@ -16,6 +16,7 @@ class SiteMenu
         return [
             'home'         => 'Home',
             'about'        => 'About Us',
+            'branches'     => 'Branches',
             'membership'   => 'Membership',
             'events'       => 'Events',
             'gallery'      => 'Gallery',
@@ -149,6 +150,7 @@ class SiteMenu
         return [
             'home'         => ['label' => self::landingLabel('home'), 'url' => url('/')],
             'about'        => ['label' => self::landingLabel('about'), 'url' => url('/about')],
+            'branches'     => ['label' => self::landingLabel('branches'), 'url' => url('/branches'), 'match' => ['/branches']],
             'membership'   => ['label' => self::landingLabel('membership'), 'url' => url('/membership'), 'match' => ['/membership', '/join']],
             'events'       => ['label' => self::landingLabel('events'), 'url' => url('/events'), 'match' => ['/events', '/calendar']],
             'gallery'      => ['label' => self::landingLabel('gallery'), 'url' => url('/gallery')],
@@ -214,6 +216,14 @@ class SiteMenu
                 $insertAt = $aboutAt + 1;
             }
             array_splice($out, $insertAt, 0, ['events']);
+        }
+        if (in_array('branches', $out, true)) {
+            $out = array_values(array_filter($out, function ($k) {
+                return $k !== 'branches';
+            }));
+            $aboutAt = array_search('about', $out, true);
+            $insertAt = $aboutAt === false ? 1 : $aboutAt + 1;
+            array_splice($out, $insertAt, 0, ['branches']);
         }
 
         return $out;

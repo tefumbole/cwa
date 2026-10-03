@@ -246,7 +246,17 @@
             <div class="mship-grid">
                 <div>
                     <label class="mship-label">{{ __('cwa.join.diocese') }} <em>*</em></label>
-                    <input required name="diocese" x-model="diocese" class="mship-input">
+                    <template x-if="hasDioceseList()">
+                        <select required name="diocese" x-model="diocese" class="mship-input">
+                            <option value="">{{ __('cwa.join.diocese_pick') }}</option>
+                            <template x-for="(name, i) in dioceseOptions()" :key="'d-'+i+'-'+name">
+                                <option :value="name" x-text="name"></option>
+                            </template>
+                        </select>
+                    </template>
+                    <template x-if="!hasDioceseList()">
+                        <input required name="diocese" x-model="diocese" class="mship-input" placeholder="{{ __('cwa.join.diocese_other') }}">
+                    </template>
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.parish') }} <em>*</em></label>
@@ -263,7 +273,7 @@
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.country') }} <em>*</em></label>
-                    <select required name="country" x-model="country" class="mship-input">
+                    <select required name="country" x-model="country" @change="onCountryChange()" class="mship-input">
                         @foreach (\App\Support\CountryDialCodes::names() as $countryName)
                             <option value="{{ $countryName }}">{{ $countryName }}</option>
                         @endforeach
@@ -411,6 +421,7 @@ function membershipWizard() {
         parish: @json(old('parish', '')),
         region: @json(old('region', '')),
         country: @json(old('country', 'Cameroon')),
+        dioceseMap: @json(\App\Support\CwaBranches::formMap()),
         idType: '',
         idPath: '',
         idName: '',
@@ -493,6 +504,19 @@ function membershipWizard() {
                 if (!res) return;
                 if (res.name && !self.fullName) self.fullName = res.name;
             }).catch(function () { self.looking = false; });
+        },
+        dioceseOptions: function () {
+            var map = this.dioceseMap || {};
+            return map[this.country] || [];
+        },
+        hasDioceseList: function () {
+            return this.dioceseOptions().length > 0;
+        },
+        onCountryChange: function () {
+            var opts = this.dioceseOptions();
+            if (opts.length && opts.indexOf(this.diocese) === -1) {
+                this.diocese = '';
+            }
         },
         goIdType: function () {
             if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country) return;

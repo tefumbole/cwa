@@ -58,6 +58,7 @@ Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('beyond.
 Route::get('/', 'BeyondController@comingSoon')->name('beyond.home');
 Route::get('/home', 'BeyondController@home')->name('beyond.home.full');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
+Route::get('/branches', 'BeyondController@branches')->name('beyond.branches');
 Route::get('/services', 'BeyondController@services')->name('beyond.services');
 Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
 Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');

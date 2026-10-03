@@ -224,6 +224,10 @@ class MembershipController extends Controller
             'email' => __('cwa.join.email'),
         ]);
 
+        if (! \App\Support\CwaBranches::acceptsDiocese($data['country'], $data['diocese'])) {
+            return back()->withInput()->withErrors(['diocese' => __('cwa.join.diocese_invalid')]);
+        }
+
         $campay = app(CampayService::class);
         $cc = preg_replace('/\D/', '', (string) ($data['country_code'] ?? '237')) ?: '237';
         $phone = $campay->normalizePhone($cc === '237' ? $data['phone'] : ($cc.$data['phone']));

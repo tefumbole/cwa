@@ -53,6 +53,11 @@ class BeyondController extends Controller
         ]);
     }
 
+    public function branches()
+    {
+        return view('beyond.branches');
+    }
+
     public function services()
     {
         return view('beyond.services', [
