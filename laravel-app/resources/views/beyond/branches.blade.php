@@ -9,7 +9,7 @@
 @endphp
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-12 md:py-16" x-data="branchesPage()">
+<div class="max-w-6xl mx-auto px-4 py-12 md:py-16" x-data="branchesPage()">
     <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.branches.kicker') }}</p>
     <h1 class="text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.branches.hero') }}</h1>
     <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem] max-w-3xl">{{ __('cwa.branches.intro') }}</p>
@@ -30,7 +30,7 @@
         </label>
     </div>
 
-    <div class="mt-8 space-y-5" x-show="tab === 'cameroon' || q.trim()" x-cloak>
+    <div class="mt-8 space-y-5 max-w-4xl" x-show="tab === 'cameroon'" x-cloak>
         <template x-for="province in visibleProvinces()" :key="province.key">
             <section class="branch-card">
                 <p class="branch-kicker" x-text="province.seat"></p>
@@ -45,38 +45,52 @@
         <p x-show="tab === 'cameroon' && visibleProvinces().length === 0" class="text-slate-500 text-sm" x-cloak>{{ __('cwa.branches.empty') }}</p>
     </div>
 
-    <div class="mt-8 space-y-5" x-show="tab === 'diaspora' || q.trim()" x-cloak>
-        <template x-for="group in visibleGroups()" :key="group.key">
-            <section class="branch-card">
-                <div class="flex items-start gap-3">
-                    <div class="flex items-center gap-1.5 pt-0.5 shrink-0">
-                        <template x-for="(code, fi) in (group.flags || [])" :key="group.key + '-flag-' + code">
-                            <span class="branch-flag" :style="'animation-delay:' + (fi * 0.22) + 's'">
+    <div class="mt-8 diaspora-shell" x-show="tab === 'diaspora'" x-cloak>
+        <aside class="diaspora-nav" aria-label="{{ __('cwa.branches.tab_diaspora') }}">
+            <template x-for="group in visibleGroups()" :key="'nav-'+group.key">
+                <button type="button" class="diaspora-link" :class="country === group.key ? 'is-on' : ''"
+                        @click="country = group.key">
+                    <template x-for="code in (group.flags || [])" :key="'navflag-'+group.key+'-'+code">
+                        <span class="branch-flag is-sm">
+                            <img :src="'https://flagcdn.com/w40/' + code + '.png'"
+                                 :alt="group.kicker || group.title" width="28" height="19">
+                        </span>
+                    </template>
+                    <span x-text="group.kicker || group.title"></span>
+                </button>
+            </template>
+        </aside>
+        <div class="diaspora-main">
+            <template x-if="activeGroup()">
+                <section class="branch-card">
+                    <div class="flex items-start gap-3">
+                        <template x-for="code in (activeGroup().flags || [])" :key="'mainflag-'+activeGroup().key+'-'+code">
+                            <span class="branch-flag">
                                 <img :src="'https://flagcdn.com/w80/' + code + '.png'"
                                      :srcset="'https://flagcdn.com/w40/' + code + '.png 1x, https://flagcdn.com/w80/' + code + '.png 2x'"
-                                     :alt="(group.kicker || group.title) + ' flag'"
+                                     :alt="activeGroup().kicker || activeGroup().title"
                                      width="40" height="27">
                             </span>
                         </template>
+                        <div class="min-w-0">
+                            <p class="branch-kicker" x-text="activeGroup().kicker"></p>
+                            <h2 class="branch-title" x-text="activeGroup().title"></h2>
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <p class="branch-kicker" x-text="group.kicker || group.title"></p>
-                        <h2 class="branch-title" x-text="group.title"></h2>
-                    </div>
-                </div>
-                <template x-for="(zone, zi) in visibleZones(group)" :key="group.key + '-z-' + zi">
-                    <div class="mt-5">
-                        <p class="branch-kicker" x-show="zone.title" x-text="zone.title"></p>
-                        <ul class="branch-grid" :class="zone.title ? '' : 'mt-0'">
-                            <template x-for="(name, i) in visibleNames(zone.branches)" :key="group.key + '-' + zi + '-' + i + '-' + name">
-                                <li class="branch-chip" x-text="name"></li>
-                            </template>
-                        </ul>
-                    </div>
-                </template>
-            </section>
-        </template>
-        <p x-show="tab === 'diaspora' && visibleGroups().length === 0" class="text-slate-500 text-sm" x-cloak>{{ __('cwa.branches.empty') }}</p>
+                    <template x-for="(zone, zi) in visibleZones(activeGroup())" :key="activeGroup().key + '-z-' + zi">
+                        <div class="mt-5">
+                            <h3 class="branch-zone" x-show="zone.title" x-text="zone.title"></h3>
+                            <ul class="branch-grid" :class="zone.title ? '' : 'mt-0'">
+                                <template x-for="(name, i) in visibleNames(zone.branches)" :key="activeGroup().key + '-' + zi + '-' + i + '-' + name">
+                                    <li class="branch-chip" x-text="name"></li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                    <p x-show="visibleZones(activeGroup()).length === 0" class="text-slate-500 text-sm mt-4 mb-0">{{ __('cwa.branches.empty') }}</p>
+                </section>
+            </template>
+        </div>
     </div>
 
     <div class="mt-12 rounded-2xl bg-brand-blue text-white p-6 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -119,6 +133,62 @@
         font-weight: 800;
         line-height: 1.3;
         color: #003D82;
+    }
+    .branch-zone {
+        margin: 0 0 0.15rem;
+        font-size: 1.02rem;
+        font-weight: 800;
+        line-height: 1.35;
+        color: #003D82;
+    }
+    .diaspora-shell {
+        display: grid;
+        gap: 1.25rem;
+        align-items: start;
+    }
+    @media (min-width: 800px) {
+        .diaspora-shell { grid-template-columns: 15.5rem minmax(0, 1fr); }
+    }
+    .diaspora-nav {
+        display: flex;
+        flex-direction: row;
+        gap: 0.4rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+    }
+    @media (min-width: 800px) {
+        .diaspora-nav {
+            flex-direction: column;
+            overflow: visible;
+            position: sticky;
+            top: 5.5rem;
+        }
+    }
+    .diaspora-link {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        width: 100%;
+        text-align: left;
+        border: 1px solid #ece6db;
+        background: #fff;
+        color: #003D82;
+        border-radius: 0.85rem;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.88rem;
+        font-weight: 800;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    .diaspora-link:hover { border-color: #D4AF37; background: #fffdf6; }
+    .diaspora-link.is-on {
+        background: #003D82;
+        border-color: #003D82;
+        color: #fff;
+    }
+    .branch-flag.is-sm {
+        width: 1.55rem;
+        height: 1.05rem;
     }
     .branch-grid {
         display: grid;
@@ -180,6 +250,7 @@ function branchesPage() {
     return {
         tab: 'cameroon',
         q: '',
+        country: 'north_america',
         provinces: @json($provinces),
         diaspora: @json($diaspora),
         needle: function () {
@@ -210,10 +281,19 @@ function branchesPage() {
         },
         visibleGroups: function () {
             var self = this;
+            if (!this.needle()) return this.diaspora || [];
             return (this.diaspora || []).filter(function (g) {
                 if (self.match(g.title) || self.match(g.kicker)) return true;
                 return self.visibleZones(g).length > 0;
             });
+        },
+        activeGroup: function () {
+            var list = this.visibleGroups();
+            var key = this.country;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].key === key) return list[i];
+            }
+            return list[0] || null;
         }
     };
 }

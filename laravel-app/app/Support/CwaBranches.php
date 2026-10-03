@@ -88,7 +88,7 @@ class CwaBranches
                 'key' => 'north_america',
                 'title' => 'CWA Cameroon Diaspora — North America',
                 'kicker' => 'North America',
-                'flags' => ['us', 'ca'],
+                'flags' => ['us'],
                 'countries' => ['USA/Canada', 'United States', 'USA', 'US'],
                 'zones' => [
                     [
