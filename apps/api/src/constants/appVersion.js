@@ -1,1 +1,1 @@
-export const APP_VERSION = 'CWA_ERP_V4.2.3';
+export const APP_VERSION = 'CWA_ERP_V4.2.4';
