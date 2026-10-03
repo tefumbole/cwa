@@ -118,9 +118,14 @@ if [[ ! -d "$APP/vendor/laravel" ]]; then
 fi
 
 # Admin UI CSS/JS live under public/vendor and are not in git.
-if [[ ! -f "$APP/public/vendor/bootstrap/css/bootstrap.min.css" && -f /var/www/cwacmr/laravel-app/public/vendor/bootstrap/css/bootstrap.min.css ]]; then
-  echo "==> Restore admin public/vendor assets from existing CWA site"
-  rsync -a /var/www/cwacmr/laravel-app/public/vendor/ "$APP/public/vendor/"
+if [[ ! -f "$APP/public/vendor/bootstrap/css/bootstrap.min.css" ]]; then
+  if [[ -f /var/www/cwacmr/laravel-app/public/vendor/bootstrap/css/bootstrap.min.css ]]; then
+    echo "==> Restore admin public/vendor assets from existing CWA site"
+    rsync -a /var/www/cwacmr/laravel-app/public/vendor/ "$APP/public/vendor/"
+  elif [[ -f /var/www/beyondtechworld/laravel-app/public/vendor/bootstrap/css/bootstrap.min.css ]]; then
+    echo "==> Restore admin public/vendor assets from Saleora vendor copy"
+    rsync -a --ignore-existing /var/www/beyondtechworld/laravel-app/public/vendor/ "$APP/public/vendor/"
+  fi
 fi
 
 run_artisan() {
