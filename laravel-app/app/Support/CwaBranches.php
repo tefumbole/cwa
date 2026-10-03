@@ -86,7 +86,9 @@ class CwaBranches
         return [
             [
                 'key' => 'north_america',
-                'title' => 'North America',
+                'title' => 'CWA Cameroon Diaspora — North America',
+                'kicker' => 'North America',
+                'flags' => ['us', 'ca'],
                 'countries' => ['USA/Canada', 'United States', 'USA', 'US'],
                 'zones' => [
                     [
@@ -163,7 +165,9 @@ class CwaBranches
             ],
             [
                 'key' => 'canada',
-                'title' => 'Canada',
+                'title' => 'CWA Cameroon Diaspora — Canada',
+                'kicker' => 'Canada',
+                'flags' => ['ca'],
                 'countries' => ['Canada'],
                 'zones' => [
                     [
@@ -177,7 +181,9 @@ class CwaBranches
             ],
             [
                 'key' => 'united_kingdom',
-                'title' => 'United Kingdom',
+                'title' => 'CWA Cameroon Diaspora — United Kingdom',
+                'kicker' => 'United Kingdom',
+                'flags' => ['gb'],
                 'countries' => ['United Kingdom', 'UK'],
                 'zones' => [
                     [
@@ -200,7 +206,9 @@ class CwaBranches
             ],
             [
                 'key' => 'belgium',
-                'title' => 'Belgium',
+                'title' => 'CWA Cameroon Diaspora — Belgium',
+                'kicker' => 'Belgium',
+                'flags' => ['be'],
                 'countries' => ['Belgium'],
                 'zones' => [
                     [
@@ -214,7 +222,9 @@ class CwaBranches
             ],
             [
                 'key' => 'germany',
-                'title' => 'Germany',
+                'title' => 'CWA Cameroon Diaspora — Germany',
+                'kicker' => 'Germany',
+                'flags' => ['de'],
                 'countries' => ['Germany'],
                 'zones' => [
                     [
@@ -228,7 +238,9 @@ class CwaBranches
             ],
             [
                 'key' => 'finland',
-                'title' => 'Finland',
+                'title' => 'CWA Cameroon Diaspora — Finland',
+                'kicker' => 'Finland',
+                'flags' => ['fi'],
                 'countries' => ['Finland'],
                 'zones' => [
                     [
@@ -241,7 +253,9 @@ class CwaBranches
             ],
             [
                 'key' => 'south_africa',
-                'title' => 'South Africa',
+                'title' => 'CWA Cameroon Diaspora — South Africa',
+                'kicker' => 'South Africa',
+                'flags' => ['za'],
                 'countries' => ['South Africa'],
                 'zones' => [
                     [
@@ -254,7 +268,9 @@ class CwaBranches
             ],
             [
                 'key' => 'norway',
-                'title' => 'Norway',
+                'title' => 'CWA Cameroon Diaspora — Norway',
+                'kicker' => 'Norway',
+                'flags' => ['no'],
                 'countries' => ['Norway'],
                 'zones' => [
                     [
