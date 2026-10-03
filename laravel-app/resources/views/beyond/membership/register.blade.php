@@ -207,11 +207,6 @@
                 </div>
                 <p class="mship-hint">{{ __('cwa.membership.phone_hint') }}</p>
                 <p x-show="looking" x-cloak class="mship-hint">{{ __('cwa.membership.checking') }}</p>
-                <div x-show="!looking && (operator || donorName)" x-cloak class="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                    <span x-show="operator === 'mtn'" class="mship-chip bg-[#ffcc00] text-[#1A1F2E]">{{ __('cwa.donate.mtn') }}</span>
-                    <span x-show="operator === 'orange'" class="mship-chip bg-[#ff6600] text-white">{{ __('cwa.donate.orange') }}</span>
-                    <span class="font-semibold text-brand-blue" x-text="donorName"></span>
-                </div>
             </div>
 
             <div class="mship-field">
@@ -256,6 +251,23 @@
                 <div>
                     <label class="mship-label">{{ __('cwa.join.parish') }} <em>*</em></label>
                     <input required name="parish" x-model="parish" class="mship-input">
+                </div>
+                <div>
+                    <label class="mship-label">{{ __('cwa.join.region') }} <em>*</em></label>
+                    <select required name="region" x-model="region" class="mship-input">
+                        <option value="">{{ __('cwa.join.region_pick') }}</option>
+                        @foreach (\App\Support\CameroonRegions::all() as $regionName)
+                            <option value="{{ $regionName }}">{{ $regionName }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="mship-label">{{ __('cwa.join.country') }} <em>*</em></label>
+                    <select required name="country" x-model="country" class="mship-input">
+                        @foreach (\App\Support\CountryDialCodes::names() as $countryName)
+                            <option value="{{ $countryName }}">{{ $countryName }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
             <div class="mship-actions">
@@ -389,8 +401,6 @@ function membershipWizard() {
         waQuery: '',
         phone: @json(old('phone', '')),
         fullName: @json(old('name', '')),
-        donorName: '',
-        operator: '',
         looking: false,
         timer: null,
         last: '',
@@ -399,6 +409,8 @@ function membershipWizard() {
         waPhone: '',
         diocese: @json(old('diocese', '')),
         parish: @json(old('parish', '')),
+        region: @json(old('region', '')),
+        country: @json(old('country', 'Cameroon')),
         idType: '',
         idPath: '',
         idName: '',
@@ -467,8 +479,6 @@ function membershipWizard() {
         lookupNow: function () {
             this.normalizePhone();
             if (this.countryCode !== '+237' || this.phone.length < 9) {
-                this.operator = '';
-                this.donorName = '';
                 return;
             }
             if (this.phone === this.last) return;
@@ -481,13 +491,11 @@ function membershipWizard() {
             .then(function (res) {
                 self.looking = false;
                 if (!res) return;
-                self.operator = res.operator || '';
-                self.donorName = res.name || '';
                 if (res.name && !self.fullName) self.fullName = res.name;
             }).catch(function () { self.looking = false; });
         },
         goIdType: function () {
-            if (!this.phone || !this.fullName || !this.diocese || !this.parish) return;
+            if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country) return;
             this.step = 'idtype';
         },
         chooseUpload: function () {

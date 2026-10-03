@@ -152,4 +152,22 @@ class CountryDialCodes
 
         return $out;
     }
+
+    /**
+     * Country names without dial codes, Cameroon first.
+     *
+     * @return array<int, string>
+     */
+    public static function names()
+    {
+        $names = [];
+        foreach (self::all() as $label) {
+            $name = trim(preg_replace('/\s*\(\+\d+\)\s*$/', '', $label));
+            if ($name !== '' && ! in_array($name, $names, true)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
 }

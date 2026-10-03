@@ -67,6 +67,8 @@ class AdminMembershipController extends Controller
                     ->orWhere('phone', 'like', $like)
                     ->orWhere('diocese', 'like', $like)
                     ->orWhere('parish', 'like', $like)
+                    ->orWhere('region', 'like', $like)
+                    ->orWhere('country', 'like', $like)
                     ->orWhere('email', 'like', $like);
             });
         }

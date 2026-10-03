@@ -21,7 +21,7 @@
             <div class="row align-items-end">
                 <div class="col-md-6 mb-2">
                     <label class="jb-label">Search</label>
-                    <input type="search" name="q" value="{{ $q }}" class="jb-field" placeholder="Name, phone, diocese, parish…">
+                    <input type="search" name="q" value="{{ $q }}" class="jb-field" placeholder="Name, phone, diocese, parish, region, country…">
                 </div>
                 <div class="col-md-2 mb-2">
                     <button type="submit" class="jb-btn" style="width:100%;justify-content:center;">Filter</button>
@@ -38,6 +38,7 @@
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Diocese / Parish</th>
+                            <th>Region / Country</th>
                             <th>Submitted</th>
                             <th>Status</th>
                             <th></th>
@@ -54,6 +55,7 @@
                                 <td><strong>{{ $row->name }}</strong></td>
                                 <td>{{ $row->phone }}</td>
                                 <td>{{ $row->diocese }}<br><span class="text-muted">{{ $row->parish }}</span></td>
+                                <td>{{ $row->region ?: '—' }}<br><span class="text-muted">{{ $row->country ?: '—' }}</span></td>
                                 <td>{{ $row->created_at ? $row->created_at->format('d M Y') : '—' }}</td>
                                 <td>
                                     @if($row->status === 'approved')
@@ -69,7 +71,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted py-4">No records.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted py-4">No records.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

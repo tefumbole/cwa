@@ -574,12 +574,89 @@
                 background: #dc3545 !important;
             }
 
+            header.header {
+                height: 63px;
+                min-height: 63px;
+                max-height: 63px;
+                overflow: visible;
+                background: var(--beyond-primary);
+            }
+
+            header.header .navbar,
+            header.header .navbar .container-fluid,
+            header.header .navbar-holder {
+                height: 63px;
+                min-height: 63px;
+                max-height: 63px;
+            }
+
+            @media (min-width: 1200px) {
+                .page {
+                    position: relative;
+                    margin-left: 230px;
+                    width: calc(100% - 230px);
+                    background: var(--beyond-bg);
+                    min-height: 100vh;
+                }
+                nav.side-navbar {
+                    width: 230px;
+                }
+            }
+
+            .side-navbar ul,
+            .side-navbar .side-menu,
+            .side-navbar .main-menu {
+                list-style: none !important;
+                padding-left: 0;
+                margin: 0;
+            }
+
+            .modal {
+                display: none !important;
+            }
+            .modal.show,
+            .modal.in {
+                display: block !important;
+            }
+
             .header .right-sidebar {
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 100%;
+                z-index: 1050;
+                min-width: 220px;
                 background: #fff;
+                box-shadow: 0 8px 24px rgba(5, 28, 64, 0.16);
+                border-radius: 8px;
+                padding: 8px 0;
+            }
+
+            .header .nav-item {
+                position: relative;
+            }
+
+            .header .nav-item:hover > .right-sidebar,
+            .header .nav-item.open > .right-sidebar {
+                display: block;
             }
 
             .header .right-sidebar a {
                 color: var(--beyond-primary) !important;
+            }
+
+            #sidebar-dashboard.active > a,
+            #sidebar-dashboard > a {
+                border-radius: 10px;
+            }
+
+            #sidebar-dashboard.active > a {
+                background: var(--beyond-accent) !important;
+                color: var(--beyond-primary-dark) !important;
+            }
+
+            #sidebar-dashboard.active > a i {
+                color: var(--beyond-primary-dark) !important;
             }
 
             .btn-primary,

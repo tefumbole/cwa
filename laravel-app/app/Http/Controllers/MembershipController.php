@@ -199,6 +199,8 @@ class MembershipController extends Controller
             'name' => 'required|string|max:160',
             'diocese' => 'required|string|max:120',
             'parish' => 'required|string|max:120',
+            'region' => 'required|string|max:80',
+            'country' => 'required|string|max:80',
             'email' => 'nullable|email|max:120',
             'age_range' => 'nullable|string|max:40',
             'selfie' => 'required_without:selfie_stored|nullable|image|max:8192',
@@ -217,6 +219,8 @@ class MembershipController extends Controller
             'name' => __('cwa.membership.name'),
             'diocese' => __('cwa.join.diocese'),
             'parish' => __('cwa.join.parish'),
+            'region' => __('cwa.join.region'),
+            'country' => __('cwa.join.country'),
             'email' => __('cwa.join.email'),
         ]);
 
@@ -272,6 +276,8 @@ class MembershipController extends Controller
             'id_issue_place' => $data['id_issue_place'] ?? null,
             'diocese' => $data['diocese'],
             'parish' => $data['parish'],
+            'region' => $data['region'],
+            'country' => $data['country'],
             'email' => $data['email'] ?? null,
             'age_range' => $data['age_range'] ?? null,
             'selfie_path' => $selfiePath,

@@ -33,6 +33,8 @@
                 <div class="jb-card">
                     <p><strong>Diocese:</strong> {{ $member->diocese }}</p>
                     <p><strong>Parish:</strong> {{ $member->parish }}</p>
+                    <p><strong>Region:</strong> {{ $member->region ?: '—' }}</p>
+                    <p><strong>Country:</strong> {{ $member->country ?: '—' }}</p>
                     <p><strong>Age range:</strong> {{ $member->age_range ?: '—' }}</p>
                     <p><strong>Bylaws agreed:</strong> {{ $member->bylaws_agreed_at ? $member->bylaws_agreed_at->format('d M Y H:i') : '—' }}</p>
                     @if($member->letter_id)
