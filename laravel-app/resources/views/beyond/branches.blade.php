@@ -15,13 +15,17 @@
     <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem] max-w-3xl">{{ __('cwa.branches.intro') }}</p>
 
     <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="inline-flex rounded-full bg-white border border-stone-200 p-1 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button type="button" @click="tab = 'cameroon'"
-                    :class="tab === 'cameroon' ? 'bg-brand-blue text-white' : 'text-slate-600 hover:text-brand-blue'"
-                    class="px-4 py-2 rounded-full text-sm font-extrabold transition-colors">{{ __('cwa.branches.tab_cameroon') }}</button>
+                    class="inline-flex items-center justify-center min-h-[2.75rem] px-7 py-2.5 rounded-full border-2 border-[#003D82] font-extrabold text-[#003D82]"
+                    :class="tab === 'cameroon' ? 'bg-[#003D82] text-white' : 'bg-white hover:bg-[#003D82] hover:text-white'">
+                {{ __('cwa.branches.tab_cameroon') }}
+            </button>
             <button type="button" @click="tab = 'diaspora'"
-                    :class="tab === 'diaspora' ? 'bg-brand-blue text-white' : 'text-slate-600 hover:text-brand-blue'"
-                    class="px-4 py-2 rounded-full text-sm font-extrabold transition-colors">{{ __('cwa.branches.tab_diaspora') }}</button>
+                    class="inline-flex items-center justify-center min-h-[2.75rem] px-7 py-2.5 rounded-full border-2 border-[#D4AF37] font-extrabold text-[#003D82]"
+                    :class="tab === 'diaspora' ? 'bg-[#D4AF37] text-[#003D82]' : 'bg-white hover:bg-[#D4AF37]'">
+                {{ __('cwa.branches.tab_diaspora') }}
+            </button>
         </div>
         <label class="relative flex-1">
             <span class="sr-only">{{ __('cwa.branches.search') }}</span>
