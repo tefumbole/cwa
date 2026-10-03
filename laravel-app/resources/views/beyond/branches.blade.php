@@ -253,6 +253,13 @@ function branchesPage() {
         country: 'north_america',
         provinces: @json($provinces),
         diaspora: @json($diaspora),
+        init: function () {
+            var self = this;
+            this.$watch('q', function () {
+                var group = self.activeGroup();
+                if (group) self.country = group.key;
+            });
+        },
         needle: function () {
             return String(this.q || '').toLowerCase().trim();
         },
