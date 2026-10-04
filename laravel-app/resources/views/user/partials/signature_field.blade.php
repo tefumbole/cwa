@@ -15,11 +15,10 @@
 @endphp
 <div class="form-group user-sig-block" id="{{ $uid }}-block" data-type="{{ $type }}">
     <label><strong>{{ $label }}</strong></label>
-    <input type="file" class="form-control" name="{{ $inputName }}" accept="image/*"
-           @if($fileField) data-current="{{ url('public/images/user/'.$fileField) }}" @endif>
+    <input type="file" class="form-control" name="{{ $inputName }}" accept="image/*">
     <div class="{{ $uid }}-preview mt-2">
         @if($fileField)
-            <img src="{{ url('public/images/user', $fileField) }}" height="50" style="float:none;display:block;" alt="{{ $label }}">
+            <img src="{{ url('public/images/user', $fileField) }}" alt="{{ $label }}" style="display:block;height:50px;width:auto;max-width:180px;object-fit:contain;">
         @else
             <span class="text-muted d-block">No {{ strtolower($label) }} found</span>
         @endif
