@@ -89,7 +89,7 @@ class CwaBranches
                 'title' => 'CWA Cameroon Diaspora — North America',
                 'kicker' => 'North America',
                 'flags' => ['us'],
-                'countries' => ['USA/Canada', 'United States', 'USA', 'US'],
+                'countries' => ['North America', 'USA/Canada', 'United States', 'USA', 'US'],
                 'zones' => [
                     [
                         'title' => 'Queen Assumed into Heaven Zone',
@@ -348,6 +348,26 @@ class CwaBranches
         }
 
         return in_array($name, $list, true);
+    }
+
+    /**
+     * Membership country picker: Cameroon, North America, then other diaspora countries.
+     *
+     * @return array<int, string>
+     */
+    public static function formCountries()
+    {
+        $out = ['Cameroon'];
+        foreach (self::diaspora() as $group) {
+            $label = $group['key'] === 'north_america'
+                ? 'North America'
+                : (isset($group['kicker']) ? $group['kicker'] : null);
+            if ($label && ! in_array($label, $out, true)) {
+                $out[] = $label;
+            }
+        }
+
+        return $out;
     }
 
     /**

@@ -196,6 +196,8 @@ return [
         'region_search' => 'Search region…',
         'region_empty' => 'No region matches',
         'country' => 'Country',
+        'country_search' => 'Search country…',
+        'country_empty' => 'No country matches',
         'phone' => 'Phone',
         'email' => 'Email',
         'age' => 'Age range',

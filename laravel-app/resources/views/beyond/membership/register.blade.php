@@ -335,11 +335,27 @@
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.country') }} <em>*</em></label>
-                    <select required name="country" x-model="country" @change="onCountryChange()" class="mship-input">
-                        @foreach (\App\Support\CountryDialCodes::names() as $countryName)
-                            <option value="{{ $countryName }}">{{ $countryName }}</option>
-                        @endforeach
-                    </select>
+                    <div class="mship-pick-wrap" @click.outside="closePick('country')">
+                        <input type="hidden" name="country" :value="country">
+                        <input type="search" class="mship-pick" autocomplete="off" enterkeyhint="search"
+                               x-ref="countrySearch" x-model="countryQuery"
+                               :placeholder="countryPlaceholder"
+                               @focus="openPick('country')"
+                               @keydown.escape.prevent="closePick('country')"
+                               @keydown.enter.prevent="pickFirst('country')">
+                        <div x-show="countryOpen" x-cloak class="mship-menu is-wide">
+                            <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                                <template x-for="name in filteredResidenceCountries()" :key="'c-'+name">
+                                    <li>
+                                        <button type="button" @mousedown.prevent="pickResidence(name)"
+                                                :class="country === name ? 'is-on' : ''"
+                                                x-text="name"></button>
+                                    </li>
+                                </template>
+                            </ul>
+                            <p x-show="filteredResidenceCountries().length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.join.country_empty') }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="mship-actions">
@@ -484,6 +500,8 @@ function membershipWizard() {
         region: @json(old('region', '')),
         country: @json(old('country', 'Cameroon')),
         dioceseMap: @json(\App\Support\CwaBranches::formMap()),
+        featuredCountries: @json(\App\Support\CwaBranches::formCountries()),
+        extraCountries: @json(array_values(array_diff(\App\Support\CountryDialCodes::names(), \App\Support\CwaBranches::formCountries()))),
         regions: @json(\App\Support\CameroonRegions::all()),
         dioceseOpen: false,
         dioceseQuery: @json(old('diocese', '')),
@@ -491,6 +509,9 @@ function membershipWizard() {
         regionOpen: false,
         regionQuery: @json(old('region', '')),
         regionPlaceholder: @json(__('cwa.join.region_search')),
+        countryOpen: false,
+        countryQuery: @json(old('country', 'Cameroon')),
+        countryPlaceholder: @json(__('cwa.join.country_search')),
         idType: '',
         idPath: '',
         idName: '',
@@ -598,18 +619,39 @@ function membershipWizard() {
         filteredRegions: function () {
             return this.filterNames(this.regions, this.regionQuery);
         },
-        openPick: function (kind) {
-            if (kind === 'diocese') {
+        filteredResidenceCountries: function () {
+            var featured = this.featuredCountries || [];
+            if (!String(this.countryQuery || '').trim()) return featured;
+            return this.filterNames(featured.concat(this.extraCountries || []), this.countryQuery);
+        },
+        restorePickQueries: function (except) {
+            if (except !== 'diocese') {
+                this.dioceseOpen = false;
+                this.dioceseQuery = this.diocese || '';
+            }
+            if (except !== 'region') {
                 this.regionOpen = false;
                 this.regionQuery = this.region || '';
+            }
+            if (except !== 'country') {
+                this.countryOpen = false;
+                this.countryQuery = this.country || '';
+            }
+        },
+        openPick: function (kind) {
+            this.restorePickQueries(kind);
+            if (kind === 'diocese') {
                 this.dioceseOpen = true;
                 this.dioceseQuery = '';
                 return;
             }
-            this.dioceseOpen = false;
-            this.dioceseQuery = this.diocese || '';
-            this.regionOpen = true;
-            this.regionQuery = '';
+            if (kind === 'region') {
+                this.regionOpen = true;
+                this.regionQuery = '';
+                return;
+            }
+            this.countryOpen = true;
+            this.countryQuery = '';
         },
         closePick: function (kind) {
             if (kind === 'diocese') {
@@ -617,14 +659,22 @@ function membershipWizard() {
                 this.dioceseQuery = this.diocese || '';
                 return;
             }
-            this.regionOpen = false;
-            this.regionQuery = this.region || '';
+            if (kind === 'region') {
+                this.regionOpen = false;
+                this.regionQuery = this.region || '';
+                return;
+            }
+            this.countryOpen = false;
+            this.countryQuery = this.country || '';
         },
         pickFirst: function (kind) {
-            var list = kind === 'diocese' ? this.filteredDioceses() : this.filteredRegions();
+            var list = kind === 'diocese'
+                ? this.filteredDioceses()
+                : (kind === 'region' ? this.filteredRegions() : this.filteredResidenceCountries());
             if (!list.length) return;
             if (kind === 'diocese') this.pickDiocese(list[0]);
-            else this.pickRegion(list[0]);
+            else if (kind === 'region') this.pickRegion(list[0]);
+            else this.pickResidence(list[0]);
         },
         pickDiocese: function (name) {
             this.diocese = name;
@@ -635,6 +685,12 @@ function membershipWizard() {
             this.region = name;
             this.regionQuery = name;
             this.regionOpen = false;
+        },
+        pickResidence: function (name) {
+            this.country = name;
+            this.countryQuery = name;
+            this.countryOpen = false;
+            this.onCountryChange();
         },
         onCountryChange: function () {
             var opts = this.dioceseOptions();
