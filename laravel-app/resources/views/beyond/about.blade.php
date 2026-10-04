@@ -85,7 +85,7 @@
         aspect-ratio: 1;
         border-radius: 999px;
         overflow: hidden;
-        border: 0.55rem solid #003D82;
+        border: 0.275rem solid #003D82;
         background: #efeae0;
         box-sizing: border-box;
     }
