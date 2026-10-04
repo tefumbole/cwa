@@ -54,8 +54,8 @@
                                     <div class="form-group">
                                         <label>Email / Invoice Header</label>
                                         @if($lims_general_setting_data && $lims_general_setting_data->email_header)
-                                            <div class="mb-2 p-2 border rounded bg-light d-flex align-items-center justify-content-center" style="width:100%;max-width:420px;height:72px;overflow:hidden;">
-                                                <img src="{{url('public/logo', $lims_general_setting_data->email_header)}}" alt="Current email header" style="max-height:100%;max-width:100%;width:auto;height:auto;object-fit:contain;">
+                                            <div class="mb-2 p-2 border rounded bg-light" style="width:100%;max-height:140px;overflow:hidden;">
+                                                <img src="{{url('public/logo', $lims_general_setting_data->email_header)}}" alt="Current email header" style="display:block;width:100%;max-height:120px;object-fit:contain;object-position:left center;">
                                             </div>
                                         @endif
                                         <input type="file" name="email_header" class="form-control" accept="image/png,image/jpeg,image/gif"/>
@@ -71,8 +71,8 @@
                                     <div class="form-group">
                                         <label>Email / Invoice Footer</label>
                                         @if($lims_general_setting_data && $lims_general_setting_data->email_footer)
-                                            <div class="mb-2 p-2 border rounded bg-light d-flex align-items-center justify-content-center" style="width:100%;max-width:420px;height:72px;overflow:hidden;">
-                                                <img src="{{url('public/logo', $lims_general_setting_data->email_footer)}}" alt="Current email footer" style="max-height:100%;max-width:100%;width:auto;height:auto;object-fit:contain;">
+                                            <div class="mb-2 p-2 border rounded bg-light" style="width:100%;max-height:140px;overflow:hidden;">
+                                                <img src="{{url('public/logo', $lims_general_setting_data->email_footer)}}" alt="Current email footer" style="display:block;width:100%;max-height:120px;object-fit:contain;object-position:left center;">
                                             </div>
                                         @endif
                                         <input type="file" name="email_footer" class="form-control" accept="image/png,image/jpeg,image/gif"/>

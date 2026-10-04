@@ -50,7 +50,7 @@
             : 'Click here, then paste an image (Ctrl+V / \u2318V) \u2014 or drop a file';
 
         var prev = document.createElement('img');
-        prev.style.cssText = 'margin-top:8px;max-height:90px;border-radius:6px;border:1px solid #eee;display:none;';
+        prev.style.cssText = 'display:none;box-sizing:border-box;margin-top:8px;width:100%;max-width:100%;max-height:120px;height:auto;object-fit:contain;object-position:left center;border-radius:6px;border:1px solid #eee;background:#fff;';
         var cur = inp.getAttribute('data-current');
         if (cur) { prev.src = cur; prev.style.display = ''; }
 

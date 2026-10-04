@@ -86,7 +86,6 @@ class SettingController extends Controller
         $campayUsername = \App\Support\EnvFile::get('CAMPAY_USERNAME', '');
         $campayPassword = \App\Support\EnvFile::get('CAMPAY_PASSWORD', '');
         $campayAppId = \App\Support\EnvFile::get('CAMPAY_APP_ID', '');
-        $campayWebhookSecret = \App\Support\EnvFile::get('CAMPAY_WEBHOOK_SECRET', '');
         $campayBaseUrl = \App\Support\EnvFile::get('CAMPAY_BASE_URL', 'https://www.campay.net/api');
 
         return view('setting.env_setting', compact(
@@ -96,7 +95,6 @@ class SettingController extends Controller
             'campayUsername',
             'campayPassword',
             'campayAppId',
-            'campayWebhookSecret',
             'campayBaseUrl'
         ));
     }
@@ -113,7 +111,6 @@ class SettingController extends Controller
             'CAMPAY_USERNAME' => trim((string) $request->input('campay_username', '')),
             'CAMPAY_PASSWORD' => trim((string) $request->input('campay_password', '')),
             'CAMPAY_APP_ID' => trim((string) $request->input('campay_app_id', '')),
-            'CAMPAY_WEBHOOK_SECRET' => trim((string) $request->input('campay_webhook_secret', '')),
             'CAMPAY_BASE_URL' => trim((string) $request->input('campay_base_url', 'https://www.campay.net/api')) ?: 'https://www.campay.net/api',
             'MOMO_TOKEN' => trim((string) $request->input('campay_token', '')),
         ]);
@@ -224,6 +221,13 @@ class SettingController extends Controller
         }
         if (! is_writable($logoDir)) {
             @chmod($logoDir, 0775);
+        }
+
+        foreach (['site_logo' => 'System logo', 'email_header' => 'Email header', 'email_footer' => 'Email footer', 'email_water_mark' => 'Watermark'] as $uploadName => $uploadLabel) {
+            $upload = $request->file($uploadName);
+            if ($upload && ! $upload->isValid()) {
+                return redirect()->back()->with('not_permitted', $uploadLabel.' was not saved. '.$upload->getErrorMessage());
+            }
         }
 
         if ($request->hasFile('site_logo')) {
