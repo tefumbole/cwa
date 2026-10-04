@@ -37,25 +37,29 @@
 </div>
 
 @if (!empty($leaders) && $leaders->isNotEmpty())
-    <section id="leadership" class="max-w-6xl mx-auto px-3 sm:px-4 pb-10 sm:pb-14">
-        <h2 class="text-xl sm:text-2xl font-extrabold text-brand-blue tracking-tight m-0">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
-        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-            @foreach ($leaders as $leader)
-                @php $flag = $leader->countryFlag(); @endphp
-                <article class="leader-card rounded-2xl bg-white border border-stone-200/80 px-3 py-4 text-center min-w-0">
-                    <div class="leader-ring">
-                        @if ($leader->photoPublicUrl())
-                            <div class="leader-avatar">
-                                <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" width="640" height="640">
+    <section id="leadership" class="leader-section">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-brand-blue tracking-tight m-0">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
+            <div class="leader-grid">
+                @foreach ($leaders as $leader)
+                    @php $flag = $leader->countryFlag(); @endphp
+                    <article class="leader-card">
+                        <div class="leader-slot">
+                            <div class="leader-portrait">
+                                @if ($leader->photoPublicUrl())
+                                    <div class="leader-portrait-clip">
+                                        <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" width="640" height="640">
+                                    </div>
+                                @else
+                                    <div class="leader-portrait-clip leader-portrait-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
+                                @endif
                             </div>
-                        @else
-                            <div class="leader-avatar leader-avatar-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
-                        @endif
-                    </div>
-                    <h3 class="mt-3 mb-0 text-lg font-extrabold text-brand-blue leading-snug">{{ $leader->name }}@if ($flag) <span class="leader-flag" title="{{ $leader->country }}">{{ $flag }}</span>@endif</h3>
-                    <p class="mt-1 mb-0 text-xs sm:text-sm font-extrabold tracking-[0.08em] uppercase text-brand-gold leading-tight">{{ $leader->title }}</p>
-                </article>
-            @endforeach
+                        </div>
+                        <h3 class="mt-1 mb-0 text-lg font-extrabold text-brand-blue leading-snug">{{ $leader->name }}@if ($flag) <span class="leader-flag" title="{{ $leader->country }}">{{ $flag }}</span>@endif</h3>
+                        <p class="mt-1 mb-0 text-xs sm:text-sm font-extrabold tracking-[0.08em] uppercase text-brand-gold leading-tight">{{ $leader->title }}</p>
+                    </article>
+                @endforeach
+            </div>
         </div>
     </section>
 @endif
@@ -73,23 +77,56 @@
         }
         .about-card:hover h2 { color: #002855; }
     }
-    .leader-ring {
-        width: min(18rem, 100%);
-        margin: 0 auto;
-        padding: 0.55rem;
-        border-radius: 999px;
-        background: #D4AF37;
+    .leader-section {
+        background: #FFFFFF;
+        overflow: visible;
     }
-    .leader-avatar {
+    .leader-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem 1.25rem;
+        margin-top: 1.25rem;
+    }
+    @media (min-width: 640px) {
+        .leader-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1280px) {
+        .leader-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    .leader-card {
+        background: #FFFFFF;
+        text-align: center;
+        overflow: visible;
+        min-width: 0;
+        padding: 0.25rem 0.5rem 1rem;
+    }
+    .leader-slot {
+        width: min(300px, calc(100% - 7.5rem));
+        margin: 0 auto;
+        container-type: inline-size;
+        overflow: visible;
+    }
+    .leader-portrait {
         width: 100%;
         aspect-ratio: 1;
-        border-radius: 999px;
-        overflow: hidden;
-        border: 0.275rem solid #003D82;
-        background: #efeae0;
-        box-sizing: border-box;
+        margin: 3.25rem auto 2.75rem;
+        box-sizing: content-box;
+        border-radius: 50%;
+        border: calc(100cqi * 4 / 300) solid #003E7E;
+        background: transparent;
+        overflow: visible;
+        box-shadow:
+            0 0 0 calc(100cqi * 9 / 300) #D8B32D,
+            0 0 14px 3px rgba(216,179,45,0.35),
+            0 0 30px 8px rgba(216,179,45,0.18);
     }
-    .leader-avatar img {
+    .leader-portrait-clip {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    .leader-portrait img {
         display: block;
         width: 100%;
         height: 100%;
@@ -97,13 +134,14 @@
         object-fit: cover;
         object-position: center center;
     }
-    .leader-avatar-empty {
+    .leader-portrait-empty {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #003D82;
+        color: #003E7E;
         font-weight: 800;
         font-size: 2.4rem;
+        background: #efeae0;
     }
     .leader-flag {
         font-style: normal;
