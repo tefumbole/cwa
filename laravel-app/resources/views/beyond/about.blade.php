@@ -78,14 +78,14 @@
         margin: 0 auto;
         padding: 0.55rem;
         border-radius: 999px;
-        background: #003D82;
+        background: #D4AF37;
     }
     .leader-avatar {
         width: 100%;
         aspect-ratio: 1;
         border-radius: 999px;
         overflow: hidden;
-        border: 0.55rem solid #D4AF37;
+        border: 0.55rem solid #003D82;
         background: #efeae0;
         box-sizing: border-box;
     }
