@@ -32,6 +32,10 @@
         background: #fffdf8;
     }
     .check p { margin: 0 0 .7rem; line-height: 1.45; }
+    .instruction { font-weight: 700; color: #1a1f2e; }
+    .how { margin: 0 0 .8rem; padding-left: 1.2rem; color: #3d4654; }
+    .how li { margin: 0 0 .35rem; }
+    .result-label { margin: .2rem 0 .45rem; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; color: #8a6d1d; }
     .choices { display: flex; flex-wrap: wrap; gap: .5rem; }
     .choice {
         position: relative;
@@ -73,26 +77,11 @@
 <div class="test-wrap">
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
-    <p class="text-stone-600 mb-4">You do not need to know the system. Follow the steps, try each thing, then mark what worked.</p>
+    <p class="text-stone-600 mb-4">Do one test at a time. Read the instruction, follow the steps, mark the result, then go to the next test. Keep this page open in one tab and the website in another.</p>
 
     @if($errors->any())
         <div class="err">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
     @endif
-
-    <section class="test-card">
-        <h2>Start here</h2>
-        <p class="text-stone-600 mb-2">Read this before you mark any result. Open the website in a second tab and leave this page open.</p>
-        <ol class="steps">
-            <li><span class="step-no">1</span><span>Open the website: <a href="{{ url('/') }}" target="_blank">cwacam.org</a>. The first screen is the <strong>homepage</strong>. You should see the CWACAM logo, a row of menu links, <strong>EN / FR</strong>, <strong>Donate</strong>, and <strong>Login</strong>.</span></li>
-            <li><span class="step-no">2</span><span>Click the menu links. <strong>About Us</strong> tells the story and shows leaders. <strong>Branches</strong> lists Cameroon and Diaspora. <strong>Membership</strong> is where a woman registers. You do not need a password for these pages.</span></li>
-            <li><span class="step-no">3</span><span>On a phone, tap the menu button (three lines) at the top. The same links open in a list, with <strong>Join CWA</strong> and <strong>Donate</strong>.</span></li>
-            <li><span class="step-no">4</span><span>To test the office, click <strong>Login</strong>. Type the username and password you were given. If nobody gave you a login, leave the office steps as <strong>Not tested</strong>.</span></li>
-            <li><span class="step-no">5</span><span>After login, a <strong>blue menu</strong> is on the left. Each name opens one part of the office: People, Membership, Letters, Settings, and the rest. Click a name, look at the screen, then come back here.</span></li>
-            <li><span class="step-no">6</span><span>Do not pay any money. Do not click <strong>Empty Database</strong>. Use a test name if you register a member.</span></li>
-            <li><span class="step-no">7</span><span>For each line below, choose <strong>Works</strong>, <strong>Does not work</strong>, or <strong>Not tested</strong>. If it failed, write one sentence about what you saw.</span></li>
-            <li><span class="step-no">8</span><span>Put your name and WhatsApp number, then press <strong>Send the result</strong>. The summary goes to your WhatsApp, and a copy goes to the administrator.</span></li>
-        </ol>
-    </section>
 
     <form method="POST" action="{{ route('system-test.store') }}" id="system-test">
         @csrf
@@ -115,7 +104,15 @@
                 <p class="text-stone-600 mb-3">{{ $section['intro'] }}</p>
                 @foreach($section['checks'] as $check)
                     <div class="check">
-                        <p>{{ $check['text'] }}</p>
+                        <p class="instruction">{{ $check['text'] }}</p>
+                        @if(!empty($check['steps']))
+                            <ol class="how">
+                                @foreach($check['steps'] as $step)
+                                    <li>{{ $step }}</li>
+                                @endforeach
+                            </ol>
+                        @endif
+                        <p class="result-label">Result</p>
                         <div class="choices">
                             <label class="choice ok"><input type="radio" name="checks[{{ $check['id'] }}]" value="works" @if(old('checks.'.$check['id']) === 'works') checked @endif> Works</label>
                             <label class="choice bad"><input type="radio" name="checks[{{ $check['id'] }}]" value="fails" @if(old('checks.'.$check['id']) === 'fails') checked @endif> Does not work</label>
