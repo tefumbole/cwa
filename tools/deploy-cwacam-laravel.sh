@@ -48,6 +48,7 @@ updates = {
     "APP_TIMEZONE": "Africa/Douala",
     "LAUNCH_AT": "2026-10-01T00:00:00",
     "LAUNCH_WINDOW_DAYS": "21",
+    "USER_VERIFIED": "true",
 }
 lines = []
 seen = set()
