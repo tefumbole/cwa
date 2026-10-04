@@ -16,9 +16,17 @@
             $diasporaCountries[] = $countryName;
         }
     }
-    $startCountry = old('country', $memberGroup === 'diaspora' ? '' : ($memberGroup === 'cameroon' ? 'Cameroon' : 'Cameroon'));
+    $startCountry = old('country', $memberGroup === 'diaspora' ? '' : 'Cameroon');
     if ($memberGroup === 'diaspora' && ! old('country')) {
         $startCountry = '';
+    }
+    $startDial = old('country_code', $memberGroup === 'diaspora' ? '+1' : '+237');
+    $dialByCountry = [];
+    foreach (array_merge(['Cameroon', 'North America'], $diasporaCountries) as $dialName) {
+        $code = \App\Support\CountryDialCodes::codeForName($dialName);
+        if ($code) {
+            $dialByCountry[$dialName] = $code;
+        }
     }
 @endphp
 
@@ -156,7 +164,10 @@
     }
     .mship-check input { width: 1.05rem; height: 1.05rem; accent-color: #003D82; }
     .mship-grid { display: grid; gap: 0.85rem; margin-top: 1.15rem; }
-    @media (min-width: 640px) { .mship-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 640px) {
+        .mship-grid { grid-template-columns: 1fr 1fr; }
+        .mship-grid .mship-span-2 { grid-column: 1 / -1; }
+    }
     .mship-choices { display: grid; gap: 0.7rem; }
     @media (min-width: 520px) { .mship-choices { grid-template-columns: 1fr 1fr; } }
     .mship-choice {
@@ -394,6 +405,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="mship-span-2">
+                    <label class="mship-label">{{ __('cwa.join.address') }} <em>*</em></label>
+                    <input required name="address" x-model="address" class="mship-input" autocomplete="street-address">
+                </div>
+                <div>
+                    <label class="mship-label">{{ __('cwa.join.city') }} <em>*</em></label>
+                    <input required name="city" x-model="city" class="mship-input" autocomplete="address-level2">
+                </div>
+                <div>
+                    <label class="mship-label">{{ __('cwa.join.state') }} <em>*</em></label>
+                    <input required name="state" x-model="state" class="mship-input" autocomplete="address-level1">
+                </div>
             </div>
             <div class="mship-actions">
                 <button type="button" @click="step = 'where'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
@@ -521,7 +544,7 @@ function membershipWizard() {
             if (this.step === 'sign') return 4;
             return 2;
         },
-        countryCode: '+237',
+        countryCode: @json($startDial),
         countries: @json(collect($countryCodes)->map(function ($label, $code) { return ['code' => $code, 'label' => $label]; })->values()),
         ccOpen: false,
         ccQuery: '',
@@ -533,7 +556,7 @@ function membershipWizard() {
         timer: null,
         last: '',
         waSame: true,
-        waCountry: '+237',
+        waCountry: @json($startDial),
         waPhone: '',
         diocese: @json(old('diocese', '')),
         parish: @json(old('parish', '')),
@@ -553,6 +576,10 @@ function membershipWizard() {
         countryOpen: false,
         countryQuery: @json($startCountry),
         countryPlaceholder: @json(__('cwa.join.country_search')),
+        address: @json(old('address', '')),
+        city: @json(old('city', '')),
+        state: @json(old('state', '')),
+        dialByCountry: @json($dialByCountry),
         idType: '',
         idPath: '',
         idName: '',
@@ -675,11 +702,15 @@ function membershipWizard() {
             if (kind === 'cameroon') {
                 this.country = 'Cameroon';
                 this.countryQuery = 'Cameroon';
+                this.countryCode = '+237';
+                this.waCountry = '+237';
             } else {
                 if (this.country === 'Cameroon') {
                     this.country = '';
                     this.countryQuery = '';
                 }
+                this.countryCode = '+1';
+                this.waCountry = '+1';
             }
             this.onCountryChange();
             this.step = 'phone';
@@ -750,6 +781,11 @@ function membershipWizard() {
             this.country = name;
             this.countryQuery = name;
             this.countryOpen = false;
+            var code = (this.dialByCountry || {})[name];
+            if (code) {
+                this.countryCode = code;
+                if (this.waSame) this.waCountry = code;
+            }
             this.onCountryChange();
         },
         onCountryChange: function () {
@@ -761,7 +797,7 @@ function membershipWizard() {
             this.dioceseOpen = false;
         },
         goIdType: function () {
-            if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country) return;
+            if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country || !this.address || !this.city || !this.state) return;
             this.step = 'idtype';
         },
         chooseUpload: function () {

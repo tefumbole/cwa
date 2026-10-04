@@ -170,4 +170,56 @@ class CountryDialCodes
 
         return $names;
     }
+
+    /**
+     * Dial code for a CWA country / diaspora label.
+     */
+    public static function codeForName($name)
+    {
+        $map = [
+            'Cameroon' => '+237',
+            'Cameroun' => '+237',
+            'North America' => '+1',
+            'USA/Canada' => '+1',
+            'United States' => '+1',
+            'USA' => '+1',
+            'US' => '+1',
+            'Canada' => '+1',
+            'United Kingdom' => '+44',
+            'UK' => '+44',
+            'Belgium' => '+32',
+            'Germany' => '+49',
+            'Finland' => '+358',
+            'South Africa' => '+27',
+            'Norway' => '+47',
+        ];
+        $key = trim((string) $name);
+
+        return isset($map[$key]) ? $map[$key] : null;
+    }
+
+    /**
+     * Dial list with official CWA/diocese countries first, then the rest.
+     *
+     * @param  array<int, string>  $preferredNames
+     * @return array<string, string>
+     */
+    public static function prioritized(array $preferredNames = [])
+    {
+        $all = self::all();
+        $out = [];
+        foreach ($preferredNames as $name) {
+            $code = self::codeForName($name);
+            if ($code && isset($all[$code]) && ! isset($out[$code])) {
+                $out[$code] = $all[$code];
+            }
+        }
+        foreach ($all as $code => $label) {
+            if (! isset($out[$code])) {
+                $out[$code] = $label;
+            }
+        }
+
+        return $out;
+    }
 }

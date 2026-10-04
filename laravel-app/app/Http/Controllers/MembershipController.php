@@ -50,7 +50,9 @@ class MembershipController extends Controller
 
     public function register()
     {
-        $countryCodes = \App\Support\CountryDialCodes::all();
+        $countryCodes = \App\Support\CountryDialCodes::prioritized(
+            \App\Support\CwaBranches::formCountries()
+        );
 
         return view('beyond.membership.register', [
             'ageRanges' => trans('cwa.join.ages'),
@@ -201,6 +203,9 @@ class MembershipController extends Controller
             'parish' => 'required|string|max:120',
             'region' => 'required|string|max:80',
             'country' => 'required|string|max:80',
+            'address' => 'required|string|max:180',
+            'city' => 'required|string|max:80',
+            'state' => 'required|string|max:80',
             'email' => 'nullable|email|max:120',
             'age_range' => 'nullable|string|max:40',
             'selfie' => 'required_without:selfie_stored|nullable|image|max:8192',
@@ -221,6 +226,9 @@ class MembershipController extends Controller
             'parish' => __('cwa.join.parish'),
             'region' => __('cwa.join.region'),
             'country' => __('cwa.join.country'),
+            'address' => __('cwa.join.address'),
+            'city' => __('cwa.join.city'),
+            'state' => __('cwa.join.state'),
             'email' => __('cwa.join.email'),
         ]);
 
@@ -282,6 +290,9 @@ class MembershipController extends Controller
             'parish' => $data['parish'],
             'region' => $data['region'],
             'country' => $data['country'],
+            'address' => $data['address'],
+            'city' => $data['city'],
+            'state' => $data['state'],
             'email' => $data['email'] ?? null,
             'age_range' => $data['age_range'] ?? null,
             'selfie_path' => $selfiePath,
