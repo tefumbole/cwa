@@ -117,8 +117,9 @@
         overflow: visible;
         box-shadow:
             0 0 0 calc(100cqi * 9 / 300) #D8B32D,
-            0 0 14px 3px rgba(216,179,45,0.35),
-            0 0 30px 8px rgba(216,179,45,0.18);
+            0 0 12px 2px rgba(216,179,45,0.9),
+            0 0 24px 8px rgba(216,179,45,0.55),
+            0 0 42px 14px rgba(216,179,45,0.28);
     }
     .leader-portrait-clip {
         width: 100%;
