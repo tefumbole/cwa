@@ -139,12 +139,14 @@ run_artisan() {
 mkdir -p \
   "$APP/storage/framework/"{cache/data,sessions,views} \
   "$APP/storage/logs" \
-  "$APP/bootstrap/cache"
+  "$APP/bootstrap/cache" \
+  "$APP/public/images/leaders" \
+  "$APP/public/uploads/membership"
 
 chown "$WEB_USER:$WEB_GROUP" "$APP/.env"
 chmod 640 "$APP/.env"
-chown -R "$WEB_USER:$WEB_GROUP" "$APP/storage" "$APP/bootstrap/cache"
-chmod -R ug+rwx "$APP/storage" "$APP/bootstrap/cache"
+chown -R "$WEB_USER:$WEB_GROUP" "$APP/storage" "$APP/bootstrap/cache" "$APP/public/images" "$APP/public/uploads"
+chmod -R ug+rwx "$APP/storage" "$APP/bootstrap/cache" "$APP/public/images" "$APP/public/uploads"
 
 cd "$APP"
 run_artisan config:clear || true
