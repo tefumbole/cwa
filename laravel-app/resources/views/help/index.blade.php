@@ -40,6 +40,14 @@
 
         <div class="card mb-4">
             <div class="card-body">
+                <strong>Send this link to the person who will test</strong>
+                <p class="mb-2">They mark each step as working or not. When they submit, the result is emailed to the site contact and active Admin accounts, and it is listed under <a href="{{ route('system-test.index') }}">Test results</a>.</p>
+                <p class="mb-0"><a href="{{ route('system-test.show') }}" target="_blank">{{ route('system-test.show') }}</a></p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
                 <strong>Contents</strong>
                 <ol class="mb-0 mt-2">
                     <li><a href="#start">Before you start</a></li>

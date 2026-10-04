@@ -37,6 +37,9 @@ Route::get('/rental-agreement/{token}', 'RentalContractController@show')->name('
 Route::post('/rental-agreement/{token}/sign', 'RentalContractController@sign')->name('rental.agreement.sign');
 
 // Public user signature request (WhatsApp link from People → Users → Edit)
+Route::get('/system-test', 'SystemTestController@show')->name('system-test.show');
+Route::post('/system-test', 'SystemTestController@store')->middleware('throttle:8,1')->name('system-test.store');
+
 Route::get('/user-sign/{token}', 'UserSignatureController@publicShow')->name('user.public.sign');
 Route::post('/user-sign/{token}', 'UserSignatureController@publicStore')->name('user.public.sign.store');
 Route::get('/rental-portal/{token}', 'RentalContractController@portal')->name('rental.portal');
@@ -368,6 +371,8 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/leaders/{id}/delete', 'LeaderController@destroy')->name('leaders.destroy');
 
     Route::get('/admin/help', 'HelpController@index')->name('admin.help');
+    Route::get('/admin/system-tests', 'SystemTestController@index')->name('system-test.index');
+    Route::get('/admin/system-tests/{id}', 'SystemTestController@detail')->name('system-test.detail');
 
     // Task Manager (admin)
     Route::get('/admin/tasks', 'TaskManagerController@dashboard')->name('tasks.dashboard');
