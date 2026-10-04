@@ -263,6 +263,7 @@
 @php
     $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
+    $hideSiteNav = ! empty($hideSiteNav);
 @endphp
 
 <header class="site-header sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200/80" x-data="{ open: false, userMenu: false }" x-effect="document.body.classList.toggle('nav-open', open)" @keydown.escape.window="open = false; userMenu = false">
@@ -270,7 +271,10 @@
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
             <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-spin">
         </a>
-
+        @if($hideSiteNav)
+            <span class="ml-2 mr-auto text-brand-blue font-extrabold tracking-wide">System test</span>
+        </div>
+        @else
         <nav class="hidden lg:flex items-center gap-x-7 xl:gap-x-10 flex-1 justify-center min-w-0">
             @foreach ($navLinks as $link)
                 @php $active = \App\Support\SiteMenu::navLinkIsActive($link, $currentUrl); @endphp
@@ -388,6 +392,7 @@
             </div>
         </nav>
     </div>
+        @endif
 </header>
 
 <main class="flex-1">

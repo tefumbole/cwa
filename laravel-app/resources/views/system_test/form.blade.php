@@ -92,11 +92,6 @@
             <li><span class="step-no">7</span><span>For each line below, choose <strong>Works</strong>, <strong>Does not work</strong>, or <strong>Not tested</strong>. If it failed, write one sentence about what you saw.</span></li>
             <li><span class="step-no">8</span><span>Put your name and WhatsApp number, then press <strong>Send the result</strong>. The summary goes to your WhatsApp, and a copy goes to the administrator.</span></li>
         </ol>
-        <div class="links">
-            <a href="{{ url('/') }}" target="_blank">Open the homepage</a>
-            <a href="{{ url('/login') }}" target="_blank">Open Login</a>
-            <a href="{{ url('/about') }}" target="_blank">Open About Us</a>
-        </div>
     </section>
 
     <form method="POST" action="{{ route('system-test.store') }}" id="system-test">

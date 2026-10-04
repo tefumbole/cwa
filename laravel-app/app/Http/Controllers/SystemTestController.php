@@ -19,6 +19,7 @@ class SystemTestController extends Controller
     {
         return view('system_test.form', [
             'sections' => SystemTestGuide::sections(),
+            'hideSiteNav' => true,
         ]);
     }
 
@@ -116,6 +117,7 @@ class SystemTestController extends Controller
             'mailed' => $mailed,
             'testerSent' => ! empty($testerSent['success']),
             'adminPhones' => $adminPhones,
+            'hideSiteNav' => true,
         ]);
     }
 
