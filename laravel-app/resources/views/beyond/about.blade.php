@@ -10,23 +10,23 @@
 @endphp
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 py-12 md:py-16">
+<div class="max-w-3xl mx-auto px-4 py-8 sm:py-12 md:py-16">
     <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.about.kicker') }}</p>
-    <h1 class="text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
+    <h1 class="text-[1.85rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
     <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem]">{{ $story }}</p>
 
     <div class="mt-10 space-y-5">
-        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-5 sm:p-6 md:p-7">
             <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.vision_heading', __('cwa.about.vision_heading')) }}</h2>
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $vision }}</p>
         </section>
 
-        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-5 sm:p-6 md:p-7">
             <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.mission_heading', __('cwa.about.mission_heading')) }}</h2>
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">{{ $mission }}</p>
         </section>
 
-        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-6 md:p-7">
+        <section class="about-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-5 sm:p-6 md:p-7">
             <h2 class="text-xl font-extrabold text-brand-blue">{{ \App\Support\SiteContent::text('about.motto_label', __('cwa.about.motto_label')) }}</h2>
             <p class="mt-2 text-slate-600 leading-relaxed mb-0">
                 “{{ \App\Support\SiteContent::text('about.motto_text', __('cwa.about.motto_text')) }}”
@@ -40,12 +40,14 @@
         cursor: pointer;
         transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
     }
-    .about-card:hover {
-        transform: translateY(-3px);
-        border-color: #D4AF37;
-        background: #fffdf6;
-        box-shadow: 0 14px 32px rgba(0, 61, 130, 0.12);
+    @media (hover: hover) {
+        .about-card:hover {
+            transform: translateY(-3px);
+            border-color: #D4AF37;
+            background: #fffdf6;
+            box-shadow: 0 14px 32px rgba(0, 61, 130, 0.12);
+        }
+        .about-card:hover h2 { color: #002855; }
     }
-    .about-card:hover h2 { color: #002855; }
 </style>
 @endsection

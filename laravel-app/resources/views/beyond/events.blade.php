@@ -15,14 +15,14 @@
 <section class="pt-6 md:pt-8 pb-12 min-h-[70vh]">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
         <div class="text-center mb-6">
-            <h1 class="text-3xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.event.page_title')) }}</h1>
+            <h1 class="text-[1.85rem] leading-tight sm:text-3xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.event.page_title')) }}</h1>
         </div>
 
         <form method="GET" action="{{ url('/events') }}" class="mb-12 rounded-2xl bg-white border border-stone-200/80 shadow-sm p-4 md:p-5">
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
                 @foreach ($filters as $k => $label)
                     <a href="{{ url('/events') }}?filter={{ $k }}{{ request('q') ? '&q='.urlencode(request('q')) : '' }}{{ request('type') ? '&type='.urlencode(request('type')) : '' }}"
-                       class="px-4 py-2 rounded-full text-sm font-semibold transition
+                       class="shrink-0 inline-flex items-center min-h-[2.5rem] px-4 py-2 rounded-full text-sm font-semibold transition
                           {{ $filter === $k ? 'bg-brand-blue text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">
                         {{ $label }}
                     </a>
@@ -32,14 +32,14 @@
                 <input type="hidden" name="filter" value="{{ $filter }}">
                 <label class="sr-only" for="event-q">{{ __('cwa.event.search') }}</label>
                 <input id="event-q" type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('cwa.event.search_ph') }}"
-                       class="flex-1 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold">
-                <select name="type" class="rounded-full border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
+                       class="flex-1 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-base focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold">
+                <select name="type" class="rounded-full border border-stone-200 bg-stone-50 px-4 py-3 text-base text-stone-700 min-h-[3rem]">
                     <option value="">{{ __('cwa.event.all_types') }}</option>
                     @foreach(\App\Event::TYPES as $k => $label)
                         <option value="{{ $k }}" {{ request('type') === $k ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="px-6 py-3 rounded-full bg-brand-gold text-brand-blue font-extrabold text-sm hover:bg-[#c4a030]">
+                <button type="submit" class="min-h-[3rem] px-6 py-3 rounded-full bg-brand-gold text-brand-blue font-extrabold text-sm hover:bg-[#c4a030] w-full md:w-auto">
                     {{ __('cwa.event.search') }}
                 </button>
             </div>
@@ -73,7 +73,7 @@
                             'cancelled' => 'bg-red-600 text-white',
                         ];
                     @endphp
-                    <article class="bg-white rounded-2xl border border-stone-200/80 hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
+                    <article class="bg-white rounded-2xl border border-stone-200/80 hover:shadow-lg md:hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
                         <a href="{{ url('/events/' . $ev->slug) }}" class="block relative">
                             <div class="relative aspect-[4/3] overflow-hidden bg-stone-100">
                                 @if ($flyer)

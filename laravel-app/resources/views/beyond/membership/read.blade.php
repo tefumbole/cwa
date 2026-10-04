@@ -157,6 +157,8 @@
     }
     .cwa-doc-tabs {
         display: inline-flex;
+        width: 100%;
+        max-width: 24rem;
         margin-top: 1.15rem;
         padding: 0.25rem;
         background: #fff;
@@ -165,13 +167,15 @@
         box-shadow: 0 6px 18px rgba(26, 31, 46, 0.05);
     }
     .cwa-doc-tabs a {
-        min-width: 8.5rem;
-        padding: 0.55rem 1.15rem;
+        flex: 1;
+        min-width: 0;
+        padding: 0.55rem 0.7rem;
         border-radius: 999px;
         font-weight: 800;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         text-decoration: none;
         color: #475569;
+        text-align: center;
     }
     .cwa-doc-tabs a.is-on {
         background: #003D82;
@@ -239,7 +243,6 @@
         line-height: 1.35;
         font-weight: 600;
     }
-    .cwa-doc-toc a:hover, .cwa-doc-card:target { }
     .cwa-doc-toc a:hover { background: #F6F3EC; color: #003D82; }
     .cwa-doc-toc a.is-active {
         background: #003D82;
@@ -334,22 +337,30 @@
     .cwa-doc-empty { color: #94a3b8; font-size: 0.88rem; padding: 0.5rem; }
     .cwa-doc-cta {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         justify-content: center;
         gap: 0.75rem;
         margin-top: 1.75rem;
     }
+    @media (min-width: 640px) {
+        .cwa-doc-cta { flex-direction: row; flex-wrap: wrap; }
+    }
     .cwa-doc-register {
-        display: inline-flex; align-items: center; gap: 0.4rem;
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
         min-height: 3rem; padding: 0.7rem 1.4rem;
         border-radius: 999px; background: #D4AF37; color: #003D82;
         font-weight: 800; text-decoration: none;
+        width: 100%;
     }
     .cwa-doc-close {
-        display: inline-flex; align-items: center;
+        display: inline-flex; align-items: center; justify-content: center;
         min-height: 3rem; padding: 0.7rem 1.4rem;
         border-radius: 999px; border: 1.5px solid #003D82; color: #003D82;
         font-weight: 800; text-decoration: none;
+        width: 100%;
+    }
+    @media (min-width: 640px) {
+        .cwa-doc-register, .cwa-doc-close { width: auto; }
     }
     .sr-only {
         position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -375,6 +386,8 @@
     }
     .cwa-doc-float-close:hover { background: #002855; color: #D4AF37; }
     @media (max-width: 640px) {
+        .cwa-doc { padding: 1.1rem 0.85rem 5.5rem; }
+        .cwa-doc-card { padding: 1.05rem 0.95rem 1.15rem; }
         .cwa-doc-float-close span { display: none; }
         .cwa-doc-float-close {
             width: 2.7rem;
@@ -382,7 +395,8 @@
             min-height: 0;
             padding: 0;
             justify-content: center;
-            right: 0.7rem;
+            right: calc(0.7rem + env(safe-area-inset-right, 0px));
+            top: calc(4.85rem + env(safe-area-inset-top, 0px));
         }
     }
 </style>

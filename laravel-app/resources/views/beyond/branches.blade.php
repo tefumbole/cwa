@@ -9,28 +9,28 @@
 @endphp
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-12 md:py-16" x-data="branchesPage()">
+<div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 md:py-16" x-data="branchesPage()">
     <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.branches.kicker') }}</p>
-    <h1 class="text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.branches.hero') }}</h1>
-    <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem] max-w-3xl">{{ __('cwa.branches.intro') }}</p>
+    <h1 class="text-[1.7rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.branches.hero') }}</h1>
+    <p class="mt-4 text-slate-600 leading-relaxed text-[0.98rem] sm:text-[1.05rem] max-w-3xl">{{ __('cwa.branches.intro') }}</p>
 
-    <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    <div class="mt-6 sm:mt-8 flex flex-col gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
             <button type="button" @click="tab = 'cameroon'"
-                    class="inline-flex items-center justify-center min-h-[2.75rem] px-7 py-2.5 rounded-full border-2 border-[#003D82] font-extrabold text-[#003D82]"
+                    class="flex-1 sm:flex-none inline-flex items-center justify-center min-h-[2.75rem] px-5 sm:px-7 py-2.5 rounded-full border-2 border-[#003D82] font-extrabold text-[#003D82]"
                     :class="tab === 'cameroon' ? 'bg-[#003D82] text-white' : 'bg-white hover:bg-[#003D82] hover:text-white'">
                 {{ __('cwa.branches.tab_cameroon') }}
             </button>
             <button type="button" @click="tab = 'diaspora'"
-                    class="inline-flex items-center justify-center min-h-[2.75rem] px-7 py-2.5 rounded-full border-2 border-[#D4AF37] font-extrabold text-[#003D82]"
+                    class="flex-1 sm:flex-none inline-flex items-center justify-center min-h-[2.75rem] px-5 sm:px-7 py-2.5 rounded-full border-2 border-[#D4AF37] font-extrabold text-[#003D82]"
                     :class="tab === 'diaspora' ? 'bg-[#D4AF37] text-[#003D82]' : 'bg-white hover:bg-[#D4AF37]'">
                 {{ __('cwa.branches.tab_diaspora') }}
             </button>
         </div>
-        <label class="relative flex-1">
+        <label class="relative w-full">
             <span class="sr-only">{{ __('cwa.branches.search') }}</span>
             <input type="search" x-model="q" placeholder="{{ __('cwa.branches.search') }}"
-                   class="w-full rounded-full border border-stone-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-brand-gold focus:ring-4 focus:ring-[#D4AF37]/20">
+                   class="w-full rounded-full border border-stone-200 bg-white px-4 py-2.5 text-base text-slate-700 shadow-sm outline-none focus:border-brand-gold focus:ring-4 focus:ring-[#D4AF37]/20">
         </label>
     </div>
 
@@ -97,13 +97,13 @@
         </div>
     </div>
 
-    <div class="mt-12 rounded-2xl bg-brand-blue text-white p-6 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="mt-10 sm:mt-12 rounded-2xl bg-brand-blue text-white p-5 sm:p-6 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-xl font-extrabold m-0">{{ __('cwa.branches.cta_title') }}</h2>
+            <h2 class="text-lg sm:text-xl font-extrabold m-0">{{ __('cwa.branches.cta_title') }}</h2>
             <p class="mt-1 mb-0 text-white/80 text-sm">{{ __('cwa.branches.cta_body') }}</p>
         </div>
         <a href="{{ route('beyond.membership') }}"
-           class="inline-flex justify-center items-center rounded-full bg-brand-gold text-brand-blue font-extrabold px-5 py-2.5 hover:bg-[#c4a030] whitespace-nowrap">
+           class="inline-flex justify-center items-center min-h-[2.85rem] rounded-full bg-brand-gold text-brand-blue font-extrabold px-5 py-2.5 hover:bg-[#c4a030] w-full sm:w-auto">
             {{ __('cwa.nav.join') }}
         </a>
     </div>
@@ -113,15 +113,20 @@
         background: #fff;
         border: 1px solid rgba(231, 224, 212, 0.9);
         border-radius: 1rem;
-        padding: 1.5rem 1.55rem 1.6rem;
+        padding: 1.15rem 1.1rem 1.25rem;
         box-shadow: 0 8px 24px rgba(26, 31, 46, 0.04);
         transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
     }
-    .branch-card:hover {
-        transform: translateY(-3px);
-        border-color: #D4AF37;
-        background: #fffdf6;
-        box-shadow: 0 14px 32px rgba(0, 61, 130, 0.12);
+    @media (min-width: 640px) {
+        .branch-card { padding: 1.5rem 1.55rem 1.6rem; }
+    }
+    @media (hover: hover) {
+        .branch-card:hover {
+            transform: translateY(-3px);
+            border-color: #D4AF37;
+            background: #fffdf6;
+            box-shadow: 0 14px 32px rgba(0, 61, 130, 0.12);
+        }
     }
     .branch-kicker {
         margin: 0 0 0.25rem;
@@ -158,15 +163,20 @@
         flex-direction: row;
         gap: 0.4rem;
         overflow-x: auto;
-        padding-bottom: 0.25rem;
+        padding-bottom: 0.35rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
     }
+    .diaspora-nav .diaspora-link { scroll-snap-align: start; flex: 0 0 auto; width: auto; }
     @media (min-width: 800px) {
         .diaspora-nav {
             flex-direction: column;
             overflow: visible;
             position: sticky;
             top: 5.5rem;
+            scroll-snap-type: none;
         }
+        .diaspora-nav .diaspora-link { width: 100%; }
     }
     .diaspora-link {
         display: flex;
@@ -178,13 +188,16 @@
         background: #fff;
         color: #003D82;
         border-radius: 0.85rem;
+        min-height: 2.75rem;
         padding: 0.65rem 0.75rem;
         font-size: 0.88rem;
         font-weight: 800;
         white-space: nowrap;
         cursor: pointer;
     }
-    .diaspora-link:hover { border-color: #D4AF37; background: #fffdf6; }
+    @media (hover: hover) {
+        .diaspora-link:hover { border-color: #D4AF37; background: #fffdf6; }
+    }
     .diaspora-link.is-on {
         background: #003D82;
         border-color: #003D82;

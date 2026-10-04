@@ -5,11 +5,11 @@
 
 @section('content')
 
-<div class="min-h-screen bg-gray-50 py-12">
+<div class="min-h-screen bg-gray-50 py-8 sm:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div class="text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('contact.heading', 'Get in Touch') }}</h1>
+        <div class="text-center mb-10 sm:mb-16">
+            <h1 class="text-[1.85rem] leading-tight sm:text-4xl md:text-5xl font-extrabold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('contact.heading', 'Get in Touch') }}</h1>
             <p class="text-lg text-gray-600 max-w-2xl mx-auto">
                 {{ \App\Support\SiteContent::text('contact.intro', "Have a question, need assistance, or want to explore partnership opportunities? We're here to help. Reach out to the Beyond Enterprise team today.") }}
             </p>
@@ -81,29 +81,29 @@
                         </h2>
                         <p class="text-blue-100 mt-1">Fill out the form below and we'll instantly receive it via WhatsApp.</p>
                     </div>
-                    <div class="p-8 md:p-10">
+                    <div class="p-5 sm:p-8 md:p-10">
                         <form id="contact-form" class="space-y-6" onsubmit="return submitContact(event)">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
                                     <input required name="name" type="text" placeholder="e.g. John Doe"
-                                           class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                                           class="w-full min-h-[2.85rem] rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-semibold text-gray-700">Email Address <span class="text-red-500">*</span></label>
                                     <input required name="email" type="email" placeholder="e.g. john@example.com"
-                                           class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                                           class="w-full min-h-[2.85rem] rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-700">Subject <span class="text-red-500">*</span></label>
                                 <input required name="subject" type="text" placeholder="What is this regarding?"
-                                       class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                                       class="w-full min-h-[2.85rem] rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-700">Your Message <span class="text-red-500">*</span></label>
-                                <textarea required name="message" rows="6" placeholder="Please provide details about your inquiry..."
-                                          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 resize-none focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"></textarea>
+                                <textarea required name="message" rows="5" placeholder="Please provide details about your inquiry..."
+                                          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base resize-none focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none"></textarea>
                             </div>
                             <div id="contact-success" class="hidden rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm"></div>
                             <div class="pt-4 flex flex-col sm:flex-row gap-4">

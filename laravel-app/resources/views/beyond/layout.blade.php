@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     @php
         $siteLogoUrl = \App\Support\SiteBrand::logoUrl($general_setting ?? null);
         $siteTitle = \App\Support\SiteBrand::siteTitle($general_setting ?? null);
@@ -35,7 +35,9 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; }
+        html { overflow-x: hidden; }
+        body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; overflow-x: hidden; }
+        body.nav-open { overflow: hidden; }
         :root {
             --cwa-paper: #F6F3EC;
             --cwa-ink: #1A1F2E;
@@ -94,7 +96,15 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
         }
-        header.site-header { z-index: 40; }
+        header.site-header {
+            z-index: 40;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
+        }
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px !important; }
+        }
         main.flex-1 {
             position: relative;
             z-index: 1;
@@ -132,7 +142,7 @@
             justify-content: center;
             align-items: flex-end;
             gap: 0;
-            padding: 0 1rem 0.85rem;
+            padding: 0 1rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
             font-size: 0.9rem;
             line-height: 1.35;
             text-align: center;
@@ -189,10 +199,55 @@
         }
         .cwa-wa {
             z-index: 90;
+            bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            right: calc(1rem + env(safe-area-inset-right, 0px));
         }
         body.cwa-home .cwa-wa {
-            bottom: 6.75rem;
+            bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
             z-index: 90;
+        }
+        .nav-burger {
+            min-width: 2.75rem;
+            min-height: 2.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.65rem;
+        }
+        .mobile-drawer {
+            max-height: min(78dvh, calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px)));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+        }
+        .mobile-drawer a.mobile-nav-link {
+            min-height: 2.85rem;
+            display: flex;
+            align-items: center;
+            padding: 0.55rem 0.15rem;
+        }
+        .mobile-cta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            padding-top: 0.35rem;
+        }
+        .mobile-cta a {
+            min-height: 2.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.92rem;
+        }
+        @media (max-width: 640px) {
+            .cwa-foot { margin-top: -1.75rem; }
+            .cwa-wa { width: 3.15rem; height: 3.15rem; }
+        }
+        @media (hover: none) {
+            .about-card:hover,
+            .branch-card:hover { transform: none; }
         }
     </style>
     @stack('head')
@@ -204,7 +259,7 @@
     $currentUrl = url()->current();
 @endphp
 
-<header class="site-header sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200/80" x-data="{ open: false, userMenu: false }" @keydown.escape.window="userMenu = false">
+<header class="site-header sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200/80" x-data="{ open: false, userMenu: false }" x-effect="document.body.classList.toggle('nav-open', open)" @keydown.escape.window="open = false; userMenu = false">
     <div class="w-full flex items-center justify-between h-14 sm:h-16 pl-1 pr-3 sm:pl-2 sm:pr-6 lg:pl-3 lg:pr-8">
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
             <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-spin">
@@ -283,20 +338,22 @@
             @endif
         </div>
 
-        <button @click="open = !open" class="lg:hidden text-stone-700 hover:text-brand-blue transition-colors">
+        <button @click="open = !open" class="nav-burger lg:hidden text-stone-700 hover:text-brand-blue hover:bg-stone-100 transition-colors" aria-label="{{ __('cwa.nav.menu') }}" :aria-expanded="open.toString()">
             <i data-lucide="menu" class="w-6 h-6" x-show="!open"></i>
             <i data-lucide="x" class="w-6 h-6" x-show="open" x-cloak></i>
         </button>
     </div>
 
-    <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-white border-t border-stone-200">
-        <nav class="flex flex-col space-y-3 pt-4">
+    <div x-show="open" x-cloak class="lg:hidden px-4 bg-white border-t border-stone-200 mobile-drawer">
+        <nav class="flex flex-col pt-3">
             @foreach ($navLinks as $link)
-                <a href="{{ $link['url'] }}" class="text-lg font-medium {{ !empty($link['special']) ? 'text-brand-blue' : 'text-stone-700 hover:text-brand-blue' }}">{{ $link['label'] }}</a>
+                <a href="{{ $link['url'] }}" class="mobile-nav-link text-base font-semibold {{ !empty($link['special']) ? 'text-brand-blue' : 'text-stone-700' }}">{{ $link['label'] }}</a>
             @endforeach
-            <a href="{{ route('beyond.membership') }}" class="text-lg font-bold text-brand-blue">{{ __('cwa.nav.join') }}</a>
-            <a href="{{ route('beyond.donate') }}" class="text-lg font-medium text-stone-700 hover:text-brand-blue">{{ __('cwa.nav.donate') }}</a>
-            <a href="{{ url('/documents') }}" class="text-lg font-medium text-stone-700 hover:text-brand-blue">{{ __('cwa.nav.resources') }}</a>
+            <div class="mobile-cta">
+                <a href="{{ route('beyond.membership') }}" class="bg-brand-gold text-brand-blue">{{ __('cwa.nav.join') }}</a>
+                <a href="{{ route('beyond.donate') }}" class="border-2 border-brand-blue text-brand-blue">{{ __('cwa.nav.donate') }}</a>
+            </div>
+            <a href="{{ url('/documents') }}" class="mobile-nav-link text-base font-semibold text-stone-700">{{ __('cwa.nav.resources') }}</a>
             <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'light'])</div>
             <div class="pt-3 border-t border-stone-200 space-y-2">
                 @if ($headerUser)
@@ -308,17 +365,17 @@
                         </div>
                     </div>
                     @if ($isAdminSession)
-                        <a href="{{ url('/admin') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.admin') }}</a>
-                        <a href="{{ url('/') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded border border-white/20 text-white">{{ __('cwa.nav.home_page') }}</a>
+                        <a href="{{ url('/admin') }}" class="flex items-center justify-center gap-2 w-full min-h-[2.75rem] rounded-full bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.admin') }}</a>
+                        <a href="{{ url('/') }}" class="flex items-center justify-center gap-2 w-full min-h-[2.75rem] rounded-full border border-stone-300 text-stone-700">{{ __('cwa.nav.home_page') }}</a>
                     @else
-                        <a href="{{ url('/user/profile') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.profile') }}</a>
+                        <a href="{{ url('/user/profile') }}" class="flex items-center justify-center gap-2 w-full min-h-[2.75rem] rounded-full bg-brand-gold text-brand-blue font-bold">{{ __('cwa.nav.profile') }}</a>
                     @endif
                     <form method="POST" action="{{ $isAdminSession ? route('logout') : route('beyond.logout') }}">
                         @csrf
-                        <button type="submit" class="w-full py-2 rounded border border-red-400/50 text-red-300">{{ __('cwa.nav.logout') }}</button>
+                        <button type="submit" class="w-full min-h-[2.75rem] rounded-full border border-red-200 text-red-600 font-semibold">{{ __('cwa.nav.logout') }}</button>
                     </form>
                 @else
-                    <a href="{{ url('/login') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded border border-brand-gold text-brand-gold font-medium">
+                    <a href="{{ url('/login') }}" class="flex items-center justify-center gap-2 w-full min-h-[2.75rem] rounded-full border-2 border-brand-blue text-brand-blue font-bold">
                         <i data-lucide="log-in" class="w-5 h-5"></i> {{ __('cwa.nav.login') }}
                     </a>
                 @endif

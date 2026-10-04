@@ -27,9 +27,9 @@
             <div class="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/80 to-brand-navy/40"></div>
         </div>
     @endif
-    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 text-center">
         <p class="text-brand-gold font-semibold tracking-wide uppercase text-sm mb-3">{{ \App\Event::TYPES[$event->event_type] ?? $event->event_type }}</p>
-        <h1 class="text-3xl md:text-5xl font-bold mb-4">{{ $title }}</h1>
+        <h1 class="text-[1.75rem] leading-tight sm:text-3xl md:text-5xl font-bold mb-4">{{ $title }}</h1>
         @if($publicStatus)
             <span class="inline-block text-sm font-semibold px-4 py-1 rounded-full {{ $statusColors[$publicStatus] ?? 'bg-white/20 text-white' }}">
                 {{ $statusLabels[$publicStatus] ?? $publicStatus }}

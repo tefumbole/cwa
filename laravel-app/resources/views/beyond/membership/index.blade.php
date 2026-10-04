@@ -9,9 +9,9 @@
     $readBylaws = !empty($readBylaws);
     $openDocs = $readArticles || $readBylaws || request()->boolean('open');
 @endphp
-<div class="min-h-[70vh] px-4 py-16 md:py-24" x-data="membershipGate({{ $openDocs ? 'true' : 'false' }}, {{ $readArticles ? 'true' : 'false' }}, {{ $readBylaws ? 'true' : 'false' }})">
+<div class="min-h-[70vh] px-4 py-12 sm:py-16 md:py-24" x-data="membershipGate({{ $openDocs ? 'true' : 'false' }}, {{ $readArticles ? 'true' : 'false' }}, {{ $readBylaws ? 'true' : 'false' }})">
     <div class="max-w-xl mx-auto text-center">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.membership.page_title') }}</h1>
+        <h1 class="text-[2rem] leading-tight sm:text-4xl md:text-5xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.membership.page_title') }}</h1>
         <button type="button" @click="onSubscribe()"
                 class="mt-10 inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[3.25rem] px-10 py-3.5 rounded-full bg-brand-gold text-brand-blue font-extrabold text-lg hover:bg-[#c4a030] shadow-sm">
             <i data-lucide="heart" class="w-5 h-5"></i>

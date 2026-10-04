@@ -27,6 +27,7 @@
         flex-direction: column;
         min-height: 100vh;
         color: #fff;
+        overflow-x: hidden;
     }
     .lp-nav {
         position: relative;
@@ -36,7 +37,7 @@
         justify-content: space-between;
         gap: 1rem;
         min-height: 5.15rem;
-        padding: 0.7rem 1.6rem 0.7rem 1.15rem;
+        padding: calc(0.7rem + env(safe-area-inset-top, 0px)) 1.6rem 0.7rem 1.15rem;
         background: #fff;
         box-shadow: 0 8px 24px rgba(7, 26, 56, 0.08);
     }
@@ -158,7 +159,10 @@
         display: none;
         background: #fff;
         border-top: 1px solid #eee;
-        padding: 0.75rem 1.15rem 1.1rem;
+        padding: 0.75rem 1.15rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+        max-height: min(78dvh, calc(100dvh - 4.5rem));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     .lp-drawer.is-open { display: block; }
     .lp-drawer a {
@@ -182,7 +186,7 @@
         border: 1px solid #e5e7eb;
         border-radius: 999px;
         padding: 0.55rem 1rem;
-        font-size: 0.9rem;
+        font-size: 1rem;
         outline: none;
     }
     .lp-hero {
@@ -459,20 +463,79 @@
         .lp-hero::before {
             background: linear-gradient(180deg, rgba(0,40,85,0.2) 0%, rgba(0,61,130,0.55) 42%, rgba(0,61,130,0.96) 100%);
         }
+        .lp-drawer-cta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.75rem 0 0.25rem;
+        }
+        .lp-drawer-cta a {
+            min-height: 2.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border-bottom: 0;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .lp-drawer-cta .is-join { background: var(--gold); color: #071a38; }
+        .lp-drawer-cta .is-give { border: 1.5px solid var(--gold); color: #8a6d1d; }
     }
     @media (max-width: 640px) {
+        .lp-nav { min-height: 4.15rem; padding: 0.45rem 0.85rem; }
+        .lp-brand img { width: 2.7rem; height: 2.7rem; }
+        .lp-brand-name { font-size: 1.05rem; }
         .lp-brand-tag { display: none; }
-        .dial, .dial svg { width: 62px; height: 62px; }
-        .dial-inner { inset: 8px; }
-        .dial-value { font-size: 1.05rem; }
-        .lp-rings { gap: 0.35rem; }
-        .lp-copy h1 { font-size: 3rem; }
+        .lp-menu-btn { width: 2.75rem; height: 2.75rem; }
+        .lp-copy { padding: 1.15rem 1rem 7.25rem; }
+        .lp-copy h1 { font-size: clamp(2.15rem, 11vw, 2.7rem); }
+        .lp-kicker { letter-spacing: 0.18em; font-size: 0.6rem; }
+        .lp-sub, .lp-quote { font-size: 0.92rem; }
+        .lp-btns { flex-direction: column; }
+        .lp-btn { width: 100%; justify-content: center; min-height: 3rem; }
+        .lp-hero { min-height: calc(100dvh - 4.15rem); padding-bottom: 6.5rem; }
+        .lp-meter { padding: 0.7rem 0.75rem; gap: 0.55rem; }
+        .dial, .dial svg { width: 58px; height: 58px; }
+        .dial-inner { inset: 7px; }
+        .dial-value { font-size: 1rem; }
+        .lp-rings { gap: 0.3rem; }
+        .lp-drawer a {
+            min-height: 2.85rem;
+            display: flex;
+            align-items: center;
+        }
+        .lp-drawer-cta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.75rem 0 0.25rem;
+        }
+        .lp-drawer-cta a {
+            min-height: 2.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border-bottom: 0;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .lp-drawer-cta .is-join { background: var(--gold); color: #071a38; }
+        .lp-drawer-cta .is-give { border: 1.5px solid var(--gold); color: #8a6d1d; }
+    }
+    @media (max-width: 380px) {
+        .lp-brand-name { font-size: 0.95rem; }
+        .lp-copy h1 { font-size: clamp(1.85rem, 10.5vw, 2.35rem); }
+        .dial, .dial svg { width: 50px; height: 50px; }
+        .dial-value { font-size: 0.9rem; }
+        .lp-drawer-cta { grid-template-columns: 1fr; }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="lp" x-data="{ open: false, search: false }">
+<div class="lp" x-data="{ open: false, search: false }" x-effect="document.body.classList.toggle('nav-open', open)">
     <header class="lp-nav">
         <a href="{{ url('/') }}" class="lp-brand" aria-label="{{ __('cwa.nav.home') }}">
             <img src="{{ $logoMark }}" alt="CWACAM">
@@ -516,8 +579,10 @@
         @foreach ($navLinks as $link)
             <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
         @endforeach
-        <a href="{{ route('beyond.membership') }}">{{ __('cwa.nav.join') }}</a>
-        <a href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a>
+        <div class="lp-drawer-cta">
+            <a class="is-join" href="{{ route('beyond.membership') }}">{{ __('cwa.nav.join') }}</a>
+            <a class="is-give" href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a>
+        </div>
         <a href="{{ url('/documents') }}">{{ __('cwa.nav.resources') }}</a>
         <div class="pt-2">@include('beyond.partials.lang_switch', ['variant' => 'light'])</div>
         <a href="{{ url('/login') }}">{{ __('cwa.nav.login') }}</a>

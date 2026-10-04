@@ -34,21 +34,21 @@
                 <div class="mt-2 grid grid-cols-3 gap-2">
                     @foreach($presets as $preset)
                         <button type="button"
-                                class="rounded-lg border-2 py-2 font-bold text-sm"
+                                class="rounded-lg border-2 min-h-[2.75rem] py-2 font-bold text-sm"
                                 :class="!custom && amount === {{ $preset }} ? 'border-brand-gold bg-amber-50 text-brand-blue' : 'border-slate-200'"
                                 @click="custom = false; amount = {{ $preset }}">
                             {{ number_format($preset, 0, '.', ' ') }}
                         </button>
                     @endforeach
                     <button type="button"
-                            class="rounded-lg border-2 py-2 font-bold text-sm"
+                            class="rounded-lg border-2 min-h-[2.75rem] py-2 font-bold text-sm"
                             :class="custom ? 'border-brand-gold bg-amber-50 text-brand-blue' : 'border-slate-200'"
                             @click="custom = true">
                         {{ __('cwa.donate.other') }}
                     </button>
                 </div>
                 <input x-show="custom" x-cloak type="number" min="100" step="100" x-model.number="amount"
-                       class="mt-3 w-full rounded-md border border-gray-200 px-3 py-2" placeholder="{{ __('cwa.donate.amount_ph') }}">
+                       class="mt-3 w-full min-h-[2.85rem] rounded-md border border-gray-200 px-3 py-2 text-base" placeholder="{{ __('cwa.donate.amount_ph') }}">
                 <input type="hidden" name="amount" :value="amount">
             </div>
 
@@ -57,7 +57,7 @@
                 <div class="mt-1 flex">
                     <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-200 bg-gray-50 text-gray-600 font-semibold">+237</span>
                     <input required name="phone" x-model="phone" type="tel" inputmode="numeric" maxlength="13" placeholder="6XX XXX XXX"
-                           class="w-full rounded-r-md border border-gray-200 px-3 py-2"
+                           class="w-full min-h-[2.85rem] rounded-r-md border border-gray-200 px-3 py-2 text-base"
                            @input="normalizePhone(); scheduleLookup()"
                            @blur="lookupNow()">
                 </div>
@@ -75,7 +75,7 @@
                 <p x-show="operator === 'orange'" x-cloak class="mt-2 text-xs text-slate-600">{{ __('cwa.donate.ussd_orange') }}</p>
             </div>
 
-            <button type="submit" class="w-full bg-brand-gold hover:bg-yellow-500 text-brand-blue font-bold py-3 rounded-full">
+            <button type="submit" class="w-full min-h-[3.1rem] bg-brand-gold hover:bg-yellow-500 text-brand-blue font-bold py-3 rounded-full">
                 <span x-show="operator === 'mtn'" x-cloak>{{ __('cwa.donate.pay_mtn') }}</span>
                 <span x-show="operator === 'orange'" x-cloak>{{ __('cwa.donate.pay_orange') }}</span>
                 <span x-show="operator !== 'mtn' && operator !== 'orange'">{{ __('cwa.donate.pay') }}</span>

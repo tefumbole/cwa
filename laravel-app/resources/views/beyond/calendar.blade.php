@@ -21,11 +21,11 @@
     <h1 class="text-2xl font-extrabold text-brand-blue mb-6">{{ \App\Support\SiteContent::text('events.hero_title', __('cwa.calendar.heading')) }}</h1>
 
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <div class="inline-flex rounded-full bg-white border border-slate-200 p-1">
+            <div class="inline-flex w-full sm:w-auto rounded-full bg-white border border-slate-200 p-1">
                 <a href="{{ url('/calendar') }}?view=month&amp;year={{ $year }}&amp;month={{ $month }}"
-                   class="px-4 py-1.5 rounded-full text-sm font-semibold {{ $view === 'month' ? 'bg-brand-blue text-white' : 'text-slate-600' }}">{{ __('cwa.calendar.month') }}</a>
+                   class="flex-1 sm:flex-none text-center min-h-[2.5rem] inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-semibold {{ $view === 'month' ? 'bg-brand-blue text-white' : 'text-slate-600' }}">{{ __('cwa.calendar.month') }}</a>
                 <a href="{{ url('/calendar') }}?view=year&amp;year={{ $year }}"
-                   class="px-4 py-1.5 rounded-full text-sm font-semibold {{ $view === 'year' ? 'bg-brand-blue text-white' : 'text-slate-600' }}">{{ __('cwa.calendar.yearly') }}</a>
+                   class="flex-1 sm:flex-none text-center min-h-[2.5rem] inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-semibold {{ $view === 'year' ? 'bg-brand-blue text-white' : 'text-slate-600' }}">{{ __('cwa.calendar.yearly') }}</a>
             </div>
             <form method="GET" action="{{ url('/calendar') }}" class="flex flex-wrap items-center gap-2">
                 <input type="hidden" name="view" value="{{ $view }}">

@@ -5,7 +5,7 @@
 
 @push('head')
 <style>
-    .mship-page { max-width: 38rem; margin: 0 auto; padding: 1.35rem 1rem 4.5rem; }
+    .mship-page { max-width: 38rem; margin: 0 auto; padding: 1.1rem 0.9rem 5.5rem; }
     .mship-back {
         display: inline-flex; align-items: center; gap: 0.35rem;
         color: #003D82; font-weight: 700; font-size: 0.88rem; text-decoration: none; margin-bottom: 0.85rem;
@@ -127,6 +127,16 @@
         box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
     }
     .mship-choice small { font-weight: 600; color: #64748b; font-size: 0.75rem; }
+    @media (max-width: 420px) {
+        .mship-steps li { font-size: 0; gap: 0.2rem; }
+        .mship-steps i { font-size: 0.75rem; }
+    }
+    @media (max-width: 520px) {
+        .mship-combo { flex-direction: column; }
+        .mship-combo .mship-cc { border-right: 0; border-bottom: 1px solid #e7e0d4; width: 100%; justify-content: flex-start; }
+        .mship-menu { width: 100%; left: 0; }
+        .mship-actions { flex-direction: column; }
+    }
     .mship-actions { display: flex; gap: 0.7rem; margin-top: 1.4rem; }
     .mship-btn {
         flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;

@@ -5,14 +5,14 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-extrabold text-brand-blue mb-6">{{ __('cwa.gallery.title') }}</h1>
+    <h1 class="text-[1.7rem] leading-tight sm:text-2xl font-extrabold text-brand-blue mb-6">{{ __('cwa.gallery.title') }}</h1>
         @if ($items->isEmpty())
             <div class="text-center py-20 text-gray-500">
                 <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
                 <p class="text-lg">{{ __('cwa.gallery.empty') }}</p>
             </div>
         @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                 @foreach ($items as $item)
                     @include('beyond.partials.gallery_item', ['item' => $item])
                 @endforeach
@@ -22,8 +22,8 @@
 </div>
 
 <div id="gallery-lightbox" class="fixed inset-0 z-50 hidden bg-black/90 items-center justify-center p-4" onclick="closeGalleryLightbox(event)">
-    <button type="button" class="absolute top-4 right-4 text-white text-3xl leading-none" onclick="closeGalleryLightbox(event)">&times;</button>
-    <img id="gallery-lightbox-img" src="" alt="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl">
+    <button type="button" class="absolute top-4 right-4 w-11 h-11 text-white text-3xl leading-none" onclick="closeGalleryLightbox(event)" aria-label="Close">&times;</button>
+    <img id="gallery-lightbox-img" src="" alt="" class="max-w-full max-h-[80dvh] rounded-lg shadow-2xl">
 </div>
 
 @endsection
