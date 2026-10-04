@@ -18,9 +18,22 @@ class WhatsAppMessage
         return $general->site_title ?? config('app.name', 'Application');
     }
 
+    public static function rule()
+    {
+        return str_repeat('─', 28);
+    }
+
+    /** Organisation name on its own line, then the heading. */
+    public static function brandLine()
+    {
+        return '*'.self::companyName()."*\n\n";
+    }
+
     public static function statusBlock($emoji, $title)
     {
-        return $emoji . ' *' . strtoupper($title) . "*\n━━━━━━━━━━━━━━━━\n";
+        return self::brandLine()
+            .$emoji.' *'.strtoupper($title)."*\n"
+            .self::rule()."\n\n";
     }
 
     public static function greeting($name)
@@ -30,7 +43,7 @@ class WhatsAppMessage
 
     public static function bullet($label, $value)
     {
-        return "◾ *{$label}:* {$value}\n";
+        return "■ *{$label}:* {$value}\n";
     }
 
     public static function actionLink($label, $url)
@@ -40,7 +53,25 @@ class WhatsAppMessage
 
     public static function footer()
     {
-        return "\n_" . self::companyName() . '_';
+        $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'cwacam.org';
+
+        return "\n🌐 {$host}\n\n_" . self::companyName() . '_';
+    }
+
+    /**
+     * WhatsApp asking a user to draw a signature, comment, approver mark, or all of them.
+     */
+    public static function userSignRequest($name, $label, $url)
+    {
+        $label = trim((string) $label) ?: 'Signature';
+        $msg = self::statusBlock('✍️', $label);
+        $msg .= self::greeting($name ?: 'there');
+        $msg .= "Please add your *{$label}* using the secure link below.\n";
+        $msg .= self::bullet('Expires', '3 days');
+        $msg .= self::actionLink('Open link', $url);
+        $msg .= self::footer();
+
+        return $msg;
     }
 
     public static function signatureRequest($customerName, $bookingRef, $signUrl, $company = null, $contractType = null)
@@ -459,7 +490,7 @@ class WhatsAppMessage
             }
         }
 
-        $msg .= "\n━━━━━━━━━━━━━━━━\n";
+        $msg .= "\n".self::rule()."\n";
         $msg .= self::bullet('Total', $money($grandTotal));
         $msg .= self::bullet('Payment', $payingMethod ?: '—');
         if (trim((string) $billingAddress) !== '') {
@@ -522,7 +553,7 @@ class WhatsAppMessage
         $msg .= "Welcome to *{$company}*.\n\n";
         $msg .= "Your one-time passcode (OTP) is:\n\n";
         $msg .= "👉 *{$otp}*\n\n";
-        $msg .= "━━━━━━━━━━━━━━━━\n";
+        $msg .= self::rule()."\n";
         $msg .= self::bullet('Purpose', $purposeLabel);
         $msg .= self::bullet('Expires in', "{$minutes} minutes");
         $msg .= "\n⚠️ *Security notice:* Never share this code with anyone. Our team will never ask for your OTP.";
@@ -1079,7 +1110,7 @@ class WhatsAppMessage
     {
         $line = '🌅 *PA NGWAYU FRANCIS*'."\n";
         $line .= '💌 *'.strtoupper($subjectEn).' / '.strtoupper($subjectFr)."*\n";
-        $line .= "━━━━━━━━━━━━━━━━\n\n";
+        $line .= self::rule()."\n\n";
 
         return $line;
     }

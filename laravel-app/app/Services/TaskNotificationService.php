@@ -9,6 +9,7 @@ use App\TaskAssignment;
 use App\TaskCc;
 use App\User;
 use App\Support\TaskPersonalization;
+use App\Support\WhatsAppMessage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -130,18 +131,19 @@ class TaskNotificationService extends Controller
             ? $task->deadline->format('d M Y') . ($task->deadline_time ? ' ' . substr((string) $task->deadline_time, 0, 5) : '')
             : '—';
         $desc = TaskPersonalization::personalize($task->description ?: '', TaskPersonalization::userVars($user));
-        $msg = "📋 *TASK CC NOTIFICATION*\n━━━━━━━━━━━━━━━\n\n";
-        $msg .= "Hello *" . ($user->name ?: 'Team Member') . "*,\n\n";
-        $msg .= "You have been CC'd on a task assigned to *{$assigneeNames}*:\n\n";
-        $msg .= "▪️ *Task:* {$task->title}\n";
-        $msg .= "▪️ *Priority:* " . ($task->priority ?: 'Medium') . "\n";
-        $msg .= "▪️ *Start:* {$start}\n";
-        $msg .= "▪️ *Deadline:* {$deadline}\n";
+        $msg = WhatsAppMessage::statusBlock('📋', 'Task CC notification');
+        $msg .= WhatsAppMessage::greeting($user->name ?: 'Team Member');
+        $msg .= "You have been CC'd on a task assigned to *{$assigneeNames}*.\n";
+        $msg .= WhatsAppMessage::bullet('Task', $task->title);
+        $msg .= WhatsAppMessage::bullet('Priority', $task->priority ?: 'Medium');
+        $msg .= WhatsAppMessage::bullet('Start', $start);
+        $msg .= WhatsAppMessage::bullet('Deadline', $deadline);
         if (trim($desc) !== '') {
             $msg .= "\n{$desc}\n";
         }
-        $msg .= "\nYou will receive progress updates on this task.\n\n";
-        $msg .= "👉 View tasks:\n" . url('/user/tasks') . "\n\n_Beyond Enterprise_";
+        $msg .= "\nYou will receive progress updates on this task.";
+        $msg .= WhatsAppMessage::actionLink('View tasks', url('/user/tasks'));
+        $msg .= WhatsAppMessage::footer();
 
         return $this->sendPhone($phone, $msg);
     }
@@ -180,18 +182,18 @@ class TaskNotificationService extends Controller
 
         $assigneeName = $assignee->name ?: 'Assignee';
         $accepted = $action === 'accepted';
-        $adminTitle = $accepted ? '📊 *TASK ACCEPTED*' : '❌ *TASK DECLINED*';
+        $adminTitle = WhatsAppMessage::statusBlock($accepted ? '📊' : '❌', $accepted ? 'Task accepted' : 'Task declined');
         $adminLine = $accepted
-            ? "*{$assigneeName}* has accepted the task:"
-            : "*{$assigneeName}* has declined the task:";
-        $ccTitle = $accepted ? '📊 *TASK CC — ACCEPTED*' : '❌ *TASK CC — DECLINED*';
+            ? "*{$assigneeName}* has accepted the task."
+            : "*{$assigneeName}* has declined the task.";
+        $ccTitle = WhatsAppMessage::statusBlock($accepted ? '📊' : '❌', $accepted ? 'Task CC — accepted' : 'Task CC — declined');
         $ccLine = $accepted
-            ? "*{$assigneeName}* has accepted the task you are CC'd on:"
-            : "*{$assigneeName}* has declined the task you are CC'd on:";
+            ? "*{$assigneeName}* has accepted the task you are CC'd on."
+            : "*{$assigneeName}* has declined the task you are CC'd on.";
 
         $admin = $task->created_by_admin_id ? User::find($task->created_by_admin_id) : null;
         if ($admin && ! empty($admin->phone)) {
-            $this->sendPhone($admin->phone, "{$adminTitle}\n━━━━━━━━━━━━━━━\n\n{$adminLine}\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_");
+            $this->sendPhone($admin->phone, $adminTitle.$adminLine."\n".WhatsAppMessage::bullet('Task', $task->title).WhatsAppMessage::footer());
         }
 
         foreach (TaskCc::where('task_id', $task->id)->get() as $cc) {
@@ -205,7 +207,7 @@ class TaskNotificationService extends Controller
             }
             $this->sendPhone(
                 $phone,
-                "{$ccTitle}\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n{$ccLine}\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_"
+                $ccTitle.WhatsAppMessage::greeting($user->name ?: 'CC')."{$ccLine}\n".WhatsAppMessage::bullet('Task', $task->title).WhatsAppMessage::footer()
             );
         }
     }
@@ -219,12 +221,11 @@ class TaskNotificationService extends Controller
             return;
         }
         $assigneeName = $assignee->name ?: 'Assignee';
-        $commentBlock = $comment ? "\n▪️ *Note:* {$comment}" : '';
 
         if ($status === 'Completed') {
             $admin = $task->created_by_admin_id ? User::find($task->created_by_admin_id) : null;
             if ($admin && ! empty($admin->phone)) {
-                $this->sendPhone($admin->phone, "✅ *TASK COMPLETED*\n━━━━━━━━━━━━━━━\n\n*{$assigneeName}* completed:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_");
+                $this->sendPhone($admin->phone, WhatsAppMessage::statusBlock('✅', 'Task completed')."*{$assigneeName}* completed this task.\n".WhatsAppMessage::bullet('Task', $task->title).WhatsAppMessage::footer());
             }
             foreach (TaskCc::where('task_id', $task->id)->get() as $cc) {
                 $user = BeyondUser::find($cc->user_id);
@@ -237,7 +238,11 @@ class TaskNotificationService extends Controller
                 }
                 $this->sendPhone(
                     $phone,
-                    "✅ *TASK CC — COMPLETED*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n*{$assigneeName}* completed the task you are CC'd on:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_"
+                    WhatsAppMessage::statusBlock('✅', 'Task CC — completed')
+                    .WhatsAppMessage::greeting($user->name ?: 'CC')
+                    ."*{$assigneeName}* completed the task you are CC'd on.\n"
+                    .WhatsAppMessage::bullet('Task', $task->title)
+                    .WhatsAppMessage::footer()
                 );
             }
 
@@ -255,7 +260,14 @@ class TaskNotificationService extends Controller
             }
             $this->sendPhone(
                 $phone,
-                "📋 *TASK CC — PROGRESS UPDATE*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\nYou are CC on a task assigned to *{$assigneeName}*:\n\n▪️ *Task:* {$task->title}\n▪️ *Realization:* {$progress}%\n▪️ *Status:* {$status}{$commentBlock}\n\n_Beyond Enterprise_"
+                WhatsAppMessage::statusBlock('📋', 'Task CC — progress update')
+                .WhatsAppMessage::greeting($user->name ?: 'CC')
+                ."You are CC on a task assigned to *{$assigneeName}*.\n"
+                .WhatsAppMessage::bullet('Task', $task->title)
+                .WhatsAppMessage::bullet('Realization', $progress.'%')
+                .WhatsAppMessage::bullet('Status', $status)
+                .($comment ? WhatsAppMessage::bullet('Note', $comment) : '')
+                .WhatsAppMessage::footer()
             );
         }
     }
@@ -282,7 +294,14 @@ class TaskNotificationService extends Controller
             $descBlock = trim($desc) !== '' ? "\n{$desc}\n" : '';
             $this->sendPhone(
                 $phone,
-                "⏰ *TASK REMINDER*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'Team Member') . "*,\n\nReminder for your task:\n\n▪️ *Task:* {$task->title}\n▪️ *Deadline:* {$deadline}\n{$descBlock}\n👉 Update progress:\n" . url('/user/tasks') . "\n\n_Beyond Enterprise_"
+                WhatsAppMessage::statusBlock('⏰', 'Task reminder')
+                .WhatsAppMessage::greeting($user->name ?: 'Team Member')
+                ."Reminder for your task.\n"
+                .WhatsAppMessage::bullet('Task', $task->title)
+                .WhatsAppMessage::bullet('Deadline', $deadline)
+                .$descBlock
+                .WhatsAppMessage::actionLink('Update progress', url('/user/tasks'))
+                .WhatsAppMessage::footer()
             );
         }
     }

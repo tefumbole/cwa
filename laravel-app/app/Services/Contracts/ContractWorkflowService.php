@@ -9,6 +9,7 @@ use App\ContractSignatory;
 use App\SignatureEvent;
 use App\SignatureRequest;
 use App\Services\Messaging\NotificationRouter;
+use App\Support\WhatsAppMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -346,7 +347,12 @@ class ContractWorkflowService
         ]);
 
         $url = url('/contracts/sign/'.$plain);
-        $msg = "Beyond Enterprise: Please review and sign contract {$contract->number} ({$contract->title}). Open: {$url}";
+        $msg = WhatsAppMessage::statusBlock('✍️', 'Contract signature');
+        $msg .= WhatsAppMessage::greeting($sig->display_name ?: 'there');
+        $msg .= "Please review and sign this contract.\n";
+        $msg .= WhatsAppMessage::bullet('Contract', trim($contract->number.' '.($contract->title ?: '')));
+        $msg .= WhatsAppMessage::actionLink('Open link', $url);
+        $msg .= WhatsAppMessage::footer();
 
         if ($sig->phone) {
             try {

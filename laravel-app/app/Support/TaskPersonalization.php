@@ -6,7 +6,10 @@ class TaskPersonalization
 {
     public static function defaultAssignmentTemplate()
     {
-        return "📋 *NEW TASK ASSIGNMENT*\n━━━━━━━━━━━━━━━\n\nHello *{Name}*,\n\nYou have been assigned a new task:\n\n▪️ *Task:* {subject}\n▪️ *Priority:* {priority}\n▪️ *Start:* {start_date}\n▪️ *Deadline:* {deadline}\n\n{description}\n\n👉 Open this link to *Accept* or *Reject* your task:\n{login_link}\n\n_Beyond Enterprise_";
+        $brand = '*'.WhatsAppMessage::companyName()."*\n\n";
+        $rule = WhatsAppMessage::rule();
+
+        return $brand."📋 *NEW TASK ASSIGNMENT*\n{$rule}\n\nHello *{Name}*,\n\nYou have been assigned a new task:\n\n■ *Task:* {subject}\n■ *Priority:* {priority}\n■ *Start:* {start_date}\n■ *Deadline:* {deadline}\n\n{description}\n\n👉 *Accept or reject:*\n{login_link}\n\n🌐 cwacam.org";
     }
 
     public static function personalize($template, array $vars)

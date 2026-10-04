@@ -3,7 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign — {{ $general_setting->site_title ?? 'CWA Cameroon' }}</title>
+    <title>Add your {{ strtolower($label ?? 'signature') }} — {{ $general_setting->site_title ?? 'CWA Cameroon' }}</title>
+    <meta property="og:title" content="Add your {{ strtolower($label ?? 'signature') }}">
+    <meta property="og:description" content="{{ $general_setting->site_title ?? 'Catholic Women\'s Association Cameroon' }}">
+    <meta property="og:url" content="{{ url('/user-sign/'.$token) }}">
     <style>
         :root { --primary:#0b3f90; --text:#1f2a44; }
         * { box-sizing: border-box; }

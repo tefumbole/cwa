@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\GeneralSetting;
 use App\Services\BeyondWasenderService;
 use App\Support\LetterSignature;
+use App\Support\WhatsAppMessage;
 use App\Support\WhatsAppPhone;
 use App\User;
 use Illuminate\Http\Request;
@@ -88,8 +89,7 @@ class UserSignatureController extends Controller
 
         $link = url('/user-sign/'.$token);
         $label = self::TYPES[$type];
-        $company = optional(GeneralSetting::first())->site_title ?: 'Catholic Women\'s Association Cameroon';
-        $msg = "{$company}: Please add your {$label} using this secure link:\n{$link}\n\nThis link expires in 3 days.";
+        $msg = WhatsAppMessage::userSignRequest($user->name, $label, $link);
 
         $result = app(BeyondWasenderService::class)->sendText($phone, $msg);
         \Log::info('[user-signature] WhatsApp request result', [

@@ -85,7 +85,7 @@ class AnnouncementPersonalization
         if ($subject !== '') {
             $msg .= WhatsAppMessage::bullet('Subject', $subject);
         }
-        $msg .= "━━━━━━━━━━━━━━━━\n\n";
+        $msg .= WhatsAppMessage::rule()."\n\n";
         if ($body !== '') {
             $msg .= $body."\n";
         }
