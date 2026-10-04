@@ -39,19 +39,21 @@
 @if (!empty($leaders) && $leaders->isNotEmpty())
     <section id="leadership" class="max-w-6xl mx-auto px-3 sm:px-4 pb-10 sm:pb-14">
         <h2 class="text-xl sm:text-2xl font-extrabold text-brand-blue tracking-tight m-0">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
-        <div class="mt-4 grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
             @foreach ($leaders as $leader)
                 @php $flag = $leader->countryFlag(); @endphp
-                <article class="leader-card rounded-xl bg-white border border-stone-200/80 px-2 py-3 text-center min-w-0">
-                    @if ($leader->photoPublicUrl())
-                        <div class="leader-avatar">
-                            <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" width="240" height="240">
-                        </div>
-                    @else
-                        <div class="leader-avatar leader-avatar-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
-                    @endif
-                    <h3 class="mt-2 mb-0 text-[0.92rem] sm:text-sm font-extrabold text-brand-blue leading-snug">{{ $leader->name }}@if ($flag) <span class="leader-flag" title="{{ $leader->country }}">{{ $flag }}</span>@endif</h3>
-                    <p class="mt-0.5 mb-0 text-[0.65rem] sm:text-xs font-extrabold tracking-[0.06em] uppercase text-brand-gold leading-tight">{{ $leader->title }}</p>
+                <article class="leader-card rounded-2xl bg-white border border-stone-200/80 px-3 py-4 text-center min-w-0">
+                    <div class="leader-ring">
+                        @if ($leader->photoPublicUrl())
+                            <div class="leader-avatar">
+                                <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" width="640" height="640">
+                            </div>
+                        @else
+                            <div class="leader-avatar leader-avatar-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
+                        @endif
+                    </div>
+                    <h3 class="mt-3 mb-0 text-lg font-extrabold text-brand-blue leading-snug">{{ $leader->name }}@if ($flag) <span class="leader-flag" title="{{ $leader->country }}">{{ $flag }}</span>@endif</h3>
+                    <p class="mt-1 mb-0 text-xs sm:text-sm font-extrabold tracking-[0.08em] uppercase text-brand-gold leading-tight">{{ $leader->title }}</p>
                 </article>
             @endforeach
         </div>
@@ -71,14 +73,21 @@
         }
         .about-card:hover h2 { color: #002855; }
     }
-    .leader-avatar {
-        width: 4.75rem;
-        height: 4.75rem;
+    .leader-ring {
+        width: min(18rem, 100%);
         margin: 0 auto;
+        padding: 0.55rem;
+        border-radius: 999px;
+        background: #003D82;
+    }
+    .leader-avatar {
+        width: 100%;
+        aspect-ratio: 1;
         border-radius: 999px;
         overflow: hidden;
-        border: 2px solid #D4AF37;
+        border: 0.55rem solid #D4AF37;
         background: #efeae0;
+        box-sizing: border-box;
     }
     .leader-avatar img {
         display: block;
@@ -86,7 +95,7 @@
         height: 100%;
         max-width: none;
         object-fit: cover;
-        object-position: center 18%;
+        object-position: center center;
     }
     .leader-avatar-empty {
         display: flex;
@@ -94,7 +103,7 @@
         justify-content: center;
         color: #003D82;
         font-weight: 800;
-        font-size: 1.35rem;
+        font-size: 2.4rem;
     }
     .leader-flag {
         font-style: normal;
