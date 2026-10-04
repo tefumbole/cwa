@@ -356,10 +356,10 @@
                     <label class="mship-label">{{ __('cwa.join.parish') }} <em>*</em></label>
                     <input required name="parish" x-model="parish" class="mship-input">
                 </div>
-                <div>
+                <div x-show="branchKind === 'cameroon'">
                     <label class="mship-label">{{ __('cwa.join.region') }} <em>*</em></label>
                     <div class="mship-pick-wrap" @click.outside="closePick('region')">
-                        <input type="hidden" name="region" :value="region">
+                        <input type="hidden" name="region" :value="region" :disabled="branchKind !== 'cameroon'">
                         <input type="search" class="mship-pick" autocomplete="off" enterkeyhint="search"
                                x-ref="regionSearch" x-model="regionQuery"
                                :placeholder="regionPlaceholder"
@@ -709,6 +709,8 @@ function membershipWizard() {
                     this.country = '';
                     this.countryQuery = '';
                 }
+                this.region = '';
+                this.regionQuery = '';
                 this.countryCode = '+1';
                 this.waCountry = '+1';
             }
@@ -797,7 +799,8 @@ function membershipWizard() {
             this.dioceseOpen = false;
         },
         goIdType: function () {
-            if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country || !this.address || !this.city || !this.state) return;
+            if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.country || !this.address || !this.city || !this.state) return;
+            if (this.branchKind === 'cameroon' && !this.region) return;
             this.step = 'idtype';
         },
         chooseUpload: function () {
