@@ -18,6 +18,23 @@
             {{ __('cwa.membership.subscribe') }}
         </button>
 
+        <div x-show="groups" x-cloak class="mt-8 text-left">
+            <h2 class="text-xl font-extrabold text-brand-blue text-center m-0">{{ __('cwa.membership.where_title') }}</h2>
+            <p class="mt-2 mb-5 text-slate-600 text-center">{{ __('cwa.membership.where_lead') }}</p>
+            <div class="grid gap-3">
+                <button type="button" @click="goGroup('cameroon')"
+                        class="w-full text-left rounded-2xl border-2 border-[#003D82] bg-white px-5 py-4 hover:bg-[#003D82] hover:text-white transition-colors">
+                    <span class="block font-extrabold text-lg">{{ __('cwa.membership.where_cameroon') }}</span>
+                    <span class="block text-sm opacity-80 mt-1">{{ __('cwa.membership.where_cameroon_hint') }}</span>
+                </button>
+                <button type="button" @click="goGroup('diaspora')"
+                        class="w-full text-left rounded-2xl border-2 border-[#D4AF37] bg-white px-5 py-4 hover:bg-[#D4AF37] transition-colors">
+                    <span class="block font-extrabold text-lg text-brand-blue">{{ __('cwa.membership.where_diaspora') }}</span>
+                    <span class="block text-sm text-slate-600 mt-1">{{ __('cwa.membership.where_diaspora_hint') }}</span>
+                </button>
+            </div>
+        </div>
+
         <div x-show="docs" x-cloak class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="{{ route('beyond.membership.bylaws') }}"
                class="inline-flex items-center justify-center gap-2 min-h-[2.75rem] w-full sm:w-auto px-7 py-2.5 rounded-full border-2 border-brand-blue text-brand-blue font-extrabold hover:bg-brand-blue hover:text-white">
@@ -37,21 +54,21 @@
 function membershipGate(startOpen, readArticles, readBylaws) {
     return {
         docs: !!startOpen,
+        groups: !!startOpen,
         readArticles: !!readArticles,
         readBylaws: !!readBylaws,
         registerUrl: @json(route('beyond.membership.register')),
         agreeMsg: @json(__('cwa.membership.agree_unread')),
         onSubscribe: function () {
-            if (!this.docs) {
-                this.docs = true;
-                return;
-            }
+            this.groups = true;
+        },
+        goGroup: function (kind) {
             if (!this.readArticles || !this.readBylaws) {
                 if (!window.confirm(this.agreeMsg)) {
                     return;
                 }
             }
-            window.location.href = this.registerUrl;
+            window.location.href = this.registerUrl + '?group=' + encodeURIComponent(kind);
         }
     };
 }

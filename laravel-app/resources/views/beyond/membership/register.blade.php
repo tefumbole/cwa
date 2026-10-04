@@ -200,7 +200,7 @@
           class="mship-card" id="membership-registration-form"
           x-data="membershipWizard()">
         @csrf
-        <ol class="mship-steps" aria-hidden="true">
+        <ol class="mship-steps" aria-hidden="true" x-show="step !== 'where'" x-cloak>
             <li :class="{ 'is-on': stage() === 1, 'is-done': stage() > 1 }"><i>1</i>{{ __('cwa.membership.step_details') }}</li>
             <li :class="{ 'is-on': stage() === 2, 'is-done': stage() > 2 }"><i>2</i>{{ __('cwa.membership.step_id') }}</li>
             <li :class="{ 'is-on': stage() === 3, 'is-done': stage() > 3 }"><i>3</i>{{ __('cwa.membership.step_photo') }}</li>
@@ -212,6 +212,23 @@
         <input type="hidden" name="id_type" :value="idType">
         <input type="file" name="id_front" id="id-file-input" accept="image/*" class="sr-only">
         <input type="file" name="selfie" id="membership-selfie-input" accept="image/*" class="sr-only">
+
+        {{-- Cameroon or Diaspora --}}
+        <div x-show="step === 'where'" x-cloak>
+            <p class="mship-kicker">{{ __('cwa.membership.subscribe') }}</p>
+            <h2>{{ __('cwa.membership.where_title') }}</h2>
+            <p class="mship-lead">{{ __('cwa.membership.where_lead') }}</p>
+            <div class="mship-choices">
+                <button type="button" @click="chooseGroup('cameroon')" class="mship-choice">
+                    {{ __('cwa.membership.where_cameroon') }}
+                    <small>{{ __('cwa.membership.where_cameroon_hint') }}</small>
+                </button>
+                <button type="button" @click="chooseGroup('diaspora')" class="mship-choice">
+                    {{ __('cwa.membership.where_diaspora') }}
+                    <small>{{ __('cwa.membership.where_diaspora_hint') }}</small>
+                </button>
+            </div>
+        </div>
 
         {{-- Phone --}}
         <div x-show="step === 'phone'" x-cloak>
@@ -335,8 +352,9 @@
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.country') }} <em>*</em></label>
-                    <div class="mship-pick-wrap" @click.outside="closePick('country')">
-                        <input type="hidden" name="country" :value="country">
+                    <input type="hidden" name="country" :value="country">
+                    <p x-show="branchKind === 'cameroon'" class="mship-input mb-0 flex items-center">{{ __('cwa.membership.where_cameroon') }}</p>
+                    <div x-show="branchKind !== 'cameroon'" class="mship-pick-wrap" @click.outside="closePick('country')">
                         <input type="search" class="mship-pick" autocomplete="off" enterkeyhint="search"
                                x-ref="countrySearch" x-model="countryQuery"
                                :placeholder="countryPlaceholder"
@@ -359,6 +377,7 @@
                 </div>
             </div>
             <div class="mship-actions">
+                <button type="button" @click="step = 'where'" class="mship-btn ghost">{{ __('cwa.membership.prev') }}</button>
                 <button type="button" @click="goIdType()" class="mship-btn gold">{{ __('cwa.membership.next') }}</button>
             </div>
         </div>
@@ -474,8 +493,10 @@
 <script>
 function membershipWizard() {
     return {
-        step: 'phone',
+        step: @json($errors->any() || in_array(request('group'), ['cameroon', 'diaspora'], true) ? 'phone' : 'where'),
+        branchKind: @json(old('country') === 'Cameroon' || request('group') === 'cameroon' ? 'cameroon' : (old('country') || request('group') === 'diaspora' ? 'diaspora' : '')),
         stage: function () {
+            if (this.step === 'where') return 0;
             if (this.step === 'phone') return 1;
             if (this.step === 'selfie') return 3;
             if (this.step === 'sign') return 4;
@@ -498,9 +519,10 @@ function membershipWizard() {
         diocese: @json(old('diocese', '')),
         parish: @json(old('parish', '')),
         region: @json(old('region', '')),
-        country: @json(old('country', 'Cameroon')),
+        country: @json(old('country', request('group') === 'diaspora' ? '' : 'Cameroon')),
         dioceseMap: @json(\App\Support\CwaBranches::formMap()),
-        featuredCountries: @json(\App\Support\CwaBranches::formCountries()),
+        featuredAll: @json(\App\Support\CwaBranches::formCountries()),
+        featuredDiaspora: @json(array_values(array_filter(\App\Support\CwaBranches::formCountries(), function ($name) { return $name !== 'Cameroon'; }))),
         extraCountries: @json(array_values(array_diff(\App\Support\CountryDialCodes::names(), \App\Support\CwaBranches::formCountries()))),
         regions: @json(\App\Support\CameroonRegions::all()),
         dioceseOpen: false,
@@ -510,7 +532,7 @@ function membershipWizard() {
         regionQuery: @json(old('region', '')),
         regionPlaceholder: @json(__('cwa.join.region_search')),
         countryOpen: false,
-        countryQuery: @json(old('country', 'Cameroon')),
+        countryQuery: @json(old('country', request('group') === 'diaspora' ? '' : 'Cameroon')),
         countryPlaceholder: @json(__('cwa.join.country_search')),
         idType: '',
         idPath: '',
@@ -619,10 +641,29 @@ function membershipWizard() {
         filteredRegions: function () {
             return this.filterNames(this.regions, this.regionQuery);
         },
+        featuredCountries: function () {
+            if (this.branchKind === 'diaspora') return this.featuredDiaspora || [];
+            if (this.branchKind === 'cameroon') return ['Cameroon'];
+            return this.featuredAll || [];
+        },
         filteredResidenceCountries: function () {
-            var featured = this.featuredCountries || [];
+            var featured = this.featuredCountries();
             if (!String(this.countryQuery || '').trim()) return featured;
             return this.filterNames(featured.concat(this.extraCountries || []), this.countryQuery);
+        },
+        chooseGroup: function (kind) {
+            this.branchKind = kind;
+            if (kind === 'cameroon') {
+                this.country = 'Cameroon';
+                this.countryQuery = 'Cameroon';
+            } else {
+                if (this.country === 'Cameroon') {
+                    this.country = '';
+                    this.countryQuery = '';
+                }
+            }
+            this.onCountryChange();
+            this.step = 'phone';
         },
         restorePickQueries: function (except) {
             if (except !== 'diocese') {
