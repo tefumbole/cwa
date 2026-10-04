@@ -367,6 +367,8 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/leaders/{id}', 'LeaderController@update')->name('leaders.update');
     Route::post('/admin/leaders/{id}/delete', 'LeaderController@destroy')->name('leaders.destroy');
 
+    Route::get('/admin/help', 'HelpController@index')->name('admin.help');
+
     // Task Manager (admin)
     Route::get('/admin/tasks', 'TaskManagerController@dashboard')->name('tasks.dashboard');
     Route::get('/admin/tasks/create', 'TaskManagerController@create')->name('tasks.create');

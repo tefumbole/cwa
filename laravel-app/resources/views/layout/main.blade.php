@@ -3038,6 +3038,7 @@
                                 @endif
                             </ul>
                         </li>
+                        <li id="sidebar-help"><a href="{{ route('admin.help') }}" data-nav-key="help"> <i class="fa fa-question-circle"></i><span>Help</span></a></li>
                     </ul>
                     @php
                         $__sideMenuOrder = \App\Support\SiteMenu::sideOrder();
@@ -3107,6 +3108,7 @@
                             var k = keyOf(li);
                             if (!k || !used[k]) ul.appendChild(li);
                         });
+                        if (map['help']) ul.appendChild(map['help']);
                         (hidden || []).forEach(function (k) {
                             if (map[k]) map[k].style.display = 'none';
                         });
