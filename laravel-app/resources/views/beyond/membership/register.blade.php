@@ -102,9 +102,27 @@
         background: #fff; border: 1px solid #e7e0d4; border-radius: 1rem;
         box-shadow: 0 16px 40px rgba(26,31,46,0.12);
     }
-    .mship-menu input { width: 100%; padding: 0.65rem 0.85rem; border: 0; border-bottom: 1px solid #f0ebe1; outline: none; font-size: 0.88rem; }
+    .mship-menu.is-wide { width: 100%; }
+    .mship-menu input { width: 100%; padding: 0.65rem 0.85rem; border: 0; border-bottom: 1px solid #f0ebe1; outline: none; font-size: 1rem; }
     .mship-menu button { width: 100%; text-align: left; padding: 0.5rem 0.85rem; font-size: 0.85rem; border: 0; background: transparent; color: #334155; }
     .mship-menu button:hover, .mship-menu button.is-on { background: rgba(212,175,55,0.16); color: #003D82; font-weight: 800; }
+    .mship-pick-wrap { position: relative; }
+    .mship-pick {
+        width: 100%;
+        display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        min-height: 3.1rem;
+        border-radius: 0.9rem;
+        border: 1.5px solid #e7e0d4;
+        background: #fbfaf7;
+        padding: 0.78rem 0.95rem;
+        font-size: 1rem;
+        color: #1A1F2E;
+        text-align: left;
+        cursor: pointer;
+    }
+    .mship-pick:focus { outline: none; border-color: #D4AF37; background: #fff; box-shadow: 0 0 0 4px rgba(212,175,55,0.2); }
+    .mship-pick .is-ph { color: #94a3b8; }
+    .mship-pick i { width: 1rem; height: 1rem; color: #64748b; flex-shrink: 0; }
     .mship-check {
         display: flex; align-items: center; gap: 0.55rem;
         margin-top: 0.45rem; color: #475569; font-size: 0.9rem; cursor: pointer;
@@ -256,17 +274,27 @@
             <div class="mship-grid">
                 <div>
                     <label class="mship-label">{{ __('cwa.join.diocese') }} <em>*</em></label>
-                    <template x-if="hasDioceseList()">
-                        <select required name="diocese" x-model="diocese" class="mship-input">
-                            <option value="">{{ __('cwa.join.diocese_pick') }}</option>
-                            <template x-for="(name, i) in dioceseOptions()" :key="'d-'+i+'-'+name">
-                                <option :value="name" x-text="name"></option>
-                            </template>
-                        </select>
-                    </template>
-                    <template x-if="!hasDioceseList()">
-                        <input required name="diocese" x-model="diocese" class="mship-input" placeholder="{{ __('cwa.join.diocese_other') }}">
-                    </template>
+                    <div x-show="hasDioceseList()" class="mship-pick-wrap" @click.outside="dioceseOpen = false">
+                        <input type="hidden" name="diocese" :value="diocese" :disabled="!hasDioceseList()">
+                        <button type="button" class="mship-pick" @click="togglePick('diocese')">
+                            <span :class="diocese ? '' : 'is-ph'" x-text="diocese || diocesePlaceholder"></span>
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                        <div x-show="dioceseOpen" x-cloak class="mship-menu is-wide">
+                            <input x-ref="dioceseSearch" x-model="dioceseQuery" type="search" placeholder="{{ __('cwa.join.diocese_search') }}">
+                            <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                                <template x-for="(name, i) in filteredDioceses()" :key="'d-'+i+'-'+name">
+                                    <li>
+                                        <button type="button" @click="pickDiocese(name)"
+                                                :class="diocese === name ? 'is-on' : ''"
+                                                x-text="name"></button>
+                                    </li>
+                                </template>
+                            </ul>
+                            <p x-show="filteredDioceses().length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.join.diocese_empty') }}</p>
+                        </div>
+                    </div>
+                    <input x-show="!hasDioceseList()" x-cloak required name="diocese" x-model="diocese" class="mship-input" placeholder="{{ __('cwa.join.diocese_other') }}" :disabled="hasDioceseList()">
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.parish') }} <em>*</em></label>
@@ -274,12 +302,26 @@
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.region') }} <em>*</em></label>
-                    <select required name="region" x-model="region" class="mship-input">
-                        <option value="">{{ __('cwa.join.region_pick') }}</option>
-                        @foreach (\App\Support\CameroonRegions::all() as $regionName)
-                            <option value="{{ $regionName }}">{{ $regionName }}</option>
-                        @endforeach
-                    </select>
+                    <div class="mship-pick-wrap" @click.outside="regionOpen = false">
+                        <input type="hidden" name="region" :value="region">
+                        <button type="button" class="mship-pick" @click="togglePick('region')">
+                            <span :class="region ? '' : 'is-ph'" x-text="region || regionPlaceholder"></span>
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                        <div x-show="regionOpen" x-cloak class="mship-menu is-wide">
+                            <input x-ref="regionSearch" x-model="regionQuery" type="search" placeholder="{{ __('cwa.join.region_search') }}">
+                            <ul class="max-h-52 overflow-auto m-0 p-0 list-none">
+                                <template x-for="name in filteredRegions()" :key="'r-'+name">
+                                    <li>
+                                        <button type="button" @click="pickRegion(name)"
+                                                :class="region === name ? 'is-on' : ''"
+                                                x-text="name"></button>
+                                    </li>
+                                </template>
+                            </ul>
+                            <p x-show="filteredRegions().length === 0" class="px-3 py-2 text-xs text-stone-400">{{ __('cwa.join.region_empty') }}</p>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="mship-label">{{ __('cwa.join.country') }} <em>*</em></label>
@@ -432,6 +474,13 @@ function membershipWizard() {
         region: @json(old('region', '')),
         country: @json(old('country', 'Cameroon')),
         dioceseMap: @json(\App\Support\CwaBranches::formMap()),
+        regions: @json(\App\Support\CameroonRegions::all()),
+        dioceseOpen: false,
+        dioceseQuery: '',
+        diocesePlaceholder: @json(__('cwa.join.diocese_pick')),
+        regionOpen: false,
+        regionQuery: '',
+        regionPlaceholder: @json(__('cwa.join.region_pick')),
         idType: '',
         idPath: '',
         idName: '',
@@ -456,6 +505,9 @@ function membershipWizard() {
                     self.hasSelfie = !!(input.files && input.files[0]);
                 });
             }
+            this.$nextTick(function () {
+                if (window.lucide) window.lucide.createIcons();
+            });
         },
         csrf: function () {
             var el = document.querySelector('#membership-registration-form input[name=_token]');
@@ -522,11 +574,59 @@ function membershipWizard() {
         hasDioceseList: function () {
             return this.dioceseOptions().length > 0;
         },
+        filterNames: function (list, q) {
+            var query = String(q || '').toLowerCase().trim();
+            var items = list || [];
+            if (!query) return items;
+            return items.filter(function (name) {
+                return String(name).toLowerCase().indexOf(query) !== -1;
+            });
+        },
+        filteredDioceses: function () {
+            return this.filterNames(this.dioceseOptions(), this.dioceseQuery);
+        },
+        filteredRegions: function () {
+            return this.filterNames(this.regions, this.regionQuery);
+        },
+        togglePick: function (kind) {
+            var self = this;
+            if (kind === 'diocese') {
+                this.regionOpen = false;
+                this.dioceseOpen = !this.dioceseOpen;
+                this.dioceseQuery = '';
+                if (this.dioceseOpen) {
+                    this.$nextTick(function () {
+                        if (self.$refs.dioceseSearch) self.$refs.dioceseSearch.focus();
+                    });
+                }
+                return;
+            }
+            this.dioceseOpen = false;
+            this.regionOpen = !this.regionOpen;
+            this.regionQuery = '';
+            if (this.regionOpen) {
+                this.$nextTick(function () {
+                    if (self.$refs.regionSearch) self.$refs.regionSearch.focus();
+                });
+            }
+        },
+        pickDiocese: function (name) {
+            this.diocese = name;
+            this.dioceseOpen = false;
+            this.dioceseQuery = '';
+        },
+        pickRegion: function (name) {
+            this.region = name;
+            this.regionOpen = false;
+            this.regionQuery = '';
+        },
         onCountryChange: function () {
             var opts = this.dioceseOptions();
             if (opts.length && opts.indexOf(this.diocese) === -1) {
                 this.diocese = '';
             }
+            this.dioceseOpen = false;
+            this.dioceseQuery = '';
         },
         goIdType: function () {
             if (!this.phone || !this.fullName || !this.diocese || !this.parish || !this.region || !this.country) return;
