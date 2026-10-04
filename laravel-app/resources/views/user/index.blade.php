@@ -69,7 +69,7 @@
                                        data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="sign"
                                        data-name="{{ $user->name }}"
-                                       data-email="{{ $user->email }}">
+                                       data-phone="{{ $user->phone ?: $user->additional_phone }}">
                                         <i class="dripicons-pencil"></i> Send for signature
                                     </a>
                                 </li>
@@ -78,7 +78,7 @@
                                        data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="approve"
                                        data-name="{{ $user->name }}"
-                                       data-email="{{ $user->email }}">
+                                       data-phone="{{ $user->phone ?: $user->additional_phone }}">
                                         <i class="dripicons-user"></i> Send for approver
                                     </a>
                                 </li>
@@ -87,7 +87,7 @@
                                        data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="stemp"
                                        data-name="{{ $user->name }}"
-                                       data-email="{{ $user->email }}">
+                                       data-phone="{{ $user->phone ?: $user->additional_phone }}">
                                         <i class="dripicons-message"></i> Send for comment
                                     </a>
                                 </li>
@@ -96,8 +96,8 @@
                                        data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="all"
                                        data-name="{{ $user->name }}"
-                                       data-email="{{ $user->email }}">
-                                        <i class="fa fa-envelope"></i> Send for all
+                                       data-phone="{{ $user->phone ?: $user->additional_phone }}">
+                                        <i class="fa fa-whatsapp"></i> Send for all
                                     </a>
                                 </li>
                                 @endif
@@ -261,8 +261,8 @@
         var type = $btn.data('type');
         var label = requestLabels[type] || type;
         var name = $btn.data('name') || 'this user';
-        var email = $btn.data('email') || 'their email';
-        if (!confirm('Email ' + name + ' (' + email + ') a link to add their ' + label + '?')) {
+        var phone = $btn.data('phone') || 'their WhatsApp';
+        if (!confirm('Send a WhatsApp link to ' + name + ' (' + phone + ') so they can add their ' + label + '?')) {
             return;
         }
         $btn.addClass('disabled').css('opacity', 0.6);

@@ -33,9 +33,9 @@
             Sign on this device
         </button>
         <button type="button" class="btn btn-outline-primary btn-sm btn-sig-whatsapp" data-type="{{ $type }}"
-                data-email="{{ $user->email }}"
+                data-phone="{{ $user->phone ?: $user->additional_phone }}"
                 data-url="{{ route('user.signature.request', $user->id) }}">
-            <i class="fa fa-envelope"></i> Email sign link
+            <i class="fa fa-whatsapp"></i> WhatsApp sign link
         </button>
         @if($fileField)
             <button type="button" class="btn btn-outline-danger btn-sm btn-sig-delete" data-type="{{ $type }}"
@@ -57,7 +57,7 @@
     @endif
 
     <p class="text-muted small mb-0 sig-hint" data-type="{{ $type }}" style="display:none;">
-        Draw here, or email a link so the user can add their {{ strtolower($label) }}.
+        Draw here, or send a WhatsApp link so the user can add their {{ strtolower($label) }}.
     </p>
 
     <div class="user-sign-pad-wrap sig-pad-wrap" data-type="{{ $type }}" id="{{ $uid }}-pad-wrap">

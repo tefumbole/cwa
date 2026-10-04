@@ -140,8 +140,8 @@
                                         </select>
                                     </div>
                                     <div class="alert alert-light border">
-                                        <strong>Email a sign link</strong>
-                                        <p class="small text-muted mb-2">{{ $lims_user_data->email }} receives a link and can sign in the browser. Choose the signer, the approver, the comment, or all of them.</p>
+                                        <strong>Send a sign link on WhatsApp</strong>
+                                        <p class="small text-muted mb-2">{{ $lims_user_data->phone ?: $lims_user_data->additional_phone }} receives a link and can sign in the browser. Choose the signer, the approver, the comment, or all of them.</p>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="sign">Send for signature</button>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="approve">Send for approver</button>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="stemp">Send for comment</button>
@@ -297,8 +297,8 @@
         var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
         var target = $('.btn-sig-whatsapp[data-type="'+type+'"]');
         var url = target.length ? target.data('url') : '{{ route('user.signature.request', $lims_user_data->id) }}';
-        var email = '{{ $lims_user_data->email }}';
-        if (!skipConfirm && !confirm('Email ' + email + ' a link to add their ' + (labels[type] || type) + '?')) {
+        var phone = '{{ $lims_user_data->phone ?: $lims_user_data->additional_phone }}';
+        if (!skipConfirm && !confirm('Send a WhatsApp link to ' + phone + ' so they can add their ' + (labels[type] || type) + '?')) {
             return;
         }
         if (target.length) target.prop('disabled', true).text('Sending…');
@@ -321,7 +321,7 @@
             if (!box.length) box = $('.sig-request-result[data-type="edit-mail"]');
             box.html(html).show();
         }).fail(function (xhr) {
-            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not email the sign link.';
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not send the WhatsApp sign link.';
             var link = (xhr.responseJSON && xhr.responseJSON.link) ? xhr.responseJSON.link : '';
             var html = '<div class="alert alert-danger mb-0"><div>'+msg+'</div>';
             if (link) {
@@ -332,14 +332,14 @@
             if (!box.length) box = $('.sig-request-result[data-type="edit-mail"]');
             box.html(html).show();
         }).always(function () {
-            if (target.length) target.prop('disabled', false).html('<i class="fa fa-envelope"></i> Email sign link');
+            if (target.length) target.prop('disabled', false).html('<i class="fa fa-whatsapp"></i> WhatsApp sign link');
         });
     }
 
     $(document).on('click', '.btn-request-from-edit', function () {
         var type = $(this).data('type');
         var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
-        if (!confirm('Email {{ $lims_user_data->email }} a link to add their ' + (labels[type] || type) + '?')) {
+        if (!confirm('Send a WhatsApp link to {{ $lims_user_data->phone ?: $lims_user_data->additional_phone }} so they can add their ' + (labels[type] || type) + '?')) {
             return;
         }
         sendSignatureRequest(type, true);

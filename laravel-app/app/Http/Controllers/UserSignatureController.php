@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\GeneralSetting;
+use App\Services\BeyondWasenderService;
 use App\Support\LetterSignature;
+use App\Support\WhatsAppPhone;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -74,9 +75,9 @@ class UserSignatureController extends Controller
 
         $type = $this->resolveType($request);
         $user = User::findOrFail($id);
-        $email = trim((string) $user->email);
-        if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->signatureResponse($request, false, 'This user has no email address.', 422);
+        $phone = trim((string) ($user->phone ?: $user->additional_phone));
+        if ($phone === '') {
+            return $this->signatureResponse($request, false, 'This user has no phone number for WhatsApp.', 422);
         }
 
         $token = Str::random(48);
@@ -88,26 +89,23 @@ class UserSignatureController extends Controller
         $link = url('/user-sign/'.$token);
         $label = self::TYPES[$type];
         $company = optional(GeneralSetting::first())->site_title ?: 'Catholic Women\'s Association Cameroon';
+        $msg = "{$company}: Please add your {$label} using this secure link:\n{$link}\n\nThis link expires in 3 days.";
 
-        try {
-            Mail::send('mail.user_signature_request', [
-                'name' => $user->name,
-                'company' => $company,
-                'label' => $label,
-                'link' => $link,
-            ], function ($message) use ($email, $company, $label) {
-                $message->to($email)->subject($company.': please add your '.$label);
-            });
-        } catch (\Throwable $e) {
-            \Log::error('[user-signature] email failed: '.$e->getMessage(), [
-                'user_id' => $user->id,
-                'email' => $email,
-            ]);
+        $result = app(BeyondWasenderService::class)->sendText($phone, $msg);
+        \Log::info('[user-signature] WhatsApp request result', [
+            'user_id' => $user->id,
+            'type' => $type,
+            'phone' => $phone,
+            'link' => $link,
+            'result' => $result,
+        ]);
 
+        $display = WhatsAppPhone::display($phone);
+        if (empty($result['success']) || ! empty($result['skipped'])) {
             return $this->signatureResponse(
                 $request,
                 false,
-                'The sign link was created, but the email to '.$email.' was not sent. Copy the link below.',
+                'WhatsApp did not deliver to '.$display.': '.($result['error'] ?? 'messaging skipped or failed').'. Copy the link below.',
                 422,
                 $link
             );
@@ -116,7 +114,7 @@ class UserSignatureController extends Controller
         return $this->signatureResponse(
             $request,
             true,
-            $label.' link emailed to '.$email.'.',
+            $label.' link sent on WhatsApp to '.$display.'.',
             200,
             $link
         );
