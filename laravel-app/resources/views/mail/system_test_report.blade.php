@@ -3,8 +3,8 @@
     $works = array_values(array_filter($report['rows'], function ($row) { return $row['result'] === 'works'; }));
 @endphp
 <p><strong>{{ $report['tester_name'] }}</strong> finished a CWACAM system test on {{ $report['created_at'] }}.</p>
-@if($report['tester_email'] !== '')
-    <p>Tester email: {{ $report['tester_email'] }}</p>
+@if(!empty($report['tester_phone']))
+    <p>Tester WhatsApp: {{ $report['tester_phone'] }}</p>
 @endif
 <p>
     Works: {{ $report['counts']['works'] }}

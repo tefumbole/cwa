@@ -9,7 +9,7 @@
             Works {{ $report['counts']['works'] }}
             · Does not work {{ $report['counts']['fails'] }}
             · Not tested {{ $report['counts']['skipped'] }}
-            @if($report['tester_email'] !== '') · {{ $report['tester_email'] }} @endif
+            @if(!empty($report['tester_phone'])) · {{ $report['tester_phone'] }} @endif
         </p>
         @if($report['summary'] !== '')
             <p><strong>Overall note.</strong> {{ $report['summary'] }}</p>

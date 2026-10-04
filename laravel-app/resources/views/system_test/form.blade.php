@@ -1,87 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CWACAM system test</title>
-    <style>
-        :root { --navy:#0b3f90; --gold:#d4af37; --ink:#1a1f2e; --line:#e6e1d6; --fail:#8a1f1f; --ok:#0f6b4c; }
-        * { box-sizing: border-box; }
-        body { margin:0; font-family: Nunito, system-ui, sans-serif; background:#f6f3ec; color:var(--ink); }
-        header { background:var(--navy); color:#fff; padding:22px 16px; }
-        header h1 { margin:0 0 6px; font-size:26px; }
-        header p { margin:0; max-width:760px; line-height:1.45; color:rgba(255,255,255,.88); }
-        main { max-width:860px; margin:0 auto; padding:18px 14px 48px; }
-        .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 16px 8px; margin-bottom:16px; }
-        h2 { margin:0 0 6px; color:var(--navy); font-size:18px; }
-        .intro { color:#5c6570; margin:0 0 12px; }
-        .check { border-top:1px solid #f0ece4; padding:12px 0; }
-        .check p { margin:0 0 8px; line-height:1.4; }
-        .choices { display:flex; flex-wrap:wrap; gap:8px; }
-        .choices label { border:1px solid var(--line); border-radius:999px; padding:6px 12px; cursor:pointer; font-size:14px; }
-        .choices input { margin-right:6px; }
-        .note { width:100%; margin-top:8px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; }
-        .who label { display:block; font-weight:700; margin:8px 0 4px; }
-        .who input, .who textarea { width:100%; border:1px solid var(--line); border-radius:8px; padding:10px; font:inherit; }
-        .submit { background:var(--navy); color:#fff; border:0; border-radius:10px; padding:12px 18px; font-weight:800; cursor:pointer; }
-        .bar { position:sticky; bottom:0; background:#fff; border-top:1px solid var(--line); padding:10px 14px; display:flex; justify-content:space-between; gap:12px; align-items:center; }
-        .hp { position:absolute; left:-9999px; }
-        .err { background:#ffe5e5; color:var(--fail); padding:10px 12px; border-radius:8px; }
-    </style>
-</head>
-<body>
-<header>
-    <h1>CWACAM system test</h1>
-    <p>Work through the list. Mark what works and what does not. When you submit, the result is emailed to {{ implode(', ', $reportTo) ?: 'the site administrator' }}.</p>
-</header>
-<main>
+@extends('beyond.layout')
+
+@section('title', 'System test')
+
+@section('content')
+<style>
+    .test-wrap { max-width: 880px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+    .test-kicker { letter-spacing: .16em; text-transform: uppercase; font-size: .72rem; font-weight: 800; color: #8a6d1d; }
+    .test-card {
+        background: #fff;
+        border: 1px solid #e7e1d4;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 61, 130, .06);
+        padding: 1.25rem 1.25rem .4rem;
+        margin-bottom: 1.1rem;
+    }
+    .test-card h2 { margin: 0 0 .35rem; color: #003D82; font-family: Fraunces, Georgia, serif; font-size: 1.45rem; }
+    .steps { margin: 0; padding: 0; list-style: none; }
+    .steps li { display: flex; gap: .75rem; padding: .7rem 0; border-top: 1px solid #f0ebe1; line-height: 1.45; }
+    .steps li:first-child { border-top: 0; }
+    .step-no {
+        flex: 0 0 1.8rem; height: 1.8rem; border-radius: 999px;
+        background: #003D82; color: #fff; font-weight: 800; font-size: .85rem;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .check {
+        border: 1px solid #e7e1d4;
+        border-left: 4px solid #D4AF37;
+        border-radius: 14px;
+        padding: .9rem 1rem;
+        margin: 0 0 .85rem;
+        background: #fffdf8;
+    }
+    .check p { margin: 0 0 .7rem; line-height: 1.45; }
+    .choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .choice {
+        position: relative;
+        border: 1.5px solid #e7e1d4;
+        border-radius: 999px;
+        padding: .4rem .85rem;
+        cursor: pointer;
+        font-size: .92rem;
+        font-weight: 700;
+        background: #fff;
+    }
+    .choice input { position: absolute; opacity: 0; }
+    .choice.ok:has(input:checked) { border-color: #0f6b4c; background: #e8f7f0; color: #0f6b4c; }
+    .choice.bad:has(input:checked) { border-color: #8a1f1f; background: #fff1f1; color: #8a1f1f; }
+    .choice.skip:has(input:checked) { border-color: #003D82; background: #eef4ff; color: #003D82; }
+    .note, .field input, .field textarea {
+        width: 100%; margin-top: .55rem; border: 1px solid #e7e1d4; border-radius: 12px;
+        padding: .7rem .8rem; font: inherit; background: #fff;
+    }
+    .field label { display: block; font-weight: 800; margin: .8rem 0 .25rem; color: #003D82; }
+    .go {
+        background: #003D82; color: #fff; border: 0; border-radius: 999px;
+        padding: .85rem 1.3rem; font-weight: 800; cursor: pointer;
+    }
+    .go:hover { background: #002855; }
+    .progress {
+        display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap;
+        border: 1px solid #e7e1d4; border-radius: 16px; padding: .9rem 1rem; background: #fff;
+    }
+    .links { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+    .links a {
+        border: 1.5px solid #D4AF37; color: #003D82; border-radius: 999px;
+        padding: .35rem .8rem; font-weight: 800; text-decoration: none; background: #fff;
+    }
+    .err { background: #fff1f1; border: 1px solid #f0c2c2; color: #8a1f1f; border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem; }
+    .hp { position: absolute; left: -9999px; }
+</style>
+
+<div class="test-wrap">
+    <p class="test-kicker">CWACAM</p>
+    <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
+    <p class="text-stone-600 mb-4">You do not need to know the system. Follow the steps, try each thing, then mark what worked.</p>
+
     @if($errors->any())
         <div class="err">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
     @endif
+
+    <section class="test-card">
+        <h2>Start here</h2>
+        <p class="text-stone-600 mb-2">Read this before you mark any result. Open the website in a second tab and leave this page open.</p>
+        <ol class="steps">
+            <li><span class="step-no">1</span><span>Open the website: <a href="{{ url('/') }}" target="_blank">cwacam.org</a>. The first screen is the <strong>homepage</strong>. You should see the CWACAM logo, a row of menu links, <strong>EN / FR</strong>, <strong>Donate</strong>, and <strong>Login</strong>.</span></li>
+            <li><span class="step-no">2</span><span>Click the menu links. <strong>About Us</strong> tells the story and shows leaders. <strong>Branches</strong> lists Cameroon and Diaspora. <strong>Membership</strong> is where a woman registers. You do not need a password for these pages.</span></li>
+            <li><span class="step-no">3</span><span>On a phone, tap the menu button (three lines) at the top. The same links open in a list, with <strong>Join CWA</strong> and <strong>Donate</strong>.</span></li>
+            <li><span class="step-no">4</span><span>To test the office, click <strong>Login</strong>. Type the username and password you were given. If nobody gave you a login, leave the office steps as <strong>Not tested</strong>.</span></li>
+            <li><span class="step-no">5</span><span>After login, a <strong>blue menu</strong> is on the left. Each name opens one part of the office: People, Membership, Letters, Settings, and the rest. Click a name, look at the screen, then come back here.</span></li>
+            <li><span class="step-no">6</span><span>Do not pay any money. Do not click <strong>Empty Database</strong>. Use a test name if you register a member.</span></li>
+            <li><span class="step-no">7</span><span>For each line below, choose <strong>Works</strong>, <strong>Does not work</strong>, or <strong>Not tested</strong>. If it failed, write one sentence about what you saw.</span></li>
+            <li><span class="step-no">8</span><span>Put your name and WhatsApp number, then press <strong>Send the result</strong>. The summary goes to your WhatsApp, and a copy goes to the administrator.</span></li>
+        </ol>
+        <div class="links">
+            <a href="{{ url('/') }}" target="_blank">Open the homepage</a>
+            <a href="{{ url('/login') }}" target="_blank">Open Login</a>
+            <a href="{{ url('/about') }}" target="_blank">Open About Us</a>
+        </div>
+    </section>
+
     <form method="POST" action="{{ route('system-test.store') }}" id="system-test">
         @csrf
         <div class="hp" aria-hidden="true">
             <label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label>
         </div>
-        <section class="card who">
-            <h2>Who is testing</h2>
+
+        <section class="test-card field">
+            <h2>Your details</h2>
+            <p class="text-stone-600">The result is sent to this WhatsApp number.</p>
             <label for="tester_name">Your name</label>
-            <input id="tester_name" name="tester_name" required value="{{ old('tester_name') }}" placeholder="Name">
-            <label for="tester_email">Your email, if you want a reply</label>
-            <input id="tester_email" name="tester_email" type="email" value="{{ old('tester_email') }}" placeholder="Optional">
+            <input id="tester_name" name="tester_name" required value="{{ old('tester_name') }}" placeholder="Your name">
+            <label for="tester_phone">WhatsApp number</label>
+            <input id="tester_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
         </section>
 
         @foreach($sections as $section)
-            <section class="card">
+            <section class="test-card">
                 <h2>{{ $section['title'] }}</h2>
-                <p class="intro">{{ $section['intro'] }}</p>
+                <p class="text-stone-600 mb-3">{{ $section['intro'] }}</p>
                 @foreach($section['checks'] as $check)
                     <div class="check">
                         <p>{{ $check['text'] }}</p>
                         <div class="choices">
-                            @foreach(['works' => 'Works', 'fails' => 'Does not work', 'skipped' => 'Not tested'] as $value => $label)
-                                <label>
-                                    <input type="radio" name="checks[{{ $check['id'] }}]" value="{{ $value }}" @if(old('checks.'.$check['id']) === $value) checked @endif>
-                                    {{ $label }}
-                                </label>
-                            @endforeach
+                            <label class="choice ok"><input type="radio" name="checks[{{ $check['id'] }}]" value="works" @if(old('checks.'.$check['id']) === 'works') checked @endif> Works</label>
+                            <label class="choice bad"><input type="radio" name="checks[{{ $check['id'] }}]" value="fails" @if(old('checks.'.$check['id']) === 'fails') checked @endif> Does not work</label>
+                            <label class="choice skip"><input type="radio" name="checks[{{ $check['id'] }}]" value="skipped" @if(old('checks.'.$check['id']) === 'skipped') checked @endif> Not tested</label>
                         </div>
-                        <input class="note" type="text" name="notes[{{ $check['id'] }}]" value="{{ old('notes.'.$check['id']) }}" placeholder="What happened, if it failed">
+                        <input class="note" type="text" name="notes[{{ $check['id'] }}]" value="{{ old('notes.'.$check['id']) }}" placeholder="If it failed, what did you see?">
                     </div>
                 @endforeach
             </section>
         @endforeach
 
-        <section class="card who">
-            <h2>Overall note</h2>
-            <textarea name="summary" rows="4" placeholder="Anything else the administrator should know">{{ old('summary') }}</textarea>
+        <section class="test-card field">
+            <h2>Anything else</h2>
+            <textarea name="summary" rows="4" placeholder="Optional. Tell the administrator anything the list did not cover.">{{ old('summary') }}</textarea>
         </section>
-        <div class="bar">
-            <span id="progress">Not started</span>
-            <button class="submit" type="submit">Send the result</button>
+
+        <div class="progress">
+            <span id="progress">Mark the steps above, then send.</span>
+            <button class="go" type="submit">Send the result</button>
         </div>
     </form>
-</main>
+</div>
 <script>
 (function () {
     var form = document.getElementById('system-test');
@@ -92,8 +153,7 @@
         input.addEventListener('change', paint);
     });
     function paint() {
-        var total = Object.keys(groups).length;
-        var answered = 0, fails = 0, works = 0;
+        var total = Object.keys(groups).length, answered = 0, fails = 0, works = 0;
         Object.keys(groups).forEach(function (name) {
             var picked = form.querySelector('input[name="'+name+'"]:checked');
             if (!picked) return;
@@ -106,5 +166,4 @@
     paint();
 })();
 </script>
-</body>
-</html>
+@endsection
