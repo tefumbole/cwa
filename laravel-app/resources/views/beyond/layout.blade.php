@@ -244,6 +244,12 @@
         @media (max-width: 640px) {
             .cwa-foot { margin-top: -1.75rem; }
             .cwa-wa { width: 3.15rem; height: 3.15rem; }
+            .cwa-foot-copy { font-size: 0.78rem; }
+        }
+        @media (max-width: 380px) {
+            header.site-header .nav-logo-spin { width: 2.35rem; height: 2.35rem; }
+            .mobile-cta { grid-template-columns: 1fr; }
+            .cwa-foot-copy { font-size: 0.72rem; padding-left: 0.6rem; padding-right: 0.6rem; }
         }
         @media (hover: none) {
             .about-card:hover,

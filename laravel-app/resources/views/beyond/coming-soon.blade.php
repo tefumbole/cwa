@@ -524,12 +524,43 @@
         .lp-drawer-cta .is-join { background: var(--gold); color: #071a38; }
         .lp-drawer-cta .is-give { border: 1.5px solid var(--gold); color: #8a6d1d; }
     }
+    @media (max-width: 430px) {
+        .lp-nav {
+            gap: 0.45rem;
+            padding-left: max(0.7rem, env(safe-area-inset-left, 0px));
+            padding-right: max(0.65rem, env(safe-area-inset-right, 0px));
+        }
+        .lp-brand { flex: 1 1 auto; min-width: 0; gap: 0.45rem; }
+        .lp-menu-btn { flex-shrink: 0; }
+        .lp-kicker {
+            letter-spacing: 0.08em;
+            font-size: 0.58rem;
+            line-height: 1.45;
+        }
+        .lp-copy {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 1rem max(0.85rem, env(safe-area-inset-right, 0px)) 6.4rem max(0.85rem, env(safe-area-inset-left, 0px));
+        }
+        .lp-sub, .lp-quote { max-width: 100%; }
+        .lp-meter {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+            margin-top: 1.15rem;
+        }
+        .lp-launch { min-width: 0; flex: 1 1 8.5rem; }
+    }
     @media (max-width: 380px) {
-        .lp-brand-name { font-size: 0.95rem; }
-        .lp-copy h1 { font-size: clamp(1.85rem, 10.5vw, 2.35rem); }
-        .dial, .dial svg { width: 50px; height: 50px; }
-        .dial-value { font-size: 0.9rem; }
+        .lp-brand-name { font-size: 0.95rem; letter-spacing: 0.04em; }
+        .lp-copy h1 { font-size: clamp(1.7rem, 9.5vw, 2.15rem); }
+        .dial, .dial svg { width: 46px; height: 46px; }
+        .dial-inner { inset: 6px; }
+        .dial-value { font-size: 0.82rem; }
         .lp-drawer-cta { grid-template-columns: 1fr; }
+        .lp-launch { border-left: 0; padding-left: 0; }
     }
 </style>
 @endpush

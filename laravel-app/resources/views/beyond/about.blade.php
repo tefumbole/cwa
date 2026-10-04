@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8 sm:py-12 md:py-16">
-    <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.about.kicker') }}</p>
+    <p class="about-kicker text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.about.kicker') }}</p>
     <h1 class="text-[1.85rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
     <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem]">{{ $story }}</p>
 
@@ -147,6 +147,40 @@
         font-weight: 400;
         letter-spacing: 0;
         text-transform: none;
+    }
+    @media (max-width: 700px) {
+        .about-kicker { letter-spacing: 0.1em; line-height: 1.5; }
+        .leader-section { overflow: hidden; }
+        .leader-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.15rem 0.25rem;
+        }
+        .leader-card {
+            width: auto;
+            flex: none;
+            max-width: none;
+            padding: 0 0.1rem 0.15rem;
+        }
+        .leader-slot {
+            width: 100%;
+            padding: 0.35rem 0.45rem 0;
+            box-sizing: border-box;
+        }
+        .leader-portrait {
+            margin: 0.85rem auto 0.25rem;
+            box-shadow:
+                0 0 0 calc(100cqi * 9 / 300) #D8B32D,
+                0 0 8px 1px rgba(216,179,45,0.8),
+                0 0 14px 4px rgba(216,179,45,0.32);
+        }
+        .leader-card h3 { font-size: 0.92rem; }
+        .leader-card p { font-size: 0.62rem; letter-spacing: 0.04em; }
+    }
+    @media (max-width: 340px) {
+        .leader-grid { gap: 0.1rem; }
+        .leader-slot { padding-left: 0.3rem; padding-right: 0.3rem; }
+        .leader-card h3 { font-size: 0.82rem; }
     }
 </style>
 @endsection
