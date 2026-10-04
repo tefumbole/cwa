@@ -1,7 +1,33 @@
 @extends('layout.main')
 
 @section('content')
-@php $shot = url('public/help'); @endphp
+@php
+    $shot = url('public/help');
+    $publicMenu = \App\Support\SiteMenu::landingNavLinks();
+    $sideItems = \App\Support\SiteMenu::sideItems();
+    $sideHidden = \App\Support\SiteMenu::sideHidden();
+    $adminMenu = [];
+    foreach (\App\Support\SiteMenu::sideOrder() as $key) {
+        if (in_array($key, $sideHidden, true) || ! isset($sideItems[$key])) {
+            continue;
+        }
+        $adminMenu[] = $sideItems[$key];
+    }
+    $peopleMenu = [];
+    $peopleItems = \App\Support\SiteMenu::peopleItems();
+    foreach (\App\Support\SiteMenu::peopleOrder() as $key) {
+        if (isset($peopleItems[$key])) {
+            $peopleMenu[] = $peopleItems[$key];
+        }
+    }
+    $settingsMenu = [];
+    $settingsItems = \App\Support\SiteMenu::settingsItems();
+    foreach (\App\Support\SiteMenu::settingsOrder() as $key) {
+        if (isset($settingsItems[$key])) {
+            $settingsMenu[] = $settingsItems[$key];
+        }
+    }
+@endphp
 <section class="help-guide">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:12px;">
@@ -17,6 +43,7 @@
                 <strong>Contents</strong>
                 <ol class="mb-0 mt-2">
                     <li><a href="#start">Before you start</a></li>
+                    <li><a href="#menus">Current menus</a></li>
                     <li><a href="#home">Homepage</a></li>
                     <li><a href="#about">About Us and leaders</a></li>
                     <li><a href="#branches">Branches</a></li>
@@ -43,15 +70,63 @@
             </div>
         </article>
 
-        <article class="card mb-4" id="home">
-            <div class="card-header bg-white"><strong>2. Homepage</strong></div>
+        <article class="card mb-4" id="menus">
+            <div class="card-header bg-white"><strong>2. Current menus</strong></div>
             <div class="card-body">
-                <img src="{{ $shot }}/home.jpg" alt="CWACAM homepage with the main menu, Join CWA and Donate buttons" class="help-shot">
+                <p>These lists follow <strong>Site Content</strong>. If you drag, rename, or hide a row and save, this page shows the new menu. Hidden rows are left out. <strong>Help</strong> stays last on the admin menu.</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5>Public website</h5>
+                        <ol class="mb-2">
+                            @foreach($publicMenu as $link)
+                                <li><a href="{{ $link['url'] }}" target="_blank">{{ $link['label'] }}</a></li>
+                            @endforeach
+                        </ol>
+                        <p class="mb-0 small text-muted">On the homepage header, also confirm <strong>EN / FR</strong>, <strong>Donate</strong> and <strong>Login</strong>. <strong>Join CWA</strong> is the gold button on the homepage and in the phone menu. On other pages the header shows <strong>Join CWA</strong> next to Donate.</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5>Admin side menu</h5>
+                        <ol class="mb-2">
+                            @foreach($adminMenu as $label)
+                                <li>{{ $label }}</li>
+                            @endforeach
+                            <li>Internships <span class="text-muted">(when your role includes it)</span></li>
+                            <li>Supervisor <span class="text-muted">(when your role includes it)</span></li>
+                            <li>Help</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5>People</h5>
+                        <ol class="mb-0">
+                            @foreach($peopleMenu as $label)
+                                <li>{{ $label }}</li>
+                            @endforeach
+                        </ol>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5>Settings</h5>
+                        <ol class="mb-0">
+                            @foreach($settingsMenu as $label)
+                                <li>{{ $label }}</li>
+                            @endforeach
+                        </ol>
+                    </div>
+                </div>
+                <p class="mb-1"><strong>Pass when</strong> the public header and the blue admin menu match these lists, in this order.</p>
+            </div>
+        </article>
+
+        <article class="card mb-4" id="home">
+            <div class="card-header bg-white"><strong>3. Homepage</strong></div>
+            <div class="card-body">
+                <img src="{{ $shot }}/home.jpg" alt="CWACAM homepage with the main menu, Donate and Login" class="help-shot">
                 <ol>
                     <li>Open <a href="{{ url('/') }}" target="_blank">the homepage</a>.</li>
-                    <li>Confirm the logo, Home, About Us, Branches, Events, Gallery and Membership are visible.</li>
-                    <li>Confirm <strong>EN / FR</strong>, <strong>Donate</strong> and <strong>Join CWA</strong> are visible.</li>
-                    <li>Click <strong>Join CWA</strong>. It should open the membership page.</li>
+                    <li>Confirm the logo and the public menu from section 2, in that order.</li>
+                    <li>Confirm <strong>EN / FR</strong>, <strong>Donate</strong> and <strong>Login</strong> are visible.</li>
+                    <li>Click <strong>Join CWA</strong> on the page. It should open the membership page.</li>
                     <li>Click <strong>FR</strong>, then <strong>EN</strong>. The language should switch and return.</li>
                 </ol>
                 <p class="mb-1"><strong>Pass when</strong> the page loads, the menu does not overflow the screen, and Join CWA and Donate both open the right pages.</p>
@@ -59,7 +134,7 @@
         </article>
 
         <article class="card mb-4" id="about">
-            <div class="card-header bg-white"><strong>3. About Us and leaders</strong></div>
+            <div class="card-header bg-white"><strong>4. About Us and leaders</strong></div>
             <div class="card-body">
                 <img src="{{ $shot }}/about.jpg" alt="About Us page showing the Motto and leadership portraits with gold and navy rings" class="help-shot">
                 <ol>
@@ -75,7 +150,7 @@
         </article>
 
         <article class="card mb-4" id="branches">
-            <div class="card-header bg-white"><strong>4. Branches</strong></div>
+            <div class="card-header bg-white"><strong>5. Branches</strong></div>
             <div class="card-body">
                 <img src="{{ $shot }}/branches.jpg" alt="Branches page with Cameroon and Diaspora tabs and a search box" class="help-shot">
                 <ol>
@@ -90,7 +165,7 @@
         </article>
 
         <article class="card mb-4" id="membership">
-            <div class="card-header bg-white"><strong>5. Membership registration</strong></div>
+            <div class="card-header bg-white"><strong>6. Membership registration</strong></div>
             <div class="card-body">
                 <img src="{{ $shot }}/membership.jpg" alt="Membership page with the Register button" class="help-shot">
                 <p>Open <a href="{{ url('/membership') }}" target="_blank">Membership</a>. Use a test name and a phone number you control. Do not approve the test record until the admin section below.</p>
@@ -121,7 +196,7 @@
         </article>
 
         <article class="card mb-4" id="rest">
-            <div class="card-header bg-white"><strong>6. Events, gallery, contact and donate</strong></div>
+            <div class="card-header bg-white"><strong>7. Events, gallery, contact and donate</strong></div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -142,12 +217,12 @@
         </article>
 
         <article class="card mb-4" id="mobile">
-            <div class="card-header bg-white"><strong>7. Phones and small screens</strong></div>
+            <div class="card-header bg-white"><strong>8. Phones and small screens</strong></div>
             <div class="card-body">
                 <img src="{{ $shot }}/mobile.jpg" alt="Homepage on a narrow phone screen" class="help-shot help-shot-narrow">
                 <ol>
                     <li>Narrow the browser or use a phone.</li>
-                    <li>Open the menu. Join CWA and Donate are easy to tap. The drawer scrolls if the list is long.</li>
+                    <li>Open the menu. It lists the same public items as section 2, then <strong>Join CWA</strong>, <strong>Donate</strong>, language, and <strong>Login</strong>. The drawer scrolls if the list is long.</li>
                     <li>On About Us, leadership portraits wrap and the gold glow is not cut off by the edge of the screen.</li>
                     <li>On Branches, Cameroon and Diaspora stay on one row, and the search box is full width.</li>
                     <li>On the registration form, tapping Diocese, Region or Country focuses the search field immediately. The page does not jump sideways.</li>
@@ -157,7 +232,7 @@
         </article>
 
         <article class="card mb-4" id="admin-leaders">
-            <div class="card-header bg-white"><strong>8. Admin: About Us Leaders</strong></div>
+            <div class="card-header bg-white"><strong>9. Admin: About Us Leaders</strong></div>
             <div class="card-body">
                 <p>Menu: <strong>About Us Leaders</strong>. This is limited to administrators.</p>
                 <ol>
@@ -173,9 +248,9 @@
         </article>
 
         <article class="card mb-4" id="admin-members">
-            <div class="card-header bg-white"><strong>9. Admin: Membership</strong></div>
+            <div class="card-header bg-white"><strong>10. Admin: Membership</strong></div>
             <div class="card-body">
-                <p>Menu: <strong>Membership</strong>, then Awaiting Approvals, Members and Rejected.</p>
+                <p>Menu: <strong>Membership</strong> on the admin side menu, then Awaiting Approvals, Members and Rejected.</p>
                 <ol>
                     <li>Open <strong>Awaiting Approvals</strong>. The Cameroon test and the Diaspora test from section 5 are listed.</li>
                     <li>Open the Cameroon record. Region, address, city and state are stored.</li>
@@ -188,20 +263,22 @@
         </article>
 
         <article class="card mb-4" id="admin-content">
-            <div class="card-header bg-white"><strong>10. Admin: Site Content</strong></div>
+            <div class="card-header bg-white"><strong>11. Admin: Site Content</strong></div>
             <div class="card-body">
                 <ol>
                     <li>Open <strong>Site Content</strong>.</li>
                     <li>Change one About Us sentence, such as a word in the motto, and save.</li>
                     <li>Refresh the public About page. The new sentence is there. Change it back and save again.</li>
-                    <li>If you reorder the public menu, refresh the homepage and confirm the new order, then restore the previous order.</li>
+                    <li>Open <strong>Landing Menu</strong>. Drag one item, save, and refresh the homepage. The header follows that order. Restore the previous order.</li>
+                    <li>Open <strong>Side Menu</strong>. Drag one item or hide one that is not Dashboard or Site Content, save, and look at the blue menu. It matches. Restore the previous order. Help stays last.</li>
+                    <li>Open <strong>People</strong> and <strong>Settings</strong> if those lists were changed. The submenus match section 2.</li>
                 </ol>
-                <p class="mb-1"><strong>Pass when</strong> a saved text change appears on the public page and can be restored.</p>
+                <p class="mb-1"><strong>Pass when</strong> a saved text change appears on the public page, and a saved menu order appears on the website header and the admin side menu.</p>
             </div>
         </article>
 
         <article class="card mb-4" id="signoff">
-            <div class="card-header bg-white"><strong>11. Sign-off checklist</strong></div>
+            <div class="card-header bg-white"><strong>12. Sign-off checklist</strong></div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered mb-0">
@@ -209,7 +286,8 @@
                             <tr><th>Check</th><th style="width:90px;">Pass</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>Homepage, menu, language, Join CWA and Donate</td><td></td></tr>
+                            <tr><td>Public menu matches Help, then language, Donate, Login and Join CWA</td><td></td></tr>
+                            <tr><td>Admin side menu, People and Settings match Help, and Help is last</td><td></td></tr>
                             <tr><td>About Us motto, then leadership portraits, flags and titles</td><td></td></tr>
                             <tr><td>Branches: Cameroon, Diaspora and search</td><td></td></tr>
                             <tr><td>Membership: Cameroon path, including Region and address</td><td></td></tr>
