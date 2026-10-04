@@ -632,6 +632,14 @@ function membershipWizard() {
             this.ccOpen = false;
             this.ccQuery = '';
             this.last = '';
+            if (this.branchKind === 'diaspora' && !this.country) {
+                var name = this.countryFromDial(code);
+                if (name && name !== 'Cameroon') {
+                    this.country = name;
+                    this.countryQuery = name;
+                    this.onCountryChange();
+                }
+            }
             this.scheduleLookup();
         },
         isMobile: function () {
@@ -666,9 +674,51 @@ function membershipWizard() {
                 if (res.name && !self.fullName) self.fullName = res.name;
             }).catch(function () { self.looking = false; });
         },
+        countryFromDial: function (code) {
+            var map = this.dialByCountry || {};
+            var keys = Object.keys(map);
+            for (var i = 0; i < keys.length; i++) {
+                if (map[keys[i]] === code) return keys[i];
+            }
+            return '';
+        },
+        diasporaBranchList: function () {
+            var map = this.dioceseMap || {};
+            var countries = this.featuredDiaspora || [];
+            var names = [];
+            var seen = {};
+            for (var i = 0; i < countries.length; i++) {
+                var list = map[countries[i]] || [];
+                for (var j = 0; j < list.length; j++) {
+                    if (!seen[list[j]]) {
+                        seen[list[j]] = true;
+                        names.push(list[j]);
+                    }
+                }
+            }
+            return names;
+        },
+        branchCountry: function (name) {
+            var map = this.dioceseMap || {};
+            var countries = this.featuredDiaspora || [];
+            for (var i = 0; i < countries.length; i++) {
+                var list = map[countries[i]] || [];
+                if (list.indexOf(name) !== -1) return countries[i];
+            }
+            return '';
+        },
         dioceseOptions: function () {
             var map = this.dioceseMap || {};
-            return map[this.country] || [];
+            var selected = map[this.country] || [];
+            if (selected.length) return selected;
+            if (this.branchKind === 'diaspora') {
+                var fromPhone = this.countryFromDial(this.countryCode);
+                if (fromPhone && fromPhone !== 'Cameroon' && map[fromPhone] && map[fromPhone].length) {
+                    return map[fromPhone];
+                }
+                return this.diasporaBranchList();
+            }
+            return [];
         },
         hasDioceseList: function () {
             return this.dioceseOptions().length > 0;
@@ -773,6 +823,13 @@ function membershipWizard() {
             this.diocese = name;
             this.dioceseQuery = name;
             this.dioceseOpen = false;
+            if (this.branchKind === 'diaspora' && !this.country) {
+                var owner = this.branchCountry(name);
+                if (owner) {
+                    this.country = owner;
+                    this.countryQuery = owner;
+                }
+            }
         },
         pickRegion: function (name) {
             this.region = name;
