@@ -447,9 +447,8 @@
         font-size: 0.78rem;
         letter-spacing: 0.04em;
     }
-    .launched { display: none; color: var(--gold-soft); font-family: "Playfair Display", Georgia, serif; font-size: 1.25rem; }
-    .launched.is-visible { display: block; }
     .lp-rings.is-hidden { display: none; }
+    .lp-rings.is-hidden + .lp-launch { border-left: 0; padding-left: 0; }
     @media (min-width: 1024px) {
         .lp-links, .lp-actions { display: flex; }
         .lp-menu-btn { display: none; }
@@ -592,7 +591,7 @@
                 <i data-lucide="heart" class="w-4 h-4"></i>
                 {{ __('cwa.nav.donate') }}
             </a>
-            <a href="{{ route('beyond.membership') }}" class="lp-join">{{ __('cwa.nav.join') }}</a>
+            <a href="{{ url('/login') }}" class="lp-join">{{ __('cwa.nav.login') }}</a>
         </div>
 
         <button type="button" class="lp-menu-btn" @click="open = !open; search = false" aria-label="{{ __('cwa.nav.menu') }}">
@@ -652,7 +651,6 @@
                         </div>
                     @endforeach
                 </div>
-                <p class="launched" id="launched">{{ __('cwa.home.launched') }}</p>
                 <div class="lp-launch">
                     <i data-lucide="calendar" class="w-5 h-5"></i>
                     <span>
@@ -681,7 +679,6 @@
     var C = 2 * Math.PI * 52;
     var rings = document.getElementById('rings');
     if (!rings) return;
-    var launched = document.getElementById('launched');
     var target = new Date(rings.getAttribute('data-target')).getTime();
     var windowDays = Math.max(1, parseInt(rings.getAttribute('data-window-days'), 10) || 31);
     var nodes = {
@@ -703,7 +700,6 @@
         var diff = target - Date.now();
         if (diff <= 0) {
             rings.classList.add('is-hidden');
-            launched.classList.add('is-visible');
             return false;
         }
         var secs = Math.floor(diff / 1000);
