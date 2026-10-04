@@ -3,6 +3,25 @@
 @section('title', __('cwa.membership.page_title'))
 @section('meta_description', __('cwa.membership.page_title'))
 
+@php
+    $memberGroup = request('group');
+    if (! in_array($memberGroup, ['cameroon', 'diaspora'], true)) {
+        $memberGroup = old('country') === 'Cameroon' ? 'cameroon' : (old('country') ? 'diaspora' : '');
+    }
+    $startOnDetails = $errors->any() || in_array($memberGroup, ['cameroon', 'diaspora'], true);
+    $formCountries = \App\Support\CwaBranches::formCountries();
+    $diasporaCountries = [];
+    foreach ($formCountries as $countryName) {
+        if ($countryName !== 'Cameroon') {
+            $diasporaCountries[] = $countryName;
+        }
+    }
+    $startCountry = old('country', $memberGroup === 'diaspora' ? '' : ($memberGroup === 'cameroon' ? 'Cameroon' : 'Cameroon'));
+    if ($memberGroup === 'diaspora' && ! old('country')) {
+        $startCountry = '';
+    }
+@endphp
+
 @push('head')
 <style>
     .mship-page { max-width: 38rem; margin: 0 auto; padding: 1.1rem 0.9rem 5.5rem; }
@@ -493,8 +512,8 @@
 <script>
 function membershipWizard() {
     return {
-        step: @json($errors->any() || in_array(request('group'), ['cameroon', 'diaspora'], true) ? 'phone' : 'where'),
-        branchKind: @json(old('country') === 'Cameroon' || request('group') === 'cameroon' ? 'cameroon' : (old('country') || request('group') === 'diaspora' ? 'diaspora' : '')),
+        step: @json($startOnDetails ? 'phone' : 'where'),
+        branchKind: @json($memberGroup),
         stage: function () {
             if (this.step === 'where') return 0;
             if (this.step === 'phone') return 1;
@@ -519,11 +538,11 @@ function membershipWizard() {
         diocese: @json(old('diocese', '')),
         parish: @json(old('parish', '')),
         region: @json(old('region', '')),
-        country: @json(old('country', request('group') === 'diaspora' ? '' : 'Cameroon')),
+        country: @json($startCountry),
         dioceseMap: @json(\App\Support\CwaBranches::formMap()),
-        featuredAll: @json(\App\Support\CwaBranches::formCountries()),
-        featuredDiaspora: @json(array_values(array_filter(\App\Support\CwaBranches::formCountries(), function ($name) { return $name !== 'Cameroon'; }))),
-        extraCountries: @json(array_values(array_diff(\App\Support\CountryDialCodes::names(), \App\Support\CwaBranches::formCountries()))),
+        featuredAll: @json($formCountries),
+        featuredDiaspora: @json($diasporaCountries),
+        extraCountries: @json(array_values(array_diff(\App\Support\CountryDialCodes::names(), $formCountries))),
         regions: @json(\App\Support\CameroonRegions::all()),
         dioceseOpen: false,
         dioceseQuery: @json(old('diocese', '')),
@@ -532,7 +551,7 @@ function membershipWizard() {
         regionQuery: @json(old('region', '')),
         regionPlaceholder: @json(__('cwa.join.region_search')),
         countryOpen: false,
-        countryQuery: @json(old('country', request('group') === 'diaspora' ? '' : 'Cameroon')),
+        countryQuery: @json($startCountry),
         countryPlaceholder: @json(__('cwa.join.country_search')),
         idType: '',
         idPath: '',
