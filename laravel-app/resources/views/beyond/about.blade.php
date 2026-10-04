@@ -84,24 +84,27 @@
     .leader-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.5rem 1.25rem;
-        margin-top: 1.25rem;
+        gap: 0.35rem 0.4rem;
+        margin-top: 0.85rem;
     }
-    @media (min-width: 640px) {
+    @media (min-width: 560px) {
         .leader-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    @media (min-width: 1280px) {
+    @media (min-width: 900px) {
         .leader-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1200px) {
+        .leader-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
     .leader-card {
         background: #FFFFFF;
         text-align: center;
         overflow: visible;
         min-width: 0;
-        padding: 0.25rem 0.5rem 1rem;
+        padding: 0 0.15rem 0.35rem;
     }
     .leader-slot {
-        width: min(300px, calc(100% - 7.5rem));
+        width: min(280px, calc(100% - 4.5rem));
         margin: 0 auto;
         container-type: inline-size;
         overflow: visible;
@@ -109,10 +112,10 @@
     .leader-portrait {
         width: 100%;
         aspect-ratio: 1;
-        margin: 3.25rem auto 2.75rem;
+        margin: 2.35rem auto 1.15rem;
         box-sizing: content-box;
         border-radius: 50%;
-        border: calc(100cqi * 4 / 300) solid #003E7E;
+        border: calc(100cqi * 4.6 / 300) solid #003E7E;
         background: transparent;
         overflow: visible;
         box-shadow:
