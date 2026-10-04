@@ -34,43 +34,29 @@
             </p>
         </section>
     </div>
-
-    @if (!empty($leaders) && $leaders->isNotEmpty())
-        <section id="leadership" class="mt-12 sm:mt-16">
-            <h2 class="text-[1.55rem] leading-tight sm:text-3xl font-extrabold text-brand-blue tracking-tight m-0">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
-            <p class="mt-2 text-slate-600">{{ \App\Support\SiteContent::text('about.leadership_subtext', __('cwa.about.leadership_subtext')) }}</p>
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
-                @foreach ($leaders as $leader)
-                    <article class="leader-card rounded-2xl bg-white border border-stone-200/80 shadow-sm p-5 text-center">
-                        @if ($leader->photoPublicUrl())
-                            <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" class="leader-photo">
-                        @else
-                            <div class="leader-photo leader-photo-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
-                        @endif
-                        <h3 class="mt-4 mb-0 text-lg font-extrabold text-brand-blue">{{ $leader->name }}</h3>
-                        <p class="mt-1 mb-0 text-xs font-extrabold tracking-[0.08em] uppercase text-brand-gold">{{ $leader->title }}</p>
-                        @if ($leader->country)
-                            <p class="mt-2 mb-0 text-sm text-slate-600">{{ $leader->countryLabel() }}</p>
-                        @endif
-                        @if ($leader->description)
-                            <p class="mt-3 mb-0 text-sm text-slate-600 leading-relaxed text-left">{{ $leader->description }}</p>
-                        @endif
-                        @if ($leader->email || $leader->phone)
-                            <div class="mt-3 flex flex-col gap-1 text-sm">
-                                @if ($leader->email)
-                                    <a href="mailto:{{ $leader->email }}" class="text-brand-blue font-semibold break-all">{{ $leader->email }}</a>
-                                @endif
-                                @if ($leader->phone)
-                                    <a href="tel:{{ preg_replace('/\s+/', '', $leader->phone) }}" class="text-brand-blue font-semibold">{{ \App\Support\WhatsAppPhone::display($leader->phone) }}</a>
-                                @endif
-                            </div>
-                        @endif
-                    </article>
-                @endforeach
-            </div>
-        </section>
-    @endif
 </div>
+
+@if (!empty($leaders) && $leaders->isNotEmpty())
+    <section id="leadership" class="max-w-6xl mx-auto px-3 sm:px-4 pb-10 sm:pb-14">
+        <h2 class="text-xl sm:text-2xl font-extrabold text-brand-blue tracking-tight m-0">{{ \App\Support\SiteContent::text('about.leadership_heading', __('cwa.about.leadership_heading')) }}</h2>
+        <div class="mt-4 grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+            @foreach ($leaders as $leader)
+                @php $flag = $leader->countryFlag(); @endphp
+                <article class="leader-card rounded-xl bg-white border border-stone-200/80 px-2 py-3 text-center min-w-0">
+                    @if ($leader->photoPublicUrl())
+                        <div class="leader-avatar">
+                            <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" width="240" height="240">
+                        </div>
+                    @else
+                        <div class="leader-avatar leader-avatar-empty" aria-hidden="true">{{ mb_strtoupper(mb_substr($leader->name, 0, 1)) }}</div>
+                    @endif
+                    <h3 class="mt-2 mb-0 text-[0.92rem] sm:text-sm font-extrabold text-brand-blue leading-snug">{{ $leader->name }}@if ($flag) <span class="leader-flag" title="{{ $leader->country }}">{{ $flag }}</span>@endif</h3>
+                    <p class="mt-0.5 mb-0 text-[0.65rem] sm:text-xs font-extrabold tracking-[0.06em] uppercase text-brand-gold leading-tight">{{ $leader->title }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+@endif
 <style>
     .about-card {
         cursor: pointer;
@@ -85,22 +71,36 @@
         }
         .about-card:hover h2 { color: #002855; }
     }
-    .leader-photo {
-        width: 8.5rem;
-        height: 8.5rem;
+    .leader-avatar {
+        width: 4.75rem;
+        height: 4.75rem;
         margin: 0 auto;
         border-radius: 999px;
-        object-fit: cover;
-        border: 4px solid #D4AF37;
-        background: #003D82;
+        overflow: hidden;
+        border: 2px solid #D4AF37;
+        background: #efeae0;
     }
-    .leader-photo-empty {
+    .leader-avatar img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        object-position: center 18%;
+    }
+    .leader-avatar-empty {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #D4AF37;
+        color: #003D82;
         font-weight: 800;
-        font-size: 2rem;
+        font-size: 1.35rem;
+    }
+    .leader-flag {
+        font-style: normal;
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
     }
 </style>
 @endsection
