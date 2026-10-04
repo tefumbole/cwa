@@ -4,7 +4,24 @@
 
 @section('content')
 <style>
-    .test-wrap { max-width: 880px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+    .test-layout {
+        max-width: 1120px; margin: 0 auto; padding: 2rem 1rem 5rem;
+        display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 1.25rem; align-items: start;
+    }
+    .progress-rail {
+        position: sticky; top: 5.5rem;
+        background: #fff; border: 1px solid #e7e1d4; border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 61, 130, .08); padding: 1rem 1rem 1.1rem;
+    }
+    .progress-rail h2 { margin: 0 0 .7rem; color: #003D82; font-family: Fraunces, Georgia, serif; font-size: 1.2rem; }
+    .bar-track { height: 12px; border-radius: 999px; background: #f3efe6; overflow: hidden; border: 1px solid #e7e1d4; }
+    .bar-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #003D82, #D4AF37); transition: width .25s ease; }
+    .pct { margin: .7rem 0 .15rem; font-size: 2.1rem; font-weight: 800; color: #003D82; line-height: 1; }
+    .rail-detail { margin: 0; color: #3d4654; font-size: .92rem; }
+    @media (max-width: 860px) {
+        .test-layout { grid-template-columns: 1fr; padding-top: 1rem; }
+        .progress-rail { position: sticky; top: .5rem; z-index: 20; }
+    }
     .test-kicker { letter-spacing: .16em; text-transform: uppercase; font-size: .72rem; font-weight: 800; color: #8a6d1d; }
     .test-card {
         background: #fff;
@@ -31,7 +48,16 @@
         margin: 0 0 .85rem;
         background: #fffdf8;
     }
+    .check.is-done { border-left-color: #0f6b4c; }
+    .task-head { display: flex; gap: .7rem; align-items: flex-start; }
+    .task-no {
+        flex: 0 0 2rem; height: 2rem; border-radius: 999px;
+        background: #003D82; color: #fff; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .check.is-done .task-no { background: #0f6b4c; }
     .check p { margin: 0 0 .7rem; line-height: 1.45; }
+    .task-head .instruction { margin: .15rem 0 0; }
     .instruction { font-weight: 700; color: #1a1f2e; }
     .how { margin: 0 0 .8rem; padding-left: 1.2rem; color: #3d4654; }
     .how li { margin: 0 0 .35rem; }
@@ -74,7 +100,8 @@
     .hp { position: absolute; left: -9999px; }
 </style>
 
-<div class="test-wrap">
+<div class="test-layout">
+<div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
     <p class="text-stone-600 mb-4">Do one test at a time. Read the instruction, follow the steps, mark the result, then go to the next test. Keep this page open in one tab and the website in another.</p>
@@ -98,13 +125,18 @@
             <input id="tester_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
         </section>
 
+        @php $taskNo = 0; @endphp
         @foreach($sections as $section)
             <section class="test-card">
                 <h2>{{ $section['title'] }}</h2>
                 <p class="text-stone-600 mb-3">{{ $section['intro'] }}</p>
                 @foreach($section['checks'] as $check)
-                    <div class="check">
-                        <p class="instruction">{{ $check['text'] }}</p>
+                    @php $taskNo++; @endphp
+                    <div class="check" id="task-{{ $taskNo }}">
+                        <div class="task-head">
+                            <span class="task-no">{{ $taskNo }}</span>
+                            <p class="instruction">{{ $check['text'] }}</p>
+                        </div>
                         @if(!empty($check['steps']))
                             <ol class="how">
                                 @foreach($check['steps'] as $step)
@@ -130,15 +162,25 @@
         </section>
 
         <div class="progress">
-            <span id="progress">Mark the steps above, then send.</span>
+            <span id="progress-inline">Mark each task, then send.</span>
             <button class="go" type="submit">Send the result</button>
         </div>
     </form>
+</div>
+<aside class="progress-rail" aria-live="polite">
+    <h2>Progress</h2>
+    <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+    <p class="pct" id="progress-pct">0%</p>
+    <p class="rail-detail" id="progress">0 of 0 answered</p>
+</aside>
 </div>
 <script>
 (function () {
     var form = document.getElementById('system-test');
     var out = document.getElementById('progress');
+    var inline = document.getElementById('progress-inline');
+    var pct = document.getElementById('progress-pct');
+    var bar = document.getElementById('bar-fill');
     var groups = {};
     Array.prototype.forEach.call(form.querySelectorAll('input[type=radio]'), function (input) {
         groups[input.name] = true;
@@ -148,12 +190,24 @@
         var total = Object.keys(groups).length, answered = 0, fails = 0, works = 0;
         Object.keys(groups).forEach(function (name) {
             var picked = form.querySelector('input[name="'+name+'"]:checked');
-            if (!picked) return;
+            var card = picked ? picked.closest('.check') : null;
+            if (card && !picked) card.classList.remove('is-done');
+            if (!picked) {
+                var any = form.querySelector('input[name="'+name+'"]');
+                if (any) any.closest('.check').classList.remove('is-done');
+                return;
+            }
+            picked.closest('.check').classList.add('is-done');
             answered++;
             if (picked.value === 'fails') fails++;
             if (picked.value === 'works') works++;
         });
-        out.textContent = answered + ' of ' + total + ' marked · ' + works + ' working · ' + fails + ' not working';
+        var percent = total ? Math.round(answered / total * 100) : 0;
+        pct.textContent = percent + '%';
+        bar.style.width = percent + '%';
+        var detail = answered + ' of ' + total + ' answered · ' + works + ' working · ' + fails + ' not working';
+        out.textContent = detail;
+        inline.textContent = percent + '% answered';
     }
     paint();
 })();

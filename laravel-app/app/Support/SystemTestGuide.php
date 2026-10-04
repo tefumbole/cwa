@@ -149,6 +149,19 @@ class SystemTestGuide
                         'In the blue menu, click People, then User List.',
                         'The list of users should appear.',
                     ]],
+                    ['id' => 'user-add', 'text' => 'Open Add User.', 'steps' => [
+                        'In People, click Add User.',
+                        'The new-user form should open, with name, email or username, and phone.',
+                        'Stop before saving, unless the name starts with TEST.',
+                    ]],
+                    ['id' => 'customer-list', 'text' => 'Open the customer list.', 'steps' => [
+                        'In People, click Customer List.',
+                        'The list should open, or show a clear empty message.',
+                    ]],
+                    ['id' => 'supplier-list', 'text' => 'Open the supplier list.', 'steps' => [
+                        'In People, click Supplier List.',
+                        'The list should open, or show a clear empty message.',
+                    ]],
                     ['id' => 'user-edit', 'text' => 'Open one user and look at the signatures.', 'steps' => [
                         'Click Edit on a user, or click the row.',
                         'Find Signature, Comment, and Approver.',
@@ -244,6 +257,15 @@ class SystemTestGuide
                         'On General Setting, find the email footer image.',
                         'If you upload a new one, the preview should stay inside its box and not cover the next field.',
                     ]],
+                    ['id' => 'role-permission', 'text' => 'Open Role Permission.', 'steps' => [
+                        'In Settings, click Role Permission.',
+                        'The roles should be listed.',
+                        'Open one role. The permission checkboxes should show. Do not remove an administrator permission.',
+                    ]],
+                    ['id' => 'activity-logs', 'text' => 'Open Activity Logs.', 'steps' => [
+                        'In Settings, click Activity Logs.',
+                        'Recent office actions should be listed, or the page should say there are none.',
+                    ]],
                     ['id' => 'empty-db', 'text' => 'Find Empty Database, and do not click it.', 'steps' => [
                         'In Settings, look for Empty Database.',
                         'Confirm the button is there.',
@@ -257,37 +279,195 @@ class SystemTestGuide
     protected static function menuSection()
     {
         $checks = [];
-        $hidden = [];
+        $covered = ['site-content', 'leaders', 'people', 'membership', 'announcements', 'letter', 'tasks', 'setting'];
         try {
             $hidden = SiteMenu::sideHidden();
             foreach (SiteMenu::sideOrder() as $key) {
-                if (in_array($key, $hidden, true)) {
+                if (in_array($key, $hidden, true) || in_array($key, $covered, true)) {
                     continue;
                 }
                 $label = SiteMenu::sideItems()[$key] ?? $key;
+                $activity = self::adminActivity($key, $label);
                 $checks[] = [
                     'id' => 'menu-'.$key,
-                    'text' => 'Open '.$label.' from the blue menu.',
-                    'steps' => [
-                        'Sign in if you are not already signed in.',
-                        'On the left blue menu, click '.$label.'.',
-                        'The screen should open. It should not be blank and it should not be a server error.',
-                    ],
+                    'text' => $activity['text'],
+                    'steps' => $activity['steps'],
                 ];
             }
         } catch (\Throwable $e) {
+            $checks[] = self::adminActivity('dashboard', 'Dashboard') + ['id' => 'menu-dashboard'];
+        }
+        foreach (['internship' => 'Internships', 'supervisor' => 'Supervisor'] as $key => $label) {
+            $activity = self::adminActivity($key, $label);
             $checks[] = [
-                'id' => 'menu-dashboard',
-                'text' => 'Open Dashboard. The screen loads.',
+                'id' => 'menu-'.$key,
+                'text' => $activity['text'],
+                'steps' => $activity['steps'],
             ];
         }
-        $checks[] = ['id' => 'menu-help', 'text' => 'Help is the last item in the side menu and this guide’s link is on that page.'];
+        $checks[] = [
+            'id' => 'menu-help',
+            'text' => 'Open Help. It should be the last item in the blue menu.',
+            'steps' => [
+                'Scroll to the bottom of the blue menu.',
+                'Help should be the last name.',
+                'Click Help. This test link should be on that page.',
+            ],
+        ];
 
         return [
             'id' => 'menus',
-            'title' => 'Every admin menu',
-            'intro' => 'Open each item in the blue menu. Mark Does not work only when the page errors or is empty when it should have content.',
+            'title' => 'Admin panel activities',
+            'intro' => 'Stay signed in. For each activity, use the blue menu on the left, do the steps, then mark the result. Use a name that starts with TEST, and do not delete real records.',
             'checks' => $checks,
+        ];
+    }
+
+    protected static function adminActivity($key, $label)
+    {
+        $known = [
+            'dashboard' => ['Read the Dashboard.', [
+                'In the blue menu, click Dashboard.',
+                'You should see summary numbers or charts for the office.',
+                'The page should not be blank and should not be a server error.',
+            ]],
+            'product' => ['Work in Product.', [
+                'In the blue menu, click Product, then Product List.',
+                'The list of products should open.',
+                'Click Add Product. Type a name that starts with TEST. You may stop before saving. If you save it, delete that test product afterwards.',
+            ]],
+            'purchase' => ['Work in Purchase.', [
+                'In the blue menu, click Purchase, then Purchase List.',
+                'The list should open.',
+                'Click Add Purchase and confirm the form opens. Do not save a real purchase unless you name it TEST and can delete it.',
+            ]],
+            'sale' => ['Work in Sale.', [
+                'In the blue menu, click Sale, then Sale List.',
+                'The list should open.',
+                'Open POS or Add Sale. The screen should load. Do not complete a real sale.',
+            ]],
+            'booking' => ['Work in the rental module.', [
+                'In the blue menu, click Rental Module, then Booking List.',
+                'The list should open.',
+                'Click Booking Create. The form should open. Stop before saving a real booking.',
+            ]],
+            'events' => ['Create a test event in the office.', [
+                'In the blue menu, click Events, then All Events.',
+                'The event list or an empty list should show.',
+                'Click Create Event. Give it a title that starts with TEST, save it, then open it again. Delete it if the screen allows delete.',
+            ]],
+            'invitations' => ['Work in Digital Invitations.', [
+                'In the blue menu, click Digital Invitations, then All Invitations.',
+                'The list should open.',
+                'Click Create Invitation. The form should open. Do not send it to a real guest list.',
+            ]],
+            'jobs' => ['Work in the Job Board.', [
+                'In the blue menu, click Job Board, then Job Postings.',
+                'The list should open.',
+                'Click Add Job. The form should open. Do not publish a real vacancy unless the title starts with TEST.',
+            ]],
+            'contracts' => ['Work in Contracts.', [
+                'In the blue menu, click Contracts, then Contract List.',
+                'The list should open.',
+                'Click Create Contract. The form should open. Stop before sending it for signature.',
+            ]],
+            'permissions' => ['Work in Permissions.', [
+                'In the blue menu, click Permissions, then Permissions Listings.',
+                'The list should open.',
+                'Open Awaiting if it is in the submenu. A list or a clear empty message should show.',
+            ]],
+            'courses' => ['Work in Courses.', [
+                'In the blue menu, click Courses.',
+                'The course list should open.',
+                'Open one course, or start a new one named TEST and stop before publishing it.',
+            ]],
+            'timesheets' => ['Open your own timesheet.', [
+                'In the blue menu, click TimeSheets (Employee).',
+                'Your timesheet screen should open.',
+                'If a clock-in or add-hours button is there, do not submit hours unless they are marked TEST.',
+            ]],
+            'timesheet-admin' => ['Open timesheet admin.', [
+                'In the blue menu, click TimeSheet Admin.',
+                'The admin timesheet list should open.',
+                'You should be able to see staff rows, or a clear empty message.',
+            ]],
+            'shop' => ['Work in Shops.', [
+                'In the blue menu, click Shops.',
+                'The shop list should open.',
+                'Open one shop, or start Add Shop and stop before saving.',
+            ]],
+            'order' => ['Work in Online Order.', [
+                'In the blue menu, click Online Order.',
+                'The order list should open.',
+                'Open one order if any exist. Do not mark a real order as paid.',
+            ]],
+            'payments' => ['Work in Payments.', [
+                'In the blue menu, click Payments.',
+                'The payments screen should open.',
+                'You should see a list or a clear empty message. Do not record a real payment.',
+            ]],
+            'expense' => ['Work in Expense.', [
+                'In the blue menu, click Expense, then Expense List.',
+                'The list should open.',
+                'Click Add Expense. The form should open. If you save one, name it TEST and delete it afterwards.',
+            ]],
+            'quotation' => ['Work in Quotation.', [
+                'In the blue menu, click Quotation, then Quotation List.',
+                'The list should open.',
+                'Click Add Quotation. The form should open. Stop before sending it to a real customer.',
+            ]],
+            'assets' => ['Work in Fixed Assets.', [
+                'In the blue menu, click Fixed Assets.',
+                'The asset list should open.',
+                'Open one asset, or start a new one named TEST and stop before saving.',
+            ]],
+            'transfer' => ['Work in Transfer.', [
+                'In the blue menu, click Transfer.',
+                'The transfer list should open.',
+                'Start a new transfer if the button is there. Stop before moving real stock.',
+            ]],
+            'return' => ['Work in Return.', [
+                'In the blue menu, click Return.',
+                'The return list should open.',
+                'The page should not be a server error. Do not return a real sale.',
+            ]],
+            'account' => ['Work in Accounting.', [
+                'In the blue menu, click Accounting.',
+                'Open the first item in that submenu, such as the account list.',
+                'The screen should show accounts or a clear empty message.',
+            ]],
+            'hrm' => ['Work in HRM.', [
+                'In the blue menu, click HRM, then Employee.',
+                'The employee list should open.',
+                'Open Attendance or Payroll from the same menu. Each one should load. Do not change a real salary.',
+            ]],
+            'report' => ['Open one report.', [
+                'In the blue menu, click Reports.',
+                'Pick any report, such as a sale or summary report.',
+                'The report should open or say there is no data. It should not be a server error.',
+            ]],
+            'internship' => ['Work in Internships.', [
+                'In the blue menu, click Internships.',
+                'Open the list inside that menu.',
+                'The screen should show internships or a clear empty message.',
+            ]],
+            'supervisor' => ['Work in Supervisor.', [
+                'In the blue menu, click Supervisor.',
+                'Open the list inside that menu.',
+                'The screen should show supervisors or a clear empty message.',
+            ]],
+        ];
+        if (isset($known[$key])) {
+            return ['text' => $known[$key][0], 'steps' => $known[$key][1]];
+        }
+
+        return [
+            'text' => 'Work in '.$label.'.',
+            'steps' => [
+                'In the blue menu, click '.$label.'.',
+                'Open the first list inside that menu.',
+                'The screen should open. It should not be blank and it should not be a server error. Do not delete real records.',
+            ],
         ];
     }
 }
