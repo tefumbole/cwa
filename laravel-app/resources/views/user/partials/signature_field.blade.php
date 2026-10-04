@@ -8,7 +8,6 @@
     $fileField = $fileField ?? null;
     $inputName = $inputName ?? $type;
     $uid = 'sig-'.$type;
-    $phoneDisplay = \App\Support\WhatsAppPhone::display($user->phone ?: $user->additional_phone);
     $pending = !empty($user->sign_request_token)
         && ($user->sign_request_type ?? 'sign') === $type
         && $user->sign_request_expires_at
@@ -33,10 +32,10 @@
         <button type="button" class="btn btn-outline-info btn-sm btn-sig-pad" data-type="{{ $type }}" style="display:none;">
             Sign on this device
         </button>
-        <button type="button" class="btn btn-outline-primary btn-sm btn-sig-whatsapp" data-type="{{ $type }}" style="display:none;"
-                data-phone="{{ $phoneDisplay }}"
+        <button type="button" class="btn btn-outline-primary btn-sm btn-sig-whatsapp" data-type="{{ $type }}"
+                data-email="{{ $user->email }}"
                 data-url="{{ route('user.signature.request', $user->id) }}">
-            <i class="fa fa-whatsapp"></i> Request link (WhatsApp)
+            <i class="fa fa-envelope"></i> Email sign link
         </button>
         @if($fileField)
             <button type="button" class="btn btn-outline-danger btn-sm btn-sig-delete" data-type="{{ $type }}"
@@ -58,7 +57,7 @@
     @endif
 
     <p class="text-muted small mb-0 sig-hint" data-type="{{ $type }}" style="display:none;">
-        Draw here, or WhatsApp a link so the user can add their {{ strtolower($label) }} on their phone.
+        Draw here, or email a link so the user can add their {{ strtolower($label) }}.
     </p>
 
     <div class="user-sign-pad-wrap sig-pad-wrap" data-type="{{ $type }}" id="{{ $uid }}-pad-wrap">

@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\GeneralSetting;
-use App\Services\BeyondWasenderService;
 use App\Support\LetterSignature;
-use App\Support\WhatsAppPhone;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -19,6 +18,7 @@ class UserSignatureController extends Controller
         'sign' => 'Signature',
         'stemp' => 'Comment',
         'approve' => 'Approver',
+        'all' => 'Signature, comment, and approver',
     ];
 
     public function __construct()
@@ -50,6 +50,9 @@ class UserSignatureController extends Controller
         }
 
         $type = $this->resolveType($request);
+        if ($type === 'all') {
+            return $this->signatureResponse($request, false, 'Choose signature, comment, or approver.', 422);
+        }
         $request->validate([
             'signature_image' => 'required|string',
         ]);
@@ -71,9 +74,9 @@ class UserSignatureController extends Controller
 
         $type = $this->resolveType($request);
         $user = User::findOrFail($id);
-        $phone = trim((string) ($user->phone ?: $user->additional_phone));
-        if ($phone === '') {
-            return $this->signatureResponse($request, false, 'This user has no phone number for WhatsApp.', 422);
+        $email = trim((string) $user->email);
+        if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->signatureResponse($request, false, 'This user has no email address.', 422);
         }
 
         $token = Str::random(48);
@@ -84,25 +87,27 @@ class UserSignatureController extends Controller
 
         $link = url('/user-sign/'.$token);
         $label = self::TYPES[$type];
-        $company = optional(GeneralSetting::first())->site_title ?: 'Beyond Enterprise';
-        $msg = "{$company}: Please add your {$label} using this secure link:\n{$link}\n\nThis link expires in 3 days.";
+        $company = optional(GeneralSetting::first())->site_title ?: 'Catholic Women\'s Association Cameroon';
 
-        usleep(1200000);
+        try {
+            Mail::send('mail.user_signature_request', [
+                'name' => $user->name,
+                'company' => $company,
+                'label' => $label,
+                'link' => $link,
+            ], function ($message) use ($email, $company, $label) {
+                $message->to($email)->subject($company.': please add your '.$label);
+            });
+        } catch (\Throwable $e) {
+            \Log::error('[user-signature] email failed: '.$e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $email,
+            ]);
 
-        $result = app(BeyondWasenderService::class)->sendText($phone, $msg);
-        \Log::info('[user-signature] WhatsApp request result', [
-            'user_id' => $user->id,
-            'type' => $type,
-            'phone' => $phone,
-            'link' => $link,
-            'result' => $result,
-        ]);
-
-        if (empty($result['success']) || ! empty($result['skipped'])) {
             return $this->signatureResponse(
                 $request,
                 false,
-                'WhatsApp did not deliver: '.($result['error'] ?? 'messaging skipped or failed').'. Use the link below.',
+                'The sign link was created, but the email to '.$email.' was not sent. Copy the link below.',
                 422,
                 $link
             );
@@ -111,7 +116,7 @@ class UserSignatureController extends Controller
         return $this->signatureResponse(
             $request,
             true,
-            $label.' request sent to WhatsApp ('.WhatsAppPhone::display($phone).'). If it does not arrive, use Open link below.',
+            $label.' link emailed to '.$email.'.',
             200,
             $link
         );
@@ -124,6 +129,9 @@ class UserSignatureController extends Controller
         }
 
         $type = $this->resolveType($request);
+        if ($type === 'all') {
+            return $this->signatureResponse($request, false, 'Choose signature, comment, or approver.', 422);
+        }
         $user = User::findOrFail($id);
         $this->deleteUserImage($user, $type);
 
@@ -171,21 +179,30 @@ class UserSignatureController extends Controller
             return response()->view('user.public_sign_expired', [], 410);
         }
 
-        $request->validate([
-            'signature_image' => 'required|string',
-        ]);
-
         $type = $this->normalizeType($user->sign_request_type ?: 'sign');
+        $fields = $type === 'all'
+            ? ['sign' => 'signature_image', 'stemp' => 'comment_image', 'approve' => 'approver_image']
+            : [$type => 'signature_image'];
 
-        try {
-            $filename = $this->persistUserImage($user, $request->signature_image, $type);
-        } catch (\Throwable $e) {
-            \Log::error('UserSignature publicStore failed: '.$e->getMessage());
-            $filename = null;
+        $saved = 0;
+        foreach ($fields as $column => $input) {
+            $dataUrl = (string) $request->input($input, '');
+            if ($dataUrl === '') {
+                continue;
+            }
+            try {
+                $filename = $this->persistUserImage($user, $dataUrl, $column);
+            } catch (\Throwable $e) {
+                \Log::error('UserSignature publicStore failed: '.$e->getMessage());
+                $filename = null;
+            }
+            if ($filename) {
+                $saved++;
+            }
         }
 
-        if (! $filename) {
-            return back()->with('not_permitted', 'Could not save. Please try again.');
+        if ($saved === 0) {
+            return back()->with('not_permitted', 'Draw at least one signature, then save.');
         }
 
         $user->sign_request_token = null;

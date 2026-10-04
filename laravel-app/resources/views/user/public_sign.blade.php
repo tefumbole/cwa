@@ -3,16 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add Signature — {{ $general_setting->site_title ?? 'Beyond' }}</title>
+    <title>Sign — {{ $general_setting->site_title ?? 'CWA Cameroon' }}</title>
     <style>
-        :root { --primary:#0b3f90; --accent:#c6ab47; --text:#1f2a44; }
+        :root { --primary:#0b3f90; --text:#1f2a44; }
         * { box-sizing: border-box; }
         body { margin:0; font-family: Nunito, system-ui, sans-serif; background: linear-gradient(180deg,#f4f8ff 0%,#e8efff 100%); color:var(--text); min-height:100vh; }
         .wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 40px; }
         .card { background:#fff; border:1px solid #d7e4fb; border-radius:16px; padding:22px; box-shadow:0 8px 24px rgba(11,63,144,.08); }
         h1 { margin:0 0 8px; font-size:22px; color:var(--primary); }
+        h2 { margin:18px 0 8px; font-size:16px; color:var(--primary); }
         p { color:#64748b; margin:0 0 16px; line-height:1.5; }
-        #signature-pad { width:100%; height:200px; border:2px dashed #0b3f90; border-radius:12px; touch-action:none; background:#f8fbff; }
+        canvas.pad { width:100%; height:180px; border:2px dashed #0b3f90; border-radius:12px; touch-action:none; background:#f8fbff; }
         .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
         .btn { border:0; border-radius:10px; padding:12px 18px; font-weight:700; cursor:pointer; }
         .btn-primary { background:var(--primary); color:#fff; }
@@ -22,10 +23,16 @@
     </style>
 </head>
 <body>
+@php
+    $pads = ($type ?? 'sign') === 'all'
+        ? ['signature_image' => 'Signature', 'comment_image' => 'Comment', 'approver_image' => 'Approver']
+        : ['signature_image' => $label ?? 'Signature'];
+    $company = $general_setting->site_title ?? 'CWA Cameroon';
+@endphp
 <div class="wrap">
     <div class="card">
-        <h1>Add your {{ $label ?? 'signature' }}</h1>
-        <p>Hi <span class="name">{{ $user->name }}</span> — please draw your <strong>{{ strtolower($label ?? 'signature') }}</strong> below. It will be saved to your Beyond account.</p>
+        <h1>{{ ($type ?? 'sign') === 'all' ? 'Add your signatures' : 'Add your '.($label ?? 'signature') }}</h1>
+        <p>Hi <span class="name">{{ $user->name }}</span> — {{ $company }} asked you to sign. Draw below, then save. You can close the page when you are done.</p>
 
         @if(session('not_permitted'))
             <div class="alert">{{ session('not_permitted') }}</div>
@@ -36,11 +43,16 @@
 
         <form method="POST" action="{{ route('user.public.sign.store', $token) }}" id="public-sign-form">
             @csrf
-            <canvas id="signature-pad" width="600" height="200"></canvas>
-            <input type="hidden" name="signature_image" id="signature_image">
+            @foreach($pads as $input => $padLabel)
+                <h2>{{ $padLabel }}</h2>
+                <canvas class="pad" data-input="{{ $input }}" width="600" height="180"></canvas>
+                <input type="hidden" name="{{ $input }}" id="{{ $input }}">
+                <div class="actions">
+                    <button type="button" class="btn btn-secondary clear-pad" data-input="{{ $input }}">Clear</button>
+                </div>
+            @endforeach
             <div class="actions">
-                <button type="button" class="btn btn-secondary" id="clear-pad">Clear</button>
-                <button type="submit" class="btn btn-primary">Save {{ $label ?? 'signature' }}</button>
+                <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
     </div>
@@ -48,9 +60,8 @@
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script>
 (function () {
-    var canvas = document.getElementById('signature-pad');
-    var pad = new SignaturePad(canvas, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(11,63,144)' });
-    function resize() {
+    var pads = {};
+    function resize(canvas, pad) {
         var ratio = Math.max(window.devicePixelRatio || 1, 1);
         var data = pad.toData();
         canvas.width = canvas.offsetWidth * ratio;
@@ -59,16 +70,36 @@
         pad.clear();
         if (data.length) pad.fromData(data);
     }
-    window.addEventListener('resize', resize);
-    resize();
-    document.getElementById('clear-pad').addEventListener('click', function () { pad.clear(); });
+    Array.prototype.forEach.call(document.querySelectorAll('canvas.pad'), function (canvas) {
+        var pad = new SignaturePad(canvas, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(11,63,144)' });
+        pads[canvas.getAttribute('data-input')] = { canvas: canvas, pad: pad };
+        resize(canvas, pad);
+    });
+    window.addEventListener('resize', function () {
+        Object.keys(pads).forEach(function (key) { resize(pads[key].canvas, pads[key].pad); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.clear-pad'), function (btn) {
+        btn.addEventListener('click', function () {
+            var item = pads[btn.getAttribute('data-input')];
+            if (item) item.pad.clear();
+        });
+    });
     document.getElementById('public-sign-form').addEventListener('submit', function (e) {
-        if (pad.isEmpty()) {
+        var drawn = 0;
+        Object.keys(pads).forEach(function (key) {
+            var item = pads[key];
+            var input = document.getElementById(key);
+            if (item.pad.isEmpty()) {
+                if (input) input.value = '';
+                return;
+            }
+            drawn++;
+            if (input) input.value = item.pad.toDataURL('image/png');
+        });
+        if (!drawn) {
             e.preventDefault();
-            alert('Please draw your signature first.');
-            return false;
+            alert('Please draw at least one signature first.');
         }
-        document.getElementById('signature_image').value = pad.toDataURL('image/png');
     });
 })();
 </script>

@@ -14,7 +14,7 @@
 <body>
 <div class="card">
     <h1>Link expired or invalid</h1>
-    <p>This signature request link is no longer valid. Ask an administrator to send a new WhatsApp request.</p>
+    <p>This signature link is no longer valid. Ask an administrator to email a new one.</p>
 </div>
 </body>
 </html>

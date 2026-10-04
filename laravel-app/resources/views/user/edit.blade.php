@@ -139,6 +139,15 @@
                                           @endforeach
                                         </select>
                                     </div>
+                                    <div class="alert alert-light border">
+                                        <strong>Email a sign link</strong>
+                                        <p class="small text-muted mb-2">{{ $lims_user_data->email }} receives a link and can sign in the browser. Choose the signer, the approver, the comment, or all of them.</p>
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="sign">Send for signature</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="approve">Send for approver</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="stemp">Send for comment</button>
+                                        <button type="button" class="btn btn-primary btn-sm btn-request-from-edit" data-type="all">Send for all</button>
+                                        <div class="sig-request-result mt-2" data-type="edit-mail" style="display:none;"></div>
+                                    </div>
                                     <div id="sign">
                                         @if($lims_user_data->role_id == 12)
                                             <div class="form-group">
@@ -185,13 +194,6 @@
                                             'fileField' => $lims_user_data->approve,
                                             'inputName' => 'approve',
                                         ])
-                                    </div>
-                                    <div class="alert alert-light border mt-2">
-                                        <strong>Request via WhatsApp</strong>
-                                        <p class="small text-muted mb-2">Send a secure link so this user can draw Approver, Comment, or Signature on their phone.</p>
-                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="approve">Request Approver</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="stemp">Request Comment</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="sign">Request Signature</button>
                                     </div>
                                 </div>
                             </div>
@@ -292,18 +294,14 @@
     });
 
     function sendSignatureRequest(type, skipConfirm) {
-        var labels = { approve: 'Approver', stemp: 'Comment', sign: 'Signature' };
+        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
         var target = $('.btn-sig-whatsapp[data-type="'+type+'"]');
-        if (!target.length) {
-            alert('Could not find request action for ' + (labels[type] || type));
+        var url = target.length ? target.data('url') : '{{ route('user.signature.request', $lims_user_data->id) }}';
+        var email = '{{ $lims_user_data->email }}';
+        if (!skipConfirm && !confirm('Email ' + email + ' a link to add their ' + (labels[type] || type) + '?')) {
             return;
         }
-        var phone = target.data('phone') || 'this user';
-        var url = target.data('url');
-        if (!skipConfirm && !confirm('Send a WhatsApp request link to ' + phone + ' for ' + (labels[type] || type) + '?')) {
-            return;
-        }
-        target.prop('disabled', true).text('Sending…');
+        if (target.length) target.prop('disabled', true).text('Sending…');
         $.ajax({
             method: 'POST',
             url: url,
@@ -319,25 +317,29 @@
                     + '<a class="btn btn-sm btn-primary" href="' + link + '" target="_blank" rel="noopener">Open link</a></div>';
             }
             html += '</div>';
-            $('.sig-request-result[data-type="'+type+'"]').html(html).show();
+            var box = $('.sig-request-result[data-type="'+type+'"]');
+            if (!box.length) box = $('.sig-request-result[data-type="edit-mail"]');
+            box.html(html).show();
         }).fail(function (xhr) {
-            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not send WhatsApp request.';
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not email the sign link.';
             var link = (xhr.responseJSON && xhr.responseJSON.link) ? xhr.responseJSON.link : '';
             var html = '<div class="alert alert-danger mb-0"><div>'+msg+'</div>';
             if (link) {
                 html += '<div class="mt-2"><a href="'+link+'" target="_blank" rel="noopener">'+link+'</a></div>';
             }
             html += '</div>';
-            $('.sig-request-result[data-type="'+type+'"]').html(html).show();
+            var box = $('.sig-request-result[data-type="'+type+'"]');
+            if (!box.length) box = $('.sig-request-result[data-type="edit-mail"]');
+            box.html(html).show();
         }).always(function () {
-            target.prop('disabled', false).html('<i class="fa fa-whatsapp"></i> Request link (WhatsApp)');
+            if (target.length) target.prop('disabled', false).html('<i class="fa fa-envelope"></i> Email sign link');
         });
     }
 
     $(document).on('click', '.btn-request-from-edit', function () {
         var type = $(this).data('type');
-        var labels = { approve: 'Approver', stemp: 'Comment', sign: 'Signature' };
-        if (!confirm('Send a WhatsApp link so this user can draw their ' + (labels[type] || type) + '?')) {
+        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
+        if (!confirm('Email {{ $lims_user_data->email }} a link to add their ' + (labels[type] || type) + '?')) {
             return;
         }
         sendSignatureRequest(type, true);

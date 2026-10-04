@@ -67,25 +67,37 @@
                                 <li>
                                     <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
                                        data-url="{{ route('user.signature.request', $user->id) }}"
+                                       data-type="sign"
+                                       data-name="{{ $user->name }}"
+                                       data-email="{{ $user->email }}">
+                                        <i class="dripicons-pencil"></i> Send for signature
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
+                                       data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="approve"
-                                       data-name="{{ $user->name }}">
-                                        <i class="dripicons-user"></i> Request Approver
+                                       data-name="{{ $user->name }}"
+                                       data-email="{{ $user->email }}">
+                                        <i class="dripicons-user"></i> Send for approver
                                     </a>
                                 </li>
                                 <li>
                                     <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
                                        data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="stemp"
-                                       data-name="{{ $user->name }}">
-                                        <i class="dripicons-message"></i> Request Comment
+                                       data-name="{{ $user->name }}"
+                                       data-email="{{ $user->email }}">
+                                        <i class="dripicons-message"></i> Send for comment
                                     </a>
                                 </li>
                                 <li>
                                     <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
                                        data-url="{{ route('user.signature.request', $user->id) }}"
-                                       data-type="sign"
-                                       data-name="{{ $user->name }}">
-                                        <i class="dripicons-pencil"></i> Request Signature
+                                       data-type="all"
+                                       data-name="{{ $user->name }}"
+                                       data-email="{{ $user->email }}">
+                                        <i class="fa fa-envelope"></i> Send for all
                                     </a>
                                 </li>
                                 @endif
@@ -241,7 +253,7 @@
         }
     });
 
-    var requestLabels = { approve: 'Approver', stemp: 'Comment', sign: 'Signature' };
+    var requestLabels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
     $(document).on('click', '.btn-request-sig', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -249,7 +261,8 @@
         var type = $btn.data('type');
         var label = requestLabels[type] || type;
         var name = $btn.data('name') || 'this user';
-        if (!confirm('Send a WhatsApp link so ' + name + ' can draw their ' + label + '?')) {
+        var email = $btn.data('email') || 'their email';
+        if (!confirm('Email ' + name + ' (' + email + ') a link to add their ' + label + '?')) {
             return;
         }
         $btn.addClass('disabled').css('opacity', 0.6);
@@ -261,7 +274,7 @@
         }).done(function (res) {
             var msg = (res && res.message) ? res.message : (label + ' request sent.');
             if (res && res.link) {
-                var copy = prompt(msg + '\n\nLink (copy if WhatsApp failed):', res.link);
+                var copy = prompt(msg + '\n\nLink:', res.link);
                 if (copy === null && res.link) {
                     window.open(res.link, '_blank');
                 }
