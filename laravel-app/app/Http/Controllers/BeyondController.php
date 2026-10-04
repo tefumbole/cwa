@@ -7,7 +7,12 @@ class BeyondController extends Controller
     public function comingSoon()
     {
         $timezone = config('app.timezone') ?: 'Africa/Douala';
-        $launchAt = \Carbon\Carbon::parse(config('app.launch_at'), $timezone)->locale(app()->getLocale());
+        $launchRaw = \App\Support\SiteContent::text('home.launch_date', '2026-10-15');
+        try {
+            $launchAt = \Carbon\Carbon::parse($launchRaw, $timezone)->locale(app()->getLocale());
+        } catch (\Throwable $e) {
+            $launchAt = \Carbon\Carbon::parse(config('app.launch_at'), $timezone)->locale(app()->getLocale());
+        }
 
         $launchLabel = method_exists($launchAt, 'translatedFormat')
             ? $launchAt->translatedFormat('j F Y')

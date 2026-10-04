@@ -1,12 +1,29 @@
 @extends('beyond.layout')
 
-@section('title', __('cwa.home.title'))
-@section('meta_description', __('cwa.home.meta'))
+@section('title', \App\Support\SiteContent::text('home.page_title', __('cwa.home.title')))
+@section('meta_description', \App\Support\SiteContent::text('home.meta', __('cwa.home.meta')))
 
 @php
     $navLinks = \App\Support\SiteMenu::landingNavLinks();
     $currentUrl = url()->current();
     $logoMark = url('public/branding/cwa-logo-mary.png') . '?v=mary3';
+    $homeKicker = \App\Support\SiteContent::text('home.kicker', __('cwa.home.kicker'));
+    $homeBrand = \App\Support\SiteContent::text('home.brand_tag', __('cwa.home.brand_tag'));
+    $homeHeadline = \App\Support\SiteContent::text('home.headline', __('cwa.home.headline'));
+    $homeHeadlineEm = \App\Support\SiteContent::text('home.headline_em', __('cwa.home.headline_em'));
+    $homeSub = \App\Support\SiteContent::text('home.sub', __('cwa.home.sub'));
+    $homeQuote = \App\Support\SiteContent::text('home.quote', __('cwa.home.quote'));
+    $homeCredo = \App\Support\SiteContent::text('home.credo_title', __('cwa.home.credo_title'));
+    $homeVisionLabel = \App\Support\SiteContent::text('home.vision_label', __('cwa.home.vision_label'));
+    $homeMissionLabel = \App\Support\SiteContent::text('home.mission_label', __('cwa.home.mission_label'));
+    $homeVerse = \App\Support\SiteContent::text('home.verse', __('cwa.home.verse'));
+    $homeVerseRef = \App\Support\SiteContent::text('home.verse_ref', __('cwa.home.verse_ref'));
+    $homeLaunchWord = \App\Support\SiteContent::text('home.launch', __('cwa.home.launch'));
+    $homeSearch = \App\Support\SiteContent::text('home.search_placeholder', __('cwa.home.search_placeholder'));
+    $homeDays = \App\Support\SiteContent::text('home.days', __('cwa.home.days'));
+    $homeHours = \App\Support\SiteContent::text('home.hours', __('cwa.home.hours'));
+    $homeMins = \App\Support\SiteContent::text('home.mins', __('cwa.home.mins'));
+    $homeSecs = \App\Support\SiteContent::text('home.secs', __('cwa.home.secs'));
 @endphp
 
 @push('head')
@@ -571,7 +588,7 @@
             <img src="{{ $logoMark }}" alt="CWACAM">
             <span>
                 <span class="lp-brand-name">CWACAM</span>
-                <span class="lp-brand-tag">{{ __('cwa.home.brand_tag') }}</span>
+                <span class="lp-brand-tag">{{ $homeBrand }}</span>
             </span>
         </a>
 
@@ -602,7 +619,7 @@
 
     <div class="lp-search-bar" :class="{ 'is-open': search }" x-cloak>
         <form action="{{ url('/calendar') }}" method="get">
-            <input type="search" name="q" placeholder="{{ __('cwa.home.search_placeholder') }}" aria-label="{{ __('cwa.nav.search') }}">
+            <input type="search" name="q" placeholder="{{ $homeSearch }}" aria-label="{{ __('cwa.nav.search') }}">
         </form>
     </div>
     <div class="lp-drawer" :class="{ 'is-open': open }" x-cloak>
@@ -620,11 +637,11 @@
 
     <section class="lp-hero" aria-label="{{ __('cwa.home.hero_aria') }}">
         <div class="lp-copy">
-            <p class="lp-kicker">{{ __('cwa.home.kicker') }}</p>
-            <h1>{{ __('cwa.home.headline') }}<em>{{ __('cwa.home.headline_em') }}</em></h1>
-            <p class="lp-sub">{!! __('cwa.home.sub') !!}</p>
+            <p class="lp-kicker">{{ $homeKicker }}</p>
+            <h1>{{ $homeHeadline }}<em>{{ $homeHeadlineEm }}</em></h1>
+            <p class="lp-sub">{!! $homeSub !!}</p>
             <blockquote class="lp-quote">
-                “{{ __('cwa.home.quote') }}”
+                “{{ $homeQuote }}”
                 <cite>– CWACAM</cite>
             </blockquote>
             <div class="lp-btns">
@@ -636,7 +653,7 @@
 
             <div class="lp-meter">
                 <div class="lp-rings" id="rings" data-target="{{ $launchAtIso }}" data-window-days="{{ $windowDays }}">
-                    @foreach (['days' => __('cwa.home.days'), 'hours' => __('cwa.home.hours'), 'mins' => __('cwa.home.mins'), 'secs' => __('cwa.home.secs')] as $id => $label)
+                    @foreach (['days' => $homeDays, 'hours' => $homeHours, 'mins' => $homeMins, 'secs' => $homeSecs] as $id => $label)
                         <div class="unit">
                             <div class="dial">
                                 <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -654,7 +671,7 @@
                 <div class="lp-launch">
                     <i data-lucide="calendar" class="w-5 h-5"></i>
                     <span>
-                        <small>{{ __('cwa.home.launch') }}</small>
+                        <small>{{ $homeLaunchWord }}</small>
                         <strong>{{ strtoupper($launchLabel ?? '15 October 2026') }}</strong>
                     </span>
                 </div>
@@ -662,13 +679,13 @@
         </div>
 
         <div class="lp-credo">
-            <h2>{{ __('cwa.home.credo_title') }}</h2>
-            <p class="label">{{ __('cwa.home.vision_label') }}</p>
-            <p>{{ __('cwa.about.vision_text') }}</p>
-            <p class="label">{{ __('cwa.home.mission_label') }}</p>
-            <p>{{ __('cwa.about.mission_text') }}</p>
+            <h2>{{ $homeCredo }}</h2>
+            <p class="label">{{ $homeVisionLabel }}</p>
+            <p>{{ \App\Support\SiteContent::text('about.vision_text', __('cwa.about.vision_text')) }}</p>
+            <p class="label">{{ $homeMissionLabel }}</p>
+            <p>{{ \App\Support\SiteContent::text('about.mission_text', __('cwa.about.mission_text')) }}</p>
         </div>
-        <p class="lp-verse">“{{ __('cwa.home.verse') }}”<span>{{ __('cwa.home.verse_ref') }}</span></p>
+        <p class="lp-verse">“{{ $homeVerse }}”<span>{{ $homeVerseRef }}</span></p>
     </section>
 </div>
 @endsection

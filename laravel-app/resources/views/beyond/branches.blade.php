@@ -1,6 +1,6 @@
 @extends('beyond.layout')
 
-@section('title', __('cwa.branches.title'))
+@section('title', \App\Support\SiteContent::text('branches.page_title', __('cwa.branches.title')))
 @section('meta_description', __('cwa.branches.meta'))
 
 @php
@@ -10,26 +10,26 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 md:py-16" x-data="branchesPage()">
-    <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.branches.kicker') }}</p>
-    <h1 class="text-[1.7rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ __('cwa.branches.hero') }}</h1>
-    <p class="mt-4 text-slate-600 leading-relaxed text-[0.98rem] sm:text-[1.05rem] max-w-3xl">{{ __('cwa.branches.intro') }}</p>
+    <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ \App\Support\SiteContent::text('branches.kicker', __('cwa.branches.kicker')) }}</p>
+    <h1 class="text-[1.7rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('branches.hero', __('cwa.branches.hero')) }}</h1>
+    <p class="mt-4 text-slate-600 leading-relaxed text-[0.98rem] sm:text-[1.05rem] max-w-3xl">{{ \App\Support\SiteContent::text('branches.intro', __('cwa.branches.intro')) }}</p>
 
     <div class="mt-6 sm:mt-8 flex flex-col gap-3">
         <div class="flex items-center gap-2 sm:gap-3">
             <button type="button" @click="tab = 'cameroon'"
                     class="flex-1 sm:flex-none inline-flex items-center justify-center min-h-[2.75rem] px-5 sm:px-7 py-2.5 rounded-full border-2 border-[#003D82] font-extrabold text-[#003D82]"
                     :class="tab === 'cameroon' ? 'bg-[#003D82] text-white' : 'bg-white hover:bg-[#003D82] hover:text-white'">
-                {{ __('cwa.branches.tab_cameroon') }}
+                {{ \App\Support\SiteContent::text('branches.tab_cameroon', __('cwa.branches.tab_cameroon')) }}
             </button>
             <button type="button" @click="tab = 'diaspora'"
                     class="flex-1 sm:flex-none inline-flex items-center justify-center min-h-[2.75rem] px-5 sm:px-7 py-2.5 rounded-full border-2 border-[#D4AF37] font-extrabold text-[#003D82]"
                     :class="tab === 'diaspora' ? 'bg-[#D4AF37] text-[#003D82]' : 'bg-white hover:bg-[#D4AF37]'">
-                {{ __('cwa.branches.tab_diaspora') }}
+                {{ \App\Support\SiteContent::text('branches.tab_diaspora', __('cwa.branches.tab_diaspora')) }}
             </button>
         </div>
         <label class="relative w-full">
-            <span class="sr-only">{{ __('cwa.branches.search') }}</span>
-            <input type="search" x-model="q" placeholder="{{ __('cwa.branches.search') }}"
+            <span class="sr-only">{{ \App\Support\SiteContent::text('branches.search', __('cwa.branches.search')) }}</span>
+            <input type="search" x-model="q" placeholder="{{ \App\Support\SiteContent::text('branches.search', __('cwa.branches.search')) }}"
                    class="w-full rounded-full border border-stone-200 bg-white px-4 py-2.5 text-base text-slate-700 shadow-sm outline-none focus:border-brand-gold focus:ring-4 focus:ring-[#D4AF37]/20">
         </label>
     </div>
@@ -46,11 +46,11 @@
                 </ul>
             </section>
         </template>
-        <p x-show="tab === 'cameroon' && visibleProvinces().length === 0" class="text-slate-500 text-sm" x-cloak>{{ __('cwa.branches.empty') }}</p>
+        <p x-show="tab === 'cameroon' && visibleProvinces().length === 0" class="text-slate-500 text-sm" x-cloak>{{ \App\Support\SiteContent::text('branches.empty', __('cwa.branches.empty')) }}</p>
     </div>
 
     <div class="mt-8 diaspora-shell" x-show="tab === 'diaspora'" x-cloak>
-        <aside class="diaspora-nav" aria-label="{{ __('cwa.branches.tab_diaspora') }}">
+        <aside class="diaspora-nav" aria-label="{{ \App\Support\SiteContent::text('branches.tab_diaspora', __('cwa.branches.tab_diaspora')) }}">
             <template x-for="group in visibleGroups()" :key="'nav-'+group.key">
                 <button type="button" class="diaspora-link" :class="country === group.key ? 'is-on' : ''"
                         @click="country = group.key">
@@ -91,7 +91,7 @@
                             </ul>
                         </div>
                     </template>
-                    <p x-show="visibleZones(activeGroup()).length === 0" class="text-slate-500 text-sm mt-4 mb-0">{{ __('cwa.branches.empty') }}</p>
+                    <p x-show="visibleZones(activeGroup()).length === 0" class="text-slate-500 text-sm mt-4 mb-0">{{ \App\Support\SiteContent::text('branches.empty', __('cwa.branches.empty')) }}</p>
                 </section>
             </template>
         </div>
@@ -99,8 +99,8 @@
 
     <div class="mt-10 sm:mt-12 rounded-2xl bg-brand-blue text-white p-5 sm:p-6 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-lg sm:text-xl font-extrabold m-0">{{ __('cwa.branches.cta_title') }}</h2>
-            <p class="mt-1 mb-0 text-white/80 text-sm">{{ __('cwa.branches.cta_body') }}</p>
+            <h2 class="text-lg sm:text-xl font-extrabold m-0">{{ \App\Support\SiteContent::text('branches.cta_title', __('cwa.branches.cta_title')) }}</h2>
+            <p class="mt-1 mb-0 text-white/80 text-sm">{{ \App\Support\SiteContent::text('branches.cta_body', __('cwa.branches.cta_body')) }}</p>
         </div>
         <a href="{{ route('beyond.membership') }}"
            class="inline-flex justify-center items-center min-h-[2.85rem] rounded-full bg-brand-gold text-brand-blue font-extrabold px-5 py-2.5 hover:bg-[#c4a030] w-full sm:w-auto">

@@ -58,12 +58,34 @@
                         'content-tabs'  => ['label' => 'Content Tabs', 'tone' => 'tone-teal', 'icon' => 'dripicons-toggles'],
                     ];
                     $pageTones = [
-                        'home'     => 'tone-green',
-                        'about'    => 'tone-teal',
-                        'services' => 'tone-gold',
-                        'projects' => 'tone-blue',
-                        'contact'  => 'tone-pink',
-                        'gallery'  => 'tone-red',
+                        'home'         => 'tone-green',
+                        'trainings'    => 'tone-gold',
+                        'events'       => 'tone-purple',
+                        'rentals'      => 'tone-orange',
+                        'register'     => 'tone-teal',
+                        'apply'        => 'tone-pink',
+                        'permissions'  => 'tone-blue',
+                        'about'        => 'tone-teal',
+                        'gallery'      => 'tone-red',
+                        'shareholders' => 'tone-gold',
+                        'services'     => 'tone-gold',
+                        'projects'     => 'tone-blue',
+                        'contact'      => 'tone-pink',
+                    ];
+                    $pageIcons = [
+                        'home'         => 'dripicons-home',
+                        'trainings'    => 'dripicons-graduation',
+                        'events'       => 'dripicons-calendar',
+                        'rentals'      => 'dripicons-cart',
+                        'register'     => 'dripicons-document-new',
+                        'apply'        => 'dripicons-briefcase',
+                        'permissions'  => 'dripicons-lock-open',
+                        'about'        => 'dripicons-information',
+                        'gallery'      => 'dripicons-photo-group',
+                        'shareholders' => 'dripicons-user-group',
+                        'services'     => 'dripicons-document-edit',
+                        'projects'     => 'dripicons-document-edit',
+                        'contact'      => 'dripicons-message',
                     ];
                 @endphp
                 <div class="site-content-tabs-nav">
@@ -76,7 +98,7 @@
                     @foreach($schema as $pageKey => $page)
                         @php
                             $tone = $pageTones[$pageKey] ?? 'tone-blue';
-                            $icon = $pageKey === 'gallery' ? 'dripicons-photo-group' : 'dripicons-document-edit';
+                            $icon = $pageIcons[$pageKey] ?? 'dripicons-document-edit';
                         @endphp
                         <a class="beyond-module-tab {{ $tone }} {{ $tab == $pageKey ? 'is-active' : '' }}"
                            href="{{ url('/admin/site-content?tab=' . $pageKey) }}">
@@ -91,32 +113,42 @@
                             $items = $side;
                             $order = $sideOrder;
                             $action = route('site-content.side-menu');
-                            $heading = 'Side Menu — Order';
-                            $hint = 'Drag items to reorder the admin sidebar (or use arrows). Click Save when done.';
+                            $heading = 'Side Menu — Order & Visibility';
+                            $hint = 'Drag to match the order you want on the blue menu at the left. Uncheck a row to hide it. Click Save and the left menu updates. Dashboard and Site Content stay visible. Help stays last.';
+                            $hiddenKeys = $sideHidden ?? [];
+                            $lockedKeys = $sideLocked ?? [];
                         } elseif ($tab == 'people-menu') {
                             $items = $people;
                             $order = $peopleOrder;
                             $action = route('site-content.people-menu');
                             $heading = 'People — Order';
                             $hint = 'Drag items to reorder the People submenu (User List, Customers, Billers, …). Click Save when done.';
+                            $hiddenKeys = [];
+                            $lockedKeys = [];
                         } elseif ($tab == 'settings-menu') {
                             $items = $settings;
                             $order = $settingsOrder;
                             $action = route('site-content.settings-menu');
                             $heading = 'Settings — Order';
                             $hint = 'Drag items to reorder Settings submenu items (or use arrows). Click Save when done.';
+                            $hiddenKeys = [];
+                            $lockedKeys = [];
                         } elseif ($tab == 'content-tabs') {
                             $items = \App\Support\SiteContent::contentTabItems();
                             $order = \App\Support\SiteContent::contentTabOrder();
                             $action = route('site-content.content-tabs');
                             $heading = 'Content Tabs — Order';
                             $hint = 'Drag items to reorder Site Content page tabs (or use arrows). Click Save when done.';
+                            $hiddenKeys = [];
+                            $lockedKeys = [];
                         } else {
                             $items = $landing;
                             $order = $landingOrder;
                             $action = route('site-content.landing-menu');
-                            $heading = 'Landing Menu — Order';
-                            $hint = 'Drag items to reorder the public site header menu (or use arrows). Click Save when done.';
+                            $heading = 'Landing Menu — Order, Names & Visibility';
+                            $hint = 'Uncheck a tab to hide it from the public header. Rename and drag to reorder, then Save.';
+                            $hiddenKeys = $landingHidden ?? [];
+                            $lockedKeys = [];
                         }
                     @endphp
                     <h5 class="mb-1">{{ $heading }}</h5>
@@ -127,9 +159,30 @@
                             @foreach($order as $key)
                                 @if(isset($items[$key]))
                                     <li class="list-group-item d-flex justify-content-between align-items-center" data-key="{{ $key }}">
-                                        <span class="d-flex align-items-center">
+                                        <span class="d-flex align-items-center flex-grow-1 mr-3">
                                             <span class="reorder-drag-handle" title="Drag to reorder">⋮⋮</span>
-                                            <span>{{ $items[$key] }}</span>
+                                            @if(in_array($tab, ['landing-menu', 'side-menu'], true))
+                                                @php
+                                                    $isLocked = in_array($key, $lockedKeys, true);
+                                                    $isOn = $isLocked || ! in_array($key, $hiddenKeys, true);
+                                                @endphp
+                                                <label class="mb-0 mr-3 d-flex align-items-center" style="cursor:{{ $isLocked ? 'not-allowed' : 'pointer' }}; white-space:nowrap;">
+                                                    @if($isLocked)
+                                                        <input type="hidden" name="enabled[]" value="{{ $key }}">
+                                                        <input type="checkbox" checked disabled title="This menu cannot be hidden">
+                                                    @else
+                                                        <input type="checkbox" name="enabled[]" value="{{ $key }}" {{ $isOn ? 'checked' : '' }} title="Show this menu">
+                                                    @endif
+                                                    <span class="ml-1 small text-muted">{{ $isOn ? 'On' : 'Off' }}</span>
+                                                </label>
+                                            @endif
+                                            @if($tab === 'landing-menu')
+                                                <input type="text" name="labels[{{ $key }}]" value="{{ $items[$key] }}"
+                                                       class="form-control form-control-sm" maxlength="60"
+                                                       style="max-width:260px;" aria-label="Tab name for {{ $key }}">
+                                            @else
+                                                <span>{{ $items[$key] }}</span>
+                                            @endif
                                         </span>
                                         <span class="reorder-actions">
                                             <input type="hidden" name="order[]" value="{{ $key }}" class="reorder-order-input">
@@ -158,6 +211,12 @@
                     </div>
                     @if($tab === 'contact')
                         <p class="text-info" style="font-size:13px;"><i class="dripicons-information"></i> Contact details and the message form now appear on the <strong>About Us</strong> page (<code>#contact</code> section). Edit the fields below to update that section.</p>
+                    @elseif($tab === 'home')
+                        <p class="text-muted" style="font-size:13px;">These fields are the words on the public homepage. Vision and Mission text are edited on the About tab. Save, then refresh the homepage.</p>
+                    @elseif($tab === 'about')
+                        <p class="text-muted" style="font-size:13px;">These fields are the words on the About Us page, including the motto and the leadership heading. Leader photos are managed under About Us Leaders.</p>
+                    @elseif($tab === 'branches')
+                        <p class="text-muted" style="font-size:13px;">These fields are the words on the Branches page. Diocese and country lists stay in the branch directory.</p>
                     @else
                         <p class="text-muted" style="font-size:13px;">Edit the content shown on this page. Leave a field as-is to keep the current text.</p>
                     @endif
@@ -171,10 +230,10 @@
                                 @if($type == 'image')
                                     @include('components.image_paste', ['name' => 'image[' . $key . ']', 'current' => \App\Support\SiteContent::image($tab . '.' . $key, $default)])
                                 @elseif($type == 'textarea' || $type == 'html')
-                                    <textarea name="content[{{ $key }}]" rows="{{ $type == 'html' ? 3 : 4 }}" class="form-control">{{ \App\Support\SiteContent::get($tab . '.' . $key, $default) }}</textarea>
+                                    <textarea name="content[{{ $key }}]" rows="{{ $type == 'html' ? 3 : 4 }}" class="form-control">{{ \App\Support\SiteContent::text($tab . '.' . $key, $default) }}</textarea>
                                     @if($type == 'html')<small class="text-muted">HTML is allowed here.</small>@endif
                                 @else
-                                    <input type="text" name="content[{{ $key }}]" class="form-control" value="{{ \App\Support\SiteContent::get($tab . '.' . $key, $default) }}">
+                                    <input type="text" name="content[{{ $key }}]" class="form-control" value="{{ \App\Support\SiteContent::text($tab . '.' . $key, $default) }}">
                                 @endif
                             </div>
                         @endforeach

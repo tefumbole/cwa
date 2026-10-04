@@ -1,6 +1,6 @@
 @extends('beyond.layout')
 
-@section('title', __('cwa.about.title'))
+@section('title', \App\Support\SiteContent::text('about.page_title', __('cwa.about.title')))
 @section('meta_description', __('cwa.about.meta'))
 
 @php
@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8 sm:py-12 md:py-16">
-    <p class="about-kicker text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('cwa.about.kicker') }}</p>
+    <p class="about-kicker text-xs font-extrabold tracking-[0.2em] uppercase text-brand-gold mb-3">{{ \App\Support\SiteContent::text('about.kicker', __('cwa.about.kicker')) }}</p>
     <h1 class="text-[1.85rem] leading-tight sm:text-3xl md:text-4xl font-extrabold text-brand-blue tracking-tight">{{ \App\Support\SiteContent::text('about.hero_title', __('cwa.about.hero_title')) }}</h1>
     <p class="mt-4 text-slate-600 leading-relaxed text-[1.05rem]">{{ $story }}</p>
 

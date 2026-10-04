@@ -292,6 +292,30 @@ class SiteMenu
         return self::ordered('side_menu_order', self::sideItems());
     }
 
+    /**
+     * CSS so the blue sidebar follows the Site Content side-menu order and
+     * hidden flags. Help is forced last by the layout (order 10000).
+     */
+    public static function sideItemStyle($key, $fallbackOrder = 900)
+    {
+        static $rank = null;
+        static $hidden = null;
+        if ($rank === null) {
+            $rank = [];
+            foreach (self::sideOrder() as $i => $k) {
+                $rank[$k] = (int) $i;
+            }
+            $hidden = self::sideHidden();
+        }
+        $order = array_key_exists($key, $rank) ? $rank[$key] : (int) $fallbackOrder;
+        $css = 'order:'.$order.';';
+        if (! in_array($key, self::sideLocked(), true) && in_array($key, $hidden, true)) {
+            $css .= 'display:none;';
+        }
+
+        return $css;
+    }
+
     /** Settings submenu items inside #setting (key => label). */
     public static function settingsItems()
     {

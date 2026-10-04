@@ -185,6 +185,17 @@
                 min-height: 0;
             }
 
+            #side-main-menu {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #side-main-menu > li {
+                width: 100%;
+                max-width: 100%;
+            }
+
             .sidebar-user-panel {
                 flex-shrink: 0;
                 background: #072f6b;
@@ -1431,11 +1442,11 @@
                 <div class="main-menu">
                     <ul id="side-main-menu" class="side-menu list-unstyled">
                         @if(Auth::user()->role_id != 7)
-                            <li id="sidebar-dashboard"><a href="{{ \App\Support\InternCompliance::dashboardUrl(Auth::user()) }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
+                            <li id="sidebar-dashboard" data-nav-key="dashboard" style="{{ \App\Support\SiteMenu::sideItemStyle('dashboard') }}"><a href="{{ \App\Support\InternCompliance::dashboardUrl(Auth::user()) }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                         @endif
                         @if(in_array((int) Auth::user()->role_id, [1, 2], true))
-                            <li><a href="{{ url('/admin/site-content') }}"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
-                            <li><a href="{{ url('/admin/leaders') }}"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
+                            <li data-nav-key="site-content" style="{{ \App\Support\SiteMenu::sideItemStyle('site-content') }}"><a href="{{ url('/admin/site-content') }}"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
+                            <li data-nav-key="leaders" style="{{ \App\Support\SiteMenu::sideItemStyle('leaders') }}"><a href="{{ url('/admin/leaders') }}"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
                         @endif
                         <?php
                         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -1480,7 +1491,7 @@
                         ])->first() : null;
                         ?>
                         @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active)
-                            <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
+                            <li data-nav-key="product" style="{{ \App\Support\SiteMenu::sideItemStyle('product') }}"><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
                                 <ul id="product" class="collapse list-unstyled ">
                                     @if($category_permission_active)
                                         <li id="category-menu"><a href="{{route('category.index')}}">{{__('file.category')}}</a></li>
@@ -1519,7 +1530,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#purchase" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{trans('file.Purchase')}}</span></a>
+                            <li data-nav-key="purchase" style="{{ \App\Support\SiteMenu::sideItemStyle('purchase') }}"><a href="#purchase" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{trans('file.Purchase')}}</span></a>
                                 <ul id="purchase" class="collapse list-unstyled ">
                                     <li id="purchase-list-menu"><a href="{{route('purchases.index')}}">{{trans('file.Purchase List')}}</a></li>
                                         <?php
@@ -1568,7 +1579,7 @@
                         ])->first();
                         ?>
                         @if($sale_index_permission_active || $gift_card_permission_active || $coupon_permission_active || $delivery_permission_active)
-                            <li><a href="#sale" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cart"></i><span>{{trans('file.Sale')}}</span></a>
+                            <li data-nav-key="sale" style="{{ \App\Support\SiteMenu::sideItemStyle('sale') }}"><a href="#sale" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cart"></i><span>{{trans('file.Sale')}}</span></a>
                                 <ul id="sale" class="collapse list-unstyled ">
                                     @if($sale_index_permission_active)
                                         <li id="sale-list-menu"><a href="{{route('sales.index')}}">{{trans('file.Sale List')}}</a></li>
@@ -1616,7 +1627,7 @@
                                     $booking_reminder_count = 0;
                                 }
                             ?>
-                            <li><a href="#booking" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-exchange"></i><span>{{trans('file.Booking Module')}}</span></a>
+                            <li data-nav-key="booking" style="{{ \App\Support\SiteMenu::sideItemStyle('booking') }}"><a href="#booking" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-exchange"></i><span>{{trans('file.Booking Module')}}</span></a>
                                 <ul id="booking" class="collapse list-unstyled ">
                                         <?php
                                         $create_permission_booking = DB::table('permissions')->where('name', 'booking_create')->first();
@@ -1710,7 +1721,7 @@
                         ])->first() : null;
                         ?>
                         @if($permissions_module_active || $hrm_for_perms_active)
-                            <li><a href="#staff-permissions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checkmark"></i><span>Permissions</span></a>
+                            <li data-nav-key="permissions" style="{{ \App\Support\SiteMenu::sideItemStyle('permissions') }}"><a href="#staff-permissions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checkmark"></i><span>Permissions</span></a>
                                 <ul id="staff-permissions" class="collapse list-unstyled ">
                                     <li id="perm-requests-menu">
                                         <a href="{{ route('permissions.requests') }}">Awaiting Approval
@@ -1724,7 +1735,7 @@
                             </li>
                         @endif
                         @if($events_module_active)
-                            <li><a href="#events-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-calendar"></i><span>Events</span></a>
+                            <li data-nav-key="events" style="{{ \App\Support\SiteMenu::sideItemStyle('events') }}"><a href="#events-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-calendar"></i><span>Events</span></a>
                                 <ul id="events-module" class="collapse list-unstyled ">
                                     @if(in_array('events.view', $all_permission))
                                         <li id="events-dashboard-menu"><a href="{{ route('events.dashboard') }}">Events Dashboard</a></li>
@@ -1782,7 +1793,7 @@
                                     || in_array($role->id ?? 0, [1, 2]);
                             @endphp
                             @if($oi_cat || $oi_tpl || $oi_evt || $oi_send)
-                            <li><a href="#online_invitation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>Digital Invitations</span></a>
+                            <li data-nav-key="invitations" style="{{ \App\Support\SiteMenu::sideItemStyle('invitations') }}"><a href="#online_invitation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>Digital Invitations</span></a>
                                 <ul id="online_invitation" class="collapse list-unstyled ">
                                     @if($oi_cat)
                                         <li id="online-invitation-category-menu"><a href="{{ route('online_invitation.categories.index') }}">Categories</a></li>
@@ -1817,7 +1828,7 @@
                         ])->first() : null;
                         ?>
                         @if($tasks_module_active)
-                            <li><a href="#tasks-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>Task Manager</span></a>
+                            <li data-nav-key="tasks" style="{{ \App\Support\SiteMenu::sideItemStyle('tasks') }}"><a href="#tasks-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>Task Manager</span></a>
                                 <ul id="tasks-module" class="collapse list-unstyled ">
                                     @if(in_array('tasks.view', $all_permission))
                                         <li id="tasks-dashboard-menu"><a href="{{ route('tasks.dashboard') }}">Task Dashboard</a></li>
@@ -1843,7 +1854,7 @@
                             ])->first() : null;
                         @endphp
                         @if($jobs_module_active)
-                            <li><a href="#jobs-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>Job Board</span></a>
+                            <li data-nav-key="jobs" style="{{ \App\Support\SiteMenu::sideItemStyle('jobs') }}"><a href="#jobs-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>Job Board</span></a>
                                 <ul id="jobs-module" class="collapse list-unstyled ">
                                     <li id="jobs-list-menu"><a href="{{ route('jobs.index') }}">Job Postings</a></li>
                                     <li id="jobs-create-menu"><a href="{{ route('jobs.create') }}">Add Job</a></li>
@@ -1863,7 +1874,7 @@
                             ])->first() : null;
                         @endphp
                         @if($membership_module_active)
-                            <li><a href="#membership-module" data-nav-key="membership" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>Membership</span></a>
+                            <li data-nav-key="membership" style="{{ \App\Support\SiteMenu::sideItemStyle('membership') }}"><a href="#membership-module" data-nav-key="membership" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>Membership</span></a>
                                 <ul id="membership-module" class="collapse list-unstyled ">
                                     <li id="membership-awaiting-menu"><a href="{{ route('membership.awaiting') }}">Awaiting Approvals</a></li>
                                     <li id="membership-members-menu"><a href="{{ route('membership.members') }}">Members</a></li>
@@ -1899,7 +1910,7 @@
                                 $internship_show_supervisor_menu = $internship_is_supervisor || $internship_is_admin;
                             @endphp
                             @if($internship_is_admin)
-                                <li><a href="#internship-admin-module" data-nav-key="internship" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
+                                <li data-nav-key="internship" style="{{ \App\Support\SiteMenu::sideItemStyle('internship', 850) }}"><a href="#internship-admin-module" data-nav-key="internship" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
                                     <ul id="internship-admin-module" class="collapse list-unstyled ">
                                         <li id="ip-hub"><a href="{{ route('internship.dashboard') }}">Dashboard</a></li>
                                         <li id="ip-interns"><a href="{{ route('internship.interns') }}">Interns</a></li>
@@ -1914,7 +1925,7 @@
                                 </li>
                             @endif
                             @if($internship_show_supervisor_menu)
-                                <li><a href="#supervisor-module" data-nav-key="supervisor" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>Supervisor</span></a>
+                                <li data-nav-key="supervisor" style="{{ \App\Support\SiteMenu::sideItemStyle('supervisor', 860) }}"><a href="#supervisor-module" data-nav-key="supervisor" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>Supervisor</span></a>
                                     <ul id="supervisor-module" class="collapse list-unstyled ">
                                         <li id="ip-sup-home"><a href="{{ route('internship.supervisor.dashboard') }}">Home</a></li>
                                         <li id="ip-my-students"><a href="{{ route('internship.supervisor.students') }}">{{ $internship_is_admin ? 'All Interns' : 'My Interns' }}</a></li>
@@ -1927,7 +1938,7 @@
                                 </li>
                             @endif
                             @if($internship_student_active && ! $internship_is_admin)
-                            <li><a href="#internship-module" data-nav-key="internship" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
+                            <li data-nav-key="internship" style="{{ \App\Support\SiteMenu::sideItemStyle('internship', 850) }}"><a href="#internship-module" data-nav-key="internship" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
                                 <ul id="internship-module" class="collapse list-unstyled ">
                                         <li id="ip-student-dash"><a href="{{ route('internship.student.dashboard') }}">My Task</a></li>
                                         <li id="ip-student-upload"><a href="{{ route('internship.student.upload') }}">Upload Task</a></li>
@@ -1945,7 +1956,7 @@
                             ])->first() : null;
                         @endphp
                         @if($contracts_module_active)
-                            <li><a href="#contracts-module" data-nav-key="contracts" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-edit"></i><span>Contracts</span></a>
+                            <li data-nav-key="contracts" style="{{ \App\Support\SiteMenu::sideItemStyle('contracts') }}"><a href="#contracts-module" data-nav-key="contracts" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-edit"></i><span>Contracts</span></a>
                                 <ul id="contracts-module" class="collapse list-unstyled ">
                                     <li id="contracts-dashboard-menu"><a href="{{ route('contracts.dashboard') }}">Dashboard</a></li>
                                     <li id="contracts-list-menu"><a href="{{ route('contracts.index') }}">Contract List</a></li>
@@ -1968,7 +1979,7 @@
                             ])->first() : null;
                         @endphp
                         @if($courses_module_active)
-                            <li><a href="#courses-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Courses</span></a>
+                            <li data-nav-key="courses" style="{{ \App\Support\SiteMenu::sideItemStyle('courses') }}"><a href="#courses-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Courses</span></a>
                                 <ul id="courses-module" class="collapse list-unstyled ">
                                     <li id="courses-list-menu"><a href="{{ route('courses.index') }}">Course List</a></li>
                                     <li id="courses-create-menu"><a href="{{ route('courses.create') }}">Add Course</a></li>
@@ -1988,7 +1999,7 @@
                             ])->first() : null;
                         @endphp
                         @if($timesheets_module_active)
-                            <li><a href="#timesheets-module" data-nav-key="timesheets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-clock"></i><span>TimeSheets (Employee)</span></a>
+                            <li data-nav-key="timesheets" style="{{ \App\Support\SiteMenu::sideItemStyle('timesheets') }}"><a href="#timesheets-module" data-nav-key="timesheets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-clock"></i><span>TimeSheets (Employee)</span></a>
                                 <ul id="timesheets-module" class="collapse list-unstyled ">
                                     <li id="ts-activities-menu"><a href="{{ route('timesheet.activities') }}">Create Activity</a></li>
                                     <li id="ts-fill-menu"><a href="{{ route('timesheet.fill') }}">Fill Time Sheet</a></li>
@@ -1996,7 +2007,7 @@
                                 </ul>
                             </li>
                             @if(in_array($role->id, [1, 2]) || in_array('timesheets.admin', $all_permission ?? []) || in_array('timesheets.manage', $all_permission ?? []))
-                            <li><a href="#timesheet-admin-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-graph-bar"></i><span>TimeSheet Admin</span></a>
+                            <li data-nav-key="timesheet-admin" style="{{ \App\Support\SiteMenu::sideItemStyle('timesheet-admin') }}"><a href="#timesheet-admin-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-graph-bar"></i><span>TimeSheet Admin</span></a>
                                 <ul id="timesheet-admin-module" class="collapse list-unstyled ">
                                     <li id="tsa-report-menu"><a href="{{ route('timesheet.admin.report') }}">Reports</a></li>
                                     <li id="tsa-ot-menu"><a href="{{ route('timesheet.admin.overtime') }}">Overtime Report</a></li>
@@ -2007,7 +2018,7 @@
                             @endif
                         @endif
                         @if(in_array('shops-index', $all_permission))
-                            <li>
+                            <li data-nav-key="shop" style="{{ \App\Support\SiteMenu::sideItemStyle('shop') }}">
                                 <a href="#shop" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-building"></i><span>Shops</span><span></a>
                                 <ul id="shop" class="collapse list-unstyled ">
                                     <li id="shop-list-menu"><a href="{{route('shop.index')}}">Shop Listing</a></li>
@@ -2015,7 +2026,7 @@
                             </li>
                         @endif
                         @if(in_array('orders-index', $all_permission))
-                            <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.order')}}</span><span></a>
+                            <li data-nav-key="order" style="{{ \App\Support\SiteMenu::sideItemStyle('order') }}"><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.order')}}</span><span></a>
                                 <ul id="order" class="collapse list-unstyled ">
                                     <li id="order-list-menu"><a href="{{route('order.index')}}">{{trans('file.Order List')}}</a></li>
                                     @if(Auth::user()->role_id != 12 || Auth::user()->can_donation == 1)
@@ -2041,7 +2052,7 @@
                         {{--                        </li>--}}
                         {{--                        @endif--}}
                         @if(in_array('payments-index', $all_permission))
-                            <li>
+                            <li data-nav-key="payments" style="{{ \App\Support\SiteMenu::sideItemStyle('payments') }}">
                                 <a href="#payments" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-dollar"></i><span>Payments</span></a>
                                 <ul id="payments" class="collapse list-unstyled ">
                                     <li id="payment-index-menu"><a href="{{route('payment.index')}}">Awaiting Payment</a></li>
@@ -2067,7 +2078,7 @@
 
                         ?>
                         @if($index_permission_letter_active)
-                            <li><a href="#letter" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-newspaper-o"></i><span>{{trans('file.Letters')}}</span></a>
+                            <li data-nav-key="letter" style="{{ \App\Support\SiteMenu::sideItemStyle('letter') }}"><a href="#letter" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-newspaper-o"></i><span>{{trans('file.Letters')}}</span></a>
                                 <ul id="letter" class="collapse list-unstyled ">
                                         <?php
                                         $create_permission_letter = DB::table('permissions')->where('name', 'letter_create')->first();
@@ -2231,7 +2242,7 @@
                             ])->first() : null;
                         @endphp
                         @if($announcements_module_active)
-                            <li><a href="#announcements-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-bullhorn"></i><span>Announcements</span></a>
+                            <li data-nav-key="announcements" style="{{ \App\Support\SiteMenu::sideItemStyle('announcements') }}"><a href="#announcements-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-bullhorn"></i><span>Announcements</span></a>
                                 <ul id="announcements-module" class="collapse list-unstyled ">
                                     <li id="announcements-compose-menu"><a href="{{ route('announcements.compose') }}">Compose</a></li>
                                     <li id="announcements-list-menu"><a href="{{ route('announcements.index') }}">All Announcements</a></li>
@@ -2264,7 +2275,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
+                            <li data-nav-key="expense" style="{{ \App\Support\SiteMenu::sideItemStyle('expense') }}"><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
                                 <ul id="expense" class="collapse list-unstyled ">
                                     <li id="exp-cat-menu"><a href="{{route('expense_categories.index')}}">{{trans('file.Expense Category')}}</a></li>
                                     @if(Auth::user()->role_id != 7)
@@ -2291,7 +2302,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.Quotation')}}</span><span></a>
+                            <li data-nav-key="quotation" style="{{ \App\Support\SiteMenu::sideItemStyle('quotation') }}"><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.Quotation')}}</span><span></a>
                                 <ul id="quotation" class="collapse list-unstyled ">
                                     <li id="quotation-list-menu"><a href="{{route('quotations.index')}}">{{trans('file.Quotation List')}}</a></li>
                                         <?php
@@ -2387,7 +2398,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#assets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-home"></i><span>{{trans('file.Fixed Assets')}}</span><span></a>
+                            <li data-nav-key="assets" style="{{ \App\Support\SiteMenu::sideItemStyle('assets') }}"><a href="#assets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-home"></i><span>{{trans('file.Fixed Assets')}}</span><span></a>
                                 <ul id="assets" class="collapse list-unstyled ">
                                     @if($asset_index_active)<li id="assets-dashboard-menu"><a href="{{route('asset.dashboard')}}">{{trans('file.Assets Dashboard')}}</a></li>@endif
                                     @if($region_index_active)<li id="region-menu"><a href="{{route('region.index')}}">{{trans('file.Assets Region')}}</a></li>@endif
@@ -2418,7 +2429,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#transfer" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-export"></i><span>{{trans('file.Transfer')}}</span></a>
+                            <li data-nav-key="transfer" style="{{ \App\Support\SiteMenu::sideItemStyle('transfer') }}"><a href="#transfer" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-export"></i><span>{{trans('file.Transfer')}}</span></a>
                                 <ul id="transfer" class="collapse list-unstyled ">
                                     <li id="transfer-list-menu"><a href="{{route('transfers.index')}}">{{trans('file.Transfer List')}}</a></li>
                                         <?php
@@ -2452,7 +2463,7 @@
                         ])->first();
                         ?>
                         @if($sale_return_index_permission_active || $purchase_return_index_permission_active)
-                            <li><a href="#return" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-return"></i><span>{{trans('file.return')}}</span></a>
+                            <li data-nav-key="return" style="{{ \App\Support\SiteMenu::sideItemStyle('return') }}"><a href="#return" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-return"></i><span>{{trans('file.return')}}</span></a>
                                 <ul id="return" class="collapse list-unstyled ">
                                     @if($sale_return_index_permission_active)
                                         <li id="sale-return-menu"><a href="{{route('return-sale.index')}}">{{trans('file.Sale')}}</a></li>
@@ -2500,7 +2511,7 @@
 
                         ?>
                         @if($index_permission_active || $balance_sheet_permission_active || $account_statement_permission_active || $money_transfer_permission_active)
-                            <li class=""><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
+                            <li class="" data-nav-key="account" style="{{ \App\Support\SiteMenu::sideItemStyle('account') }}"><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
                                 <ul id="account" class="collapse list-unstyled ">
                                     @if($index_permission_active)
                                         <li id="account-list-menu"><a href="{{route('accounts.index')}}">{{trans('file.Account List')}}</a></li>
@@ -2555,7 +2566,7 @@
                         ?>
                         @if($hrm_active)
                             @if(Auth::user()->role_id != 5)
-                                <li class=""><a href="#hrm" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>HRM</span></a>
+                                <li class="" data-nav-key="hrm" style="{{ \App\Support\SiteMenu::sideItemStyle('hrm') }}"><a href="#hrm" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>HRM</span></a>
                                     <ul id="hrm" class="collapse list-unstyled ">
                                         @if($department_active)
                                             <li id="dept-menu"><a href="{{route('departments.index')}}">{{trans('file.Department')}}</a></li>
@@ -2607,7 +2618,7 @@
                         ])->first();
                         ?>
                         @if($user_index_permission_active || $customer_index_permission_active || $biller_index_permission_active || $supplier_index_permission_active)
-                            <li><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
+                            <li data-nav-key="people" style="{{ \App\Support\SiteMenu::sideItemStyle('people') }}"><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
                                 <ul id="people" class="collapse list-unstyled ">
 
                                     @if($user_index_permission_active)
@@ -2764,7 +2775,7 @@
                                 ['role_id', $role->id] ])->first();
                         ?>
                         @if($JE_active ||$average_sale_active || $profit_loss_active || $best_seller_active || $warehouse_report_active || $warehouse_stock_report_active || $product_report_active || $daily_sale_active || $monthly_sale_active || $daily_purchase_active || $monthly_purchase_active || $purchase_report_active || $sale_report_active || $payment_report_active || $product_qty_alert_active || $user_report_active || $customer_report_active || $supplier_report_active || $due_report_active)
-                            <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
+                            <li data-nav-key="report" style="{{ \App\Support\SiteMenu::sideItemStyle('report') }}"><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                                 <ul id="report" class="collapse list-unstyled ">
                                     @if($profit_loss_active)
                                         <li id="profit-loss-report-menu">
@@ -2900,7 +2911,7 @@
                             </li>
                         @endif
 
-                        <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
+                        <li data-nav-key="setting" style="{{ \App\Support\SiteMenu::sideItemStyle('setting') }}"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                             <ul id="setting" class="collapse list-unstyled ">
                                 <?php
                                 $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
@@ -3038,7 +3049,7 @@
                                 @endif
                             </ul>
                         </li>
-                        <li id="sidebar-help"><a href="{{ route('admin.help') }}" data-nav-key="help"> <i class="fa fa-question-circle"></i><span>Help</span></a></li>
+                        <li id="sidebar-help" data-nav-key="help" style="order:10000;"><a href="{{ route('admin.help') }}" data-nav-key="help"> <i class="fa fa-question-circle"></i><span>Help</span></a></li>
                     </ul>
                     @php
                         $__sideMenuOrder = \App\Support\SiteMenu::sideOrder();
@@ -3055,6 +3066,7 @@
                         var ul = document.getElementById('side-main-menu');
                         if (!ul || !order || !order.length) return;
                         function keyOf(li) {
+                            if (li.getAttribute('data-nav-key')) return li.getAttribute('data-nav-key');
                             var a = null;
                             for (var i = 0; i < li.children.length; i++) {
                                 if (li.children[i].tagName === 'A') { a = li.children[i]; break; }
@@ -3066,6 +3078,7 @@
                             if (href.charAt(0) === '#') {
                                 var anchor = href.slice(1);
                                 // collapse target ids differ from Site Content reorder keys
+                                if (anchor === 'online_invitation') return 'invitations';
                                 if (anchor === 'contracts-module') return 'contracts';
                                 if (anchor === 'events-module') return 'events';
                                 if (anchor === 'invitations-module') return 'invitations';
