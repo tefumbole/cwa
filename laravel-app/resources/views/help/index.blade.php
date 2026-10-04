@@ -222,7 +222,7 @@
                 <img src="{{ $shot }}/mobile.jpg" alt="Homepage on a narrow phone screen" class="help-shot help-shot-narrow">
                 <ol>
                     <li>Narrow the browser or use a phone.</li>
-                    <li>Open the menu. It lists the same public items as section 2, then <strong>Join CWA</strong>, <strong>Donate</strong>, language, and <strong>Login</strong>. The drawer scrolls if the list is long.</li>
+                    <li>Open the menu. It lists the same public items as section 2, then <strong>Join CWA</strong>, <strong>Donate</strong>, <strong>Resources</strong>, language, and <strong>Login</strong>. The drawer scrolls if the list is long.</li>
                     <li>On About Us, leadership portraits wrap and the gold glow is not cut off by the edge of the screen.</li>
                     <li>On Branches, Cameroon and Diaspora stay on one row, and the search box is full width.</li>
                     <li>On the registration form, tapping Diocese, Region or Country focuses the search field immediately. The page does not jump sideways.</li>
@@ -252,7 +252,7 @@
             <div class="card-body">
                 <p>Menu: <strong>Membership</strong> on the admin side menu, then Awaiting Approvals, Members and Rejected.</p>
                 <ol>
-                    <li>Open <strong>Awaiting Approvals</strong>. The Cameroon test and the Diaspora test from section 5 are listed.</li>
+                    <li>Open <strong>Awaiting Approvals</strong>. The Cameroon test and the Diaspora test from section 6 are listed.</li>
                     <li>Open the Cameroon record. Region, address, city and state are stored.</li>
                     <li>Open the Diaspora record. Country, diocese or branch, address, city and state are stored. Region is empty.</li>
                     <li>Approve one test record. It leaves Awaiting and appears under <strong>Members</strong>.</li>
