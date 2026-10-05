@@ -23,6 +23,11 @@ class SystemTestController extends Controller
         ]);
     }
 
+    public function csrf()
+    {
+        return response()->json(['token' => csrf_token()]);
+    }
+
     public function store(Request $request)
     {
         if (trim((string) $request->input('company_website')) !== '') {

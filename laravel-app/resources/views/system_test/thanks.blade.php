@@ -30,4 +30,5 @@
         </ul>
     </div>
 </div>
+<script>try { localStorage.removeItem('cwacam-system-test'); } catch (e) {}</script>
 @endsection

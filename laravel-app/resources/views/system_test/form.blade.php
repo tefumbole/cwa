@@ -106,6 +106,9 @@
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
     <p class="text-stone-600 mb-4">Do one test at a time. Read the instruction, follow the steps, mark the result, then go to the next test. Keep this page open in one tab and the website in another.</p>
 
+    @if(session('test_expired'))
+        <div class="err">This page was open for a long time, so the first send expired. Your answers are still here. Press Send the result again.</div>
+    @endif
     @if($errors->any())
         <div class="err">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
     @endif
@@ -210,6 +213,72 @@
         inline.textContent = percent + '% answered';
     }
     paint();
+
+    var storageKey = 'cwacam-system-test';
+    function readSaved() {
+        try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (e) { return {}; }
+    }
+    function saveAnswers() {
+        var saved = { checks: {}, notes: {}, name: '', phone: '', summary: '' };
+        var name = document.getElementById('tester_name');
+        var phone = document.getElementById('tester_phone');
+        var summary = form.querySelector('textarea[name="summary"]');
+        saved.name = name ? name.value : '';
+        saved.phone = phone ? phone.value : '';
+        saved.summary = summary ? summary.value : '';
+        Array.prototype.forEach.call(form.querySelectorAll('input[type=radio]:checked'), function (input) {
+            saved.checks[input.name] = input.value;
+        });
+        Array.prototype.forEach.call(form.querySelectorAll('input.note'), function (input) {
+            if (input.value) saved.notes[input.name] = input.value;
+        });
+        try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch (e) {}
+    }
+    function restoreAnswers() {
+        var saved = readSaved();
+        var name = document.getElementById('tester_name');
+        var phone = document.getElementById('tester_phone');
+        var summary = form.querySelector('textarea[name="summary"]');
+        if (name && !name.value && saved.name) name.value = saved.name;
+        if (phone && !phone.value && saved.phone) phone.value = saved.phone;
+        if (summary && !summary.value && saved.summary) summary.value = saved.summary;
+        Object.keys(saved.checks || {}).forEach(function (field) {
+            var input = form.querySelector('input[name="'+field+'"][value="'+saved.checks[field]+'"]');
+            if (input && !form.querySelector('input[name="'+field+'"]:checked')) input.checked = true;
+        });
+        Object.keys(saved.notes || {}).forEach(function (field) {
+            var input = form.querySelector('input[name="'+field+'"]');
+            if (input && !input.value) input.value = saved.notes[field];
+        });
+        paint();
+    }
+    form.addEventListener('change', saveAnswers);
+    form.addEventListener('input', saveAnswers);
+    restoreAnswers();
+
+    function freshToken() {
+        return fetch('{{ route('system-test.csrf') }}', {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        }).then(function (response) { return response.json(); }).then(function (data) {
+            var input = form.querySelector('input[name="_token"]');
+            if (input && data && data.token) input.value = data.token;
+        });
+    }
+    setInterval(function () { freshToken().catch(function () {}); }, 4 * 60 * 1000);
+
+    var sending = false;
+    form.addEventListener('submit', function (event) {
+        if (sending) return;
+        event.preventDefault();
+        saveAnswers();
+        var button = form.querySelector('button[type=submit]');
+        if (button) button.disabled = true;
+        freshToken().catch(function () {}).then(function () {
+            sending = true;
+            form.submit();
+        });
+    });
 })();
 </script>
 @endsection
