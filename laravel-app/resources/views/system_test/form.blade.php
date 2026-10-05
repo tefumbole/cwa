@@ -140,13 +140,50 @@
     @media (max-width: 700px) {
         .review-row { grid-template-columns: 2rem minmax(0, 1fr); }
     }
+    .country-pick { position: relative; margin-top: .35rem; }
+    .country-trigger {
+        width: 100%; display: flex; align-items: center; gap: .75rem; text-align: left;
+        border: 1px solid #e7e1d4; border-radius: 14px; background: #fff; cursor: pointer;
+        padding: .55rem .75rem; font: inherit; box-shadow: 0 1px 0 rgba(0, 61, 130, .04);
+    }
+    .country-trigger:hover, .country-trigger[aria-expanded="true"] { border-color: #003D82; box-shadow: 0 0 0 3px rgba(0, 61, 130, .12); }
+    .country-code {
+        flex: 0 0 auto; min-width: 3.4rem; text-align: center;
+        background: #003D82; color: #fff; border-radius: 999px; padding: .35rem .55rem;
+        font-weight: 800; letter-spacing: .02em;
+    }
+    .country-option .country-code { background: #eef4ff; color: #003D82; }
+    .country-option.is-selected .country-code { background: #003D82; color: #fff; }
+    .country-name { flex: 1; font-weight: 700; color: #1a1f2e; }
+    .country-chevron {
+        width: .55rem; height: .55rem; border-right: 2px solid #003D82; border-bottom: 2px solid #003D82;
+        transform: rotate(45deg); margin-right: .35rem; margin-top: -.2rem;
+    }
+    .country-panel {
+        position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + .35rem);
+        background: #fff; border: 1px solid #e7e1d4; border-radius: 16px;
+        box-shadow: 0 18px 40px rgba(0, 61, 130, .16); padding: .65rem; 
+    }
+    .country-search {
+        width: 100%; border: 1px solid #e7e1d4; border-radius: 12px; padding: .65rem .8rem;
+        font: inherit; margin: 0 0 .45rem; background: #fbfaf7;
+    }
+    .country-search:focus { outline: none; border-color: #003D82; background: #fff; }
+    .country-list { list-style: none; margin: 0; padding: 0; max-height: 260px; overflow: auto; }
+    .country-option {
+        width: 100%; display: flex; align-items: center; gap: .7rem; text-align: left;
+        border: 0; background: transparent; border-radius: 12px; padding: .45rem .4rem; cursor: pointer; font: inherit;
+    }
+    .country-option:hover, .country-option.is-active { background: #f7f4ec; }
+    .country-option.is-selected { background: #eef4ff; }
+    .country-empty { margin: .4rem .2rem .2rem; color: #3d4654; }
 </style>
 
 <div class="test-layout{{ in_array($mode, ['test', 'review'], true) ? ' has-dock' : '' }}">
 <div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
-    <p class="text-stone-600 mb-4">Choose your country and WhatsApp number. Continue starts a test. Retrieve saved answers opens work already entered, including answers kept in this browser. Before the result is sent, you can read every answer and edit it.</p>
+    <p class="text-stone-600 mb-4">Start a new test, or retrieve an application you already began. Search for your country, enter the phone number without the country code, then continue or retrieve.</p>
 
     @if(session('test_saved'))
         <div class="saved">Saved. You can close this page and come back later with the same WhatsApp number.</div>
@@ -161,22 +198,34 @@
 
     @if($mode === 'gate')
         <section class="test-card field">
-            <h2>Your WhatsApp number</h2>
-            <p class="text-stone-600">Cameroon is first, then Rwanda. Enter the number without the country code. Retrieve saved answers must be pressed in the same browser where the answers were entered.</p>
+            <h2>Start a new test</h2>
+            <p class="text-stone-600">Cameroon is first, then Rwanda. Search the country list, then enter the number without the country code.</p>
             <form method="POST" action="{{ route('system-test.lookup') }}" id="start-test">
                 @csrf
+                <input type="hidden" name="intent" value="start">
                 <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
-                <label for="country_code">Country</label>
-                <select id="country_code" name="country_code" required>
-                    @foreach(\App\Support\CountryDialCodes::all() as $code => $label)
-                        <option value="{{ $code }}" @if(old('country_code', '+237') === $code) selected @endif>{{ $label }}</option>
-                    @endforeach
-                </select>
+                <label>Country</label>
+                @include('system_test.country_picker', ['pickerId' => 'country_code'])
                 <label for="phone_local">Phone number</label>
                 <input id="phone_local" name="phone_local" required value="{{ old('phone_local') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
                 <div class="actions" style="margin-top:1rem;">
-                    <button class="go" type="submit" name="intent" value="start">Continue</button>
-                    <button class="go-ghost" type="submit" name="intent" value="retrieve">Retrieve saved answers</button>
+                    <button class="go" type="submit">Continue</button>
+                </div>
+            </form>
+        </section>
+        <section class="test-card field">
+            <h2>Retrieve an application</h2>
+            <p class="text-stone-600">Use the same country and WhatsApp number. A code is sent to that phone and the saved answers open. If the answers were only kept in this browser, retrieve from this same browser.</p>
+            <form method="POST" action="{{ route('system-test.lookup') }}" id="retrieve-test">
+                @csrf
+                <input type="hidden" name="intent" value="retrieve">
+                <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
+                <label>Country</label>
+                @include('system_test.country_picker', ['pickerId' => 'country_code_retrieve'])
+                <label for="phone_retrieve">Phone number</label>
+                <input id="phone_retrieve" name="phone_local" required value="{{ old('phone_local') }}" placeholder="782024793" inputmode="tel" autocomplete="tel">
+                <div class="actions" style="margin-top:1rem;">
+                    <button class="go" type="submit">Retrieve application</button>
                 </div>
             </form>
         </section>
@@ -375,36 +424,41 @@
         form.appendChild(input);
     }
 
-    var start = document.getElementById('start-test');
-    if (start) {
+    function localPhone(value) {
+        var digits = String(value || '').replace(/\D/g, '');
+        if (digits.indexOf('237') === 0) return { code: '+237', local: digits.slice(3) };
+        if (digits.indexOf('250') === 0) return { code: '+250', local: digits.slice(3) };
+        return { code: '', local: digits };
+    }
+    function applySaved(form, phoneId) {
+        if (!form) return 0;
         var count = 0;
         Object.keys(saved.checks).forEach(function (field) {
             if (!saved.checks[field]) return;
-            addHidden(start, field, saved.checks[field]);
+            addHidden(form, field, saved.checks[field]);
             count++;
         });
         Object.keys(saved.notes || {}).forEach(function (field) {
             if (!saved.notes[field]) return;
-            addHidden(start, field, saved.notes[field]);
+            addHidden(form, field, saved.notes[field]);
         });
-        if (saved.summary) addHidden(start, 'summary', saved.summary);
-        if (saved.name) addHidden(start, 'tester_name', saved.name);
-        var phone = document.getElementById('phone_local');
-        if (phone && !phone.value && saved.phone) {
-            var digits = String(saved.phone).replace(/\D/g, '');
-            if (digits.indexOf('237') === 0) digits = digits.slice(3);
-            else if (digits.indexOf('250') === 0) digits = digits.slice(3);
-            phone.value = digits;
+        if (saved.summary) addHidden(form, 'summary', saved.summary);
+        if (saved.name) addHidden(form, 'tester_name', saved.name);
+        var phone = document.getElementById(phoneId);
+        var parsed = localPhone(saved.phone);
+        if (phone && !phone.value && parsed.local) phone.value = parsed.local;
+        if (parsed.code) {
+            var hidden = form.querySelector('input[name="country_code"]');
+            if (hidden) hidden.value = parsed.code;
         }
-        var country = document.getElementById('country_code');
-        if (country && saved.phone && String(saved.phone).replace(/\D/g, '').indexOf('250') === 0) {
-            country.value = '+250';
-        }
-        var note = document.getElementById('recovered-note');
-        if (note && count) {
-            note.hidden = false;
-            note.textContent = 'Found ' + count + ' answers kept in this browser' + (saved.name ? ' for ' + saved.name : '') + '. Press Retrieve saved answers and enter the same WhatsApp number. A code will open them so they can be reviewed and sent.';
-        }
+        return count;
+    }
+    var count = applySaved(document.getElementById('start-test'), 'phone_local');
+    applySaved(document.getElementById('retrieve-test'), 'phone_retrieve');
+    var note = document.getElementById('recovered-note');
+    if (note && count) {
+        note.hidden = false;
+        note.textContent = 'Found ' + count + ' answers kept in this browser' + (saved.name ? ' for ' + saved.name : '') + '. Use Retrieve an application with the same WhatsApp number. A code will open them so they can be reviewed and sent.';
     }
 
     var form = document.getElementById('system-test');
@@ -438,6 +492,89 @@
         note.hidden = false;
         note.textContent = 'Answers kept in this browser are on this page. Press Save and continue later so they stay with this phone number.';
     }
+})();
+</script>
+<script>
+(function () {
+    function choose(root, option) {
+        var hidden = root.querySelector('input[name="country_code"]');
+        if (hidden) hidden.value = option.getAttribute('data-code');
+        root.querySelector('.country-trigger .country-code').textContent = option.getAttribute('data-code');
+        root.querySelector('.country-trigger .country-name').textContent = option.getAttribute('data-name');
+        Array.prototype.forEach.call(root.querySelectorAll('.country-option'), function (item) {
+            item.classList.toggle('is-selected', item === option);
+        });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-country-picker]'), function (root) {
+        var trigger = root.querySelector('.country-trigger');
+        var panel = root.querySelector('.country-panel');
+        var search = root.querySelector('.country-search');
+        var empty = root.querySelector('.country-empty');
+        var hidden = root.querySelector('input[name="country_code"]');
+        var options = Array.prototype.slice.call(root.querySelectorAll('.country-option'));
+        var current = options.filter(function (option) { return option.getAttribute('data-code') === hidden.value; })[0];
+        if (current) choose(root, current);
+        function openPanel() {
+            panel.hidden = false;
+            trigger.setAttribute('aria-expanded', 'true');
+            search.value = '';
+            filter();
+            search.focus();
+        }
+        function closePanel() {
+            panel.hidden = true;
+            trigger.setAttribute('aria-expanded', 'false');
+        }
+        function visible() {
+            return options.filter(function (option) { return !option.parentElement.hidden; });
+        }
+        function filter() {
+            var query = search.value.trim().toLowerCase();
+            options.forEach(function (option) {
+                var hay = (option.getAttribute('data-name') + ' ' + option.getAttribute('data-code')).toLowerCase();
+                option.parentElement.hidden = query !== '' && hay.indexOf(query) === -1;
+            });
+            empty.hidden = visible().length !== 0;
+        }
+        trigger.addEventListener('click', function () {
+            if (panel.hidden) openPanel();
+            else closePanel();
+        });
+        search.addEventListener('input', filter);
+        search.addEventListener('keydown', function (event) {
+            var list = visible();
+            var active = list.filter(function (option) { return option.classList.contains('is-active'); })[0];
+            var index = list.indexOf(active);
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (active) active.classList.remove('is-active');
+                var next = event.key === 'ArrowDown' ? list[Math.min(list.length - 1, index + 1)] : list[Math.max(0, index - 1)];
+                if (!active && event.key === 'ArrowDown') next = list[0];
+                if (next) {
+                    next.classList.add('is-active');
+                    next.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                var pick = active || list[0];
+                if (pick) {
+                    choose(root, pick);
+                    closePanel();
+                }
+            } else if (event.key === 'Escape') {
+                closePanel();
+            }
+        });
+        options.forEach(function (option) {
+            option.addEventListener('click', function () {
+                choose(root, option);
+                closePanel();
+            });
+        });
+        document.addEventListener('click', function (event) {
+            if (!root.contains(event.target)) closePanel();
+        });
+    });
 })();
 </script>
 <script>
