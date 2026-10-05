@@ -55,6 +55,21 @@ class SystemTestController extends Controller
             ]));
         }
 
+        if ($request->query('review') === '1') {
+            $missing = $this->missing($pages, $draft);
+            if ($missing) {
+                return redirect()->route('system-test.show', ['page' => $this->firstIncompletePage($pages, $draft)])->withErrors([
+                    'checks' => 'Answer every question before the review. '.count($missing).' still need an answer. Not tested counts as an answer.',
+                ]);
+            }
+
+            return view('system_test.form', $this->viewData($pages, $draft, [
+                'mode' => 'review',
+                'progress' => $this->progress($pages, $draft),
+                'reviewRows' => $this->reviewRows($pages, $draft),
+            ]));
+        }
+
         $pageCount = count($pages);
         $page = (int) $request->query('page', $draft['page'] ?? 1);
         $page = max(1, min($pageCount, $page));
@@ -105,27 +120,73 @@ class SystemTestController extends Controller
         $digits = preg_replace('/\D/', '', $code);
         $name = '';
         $source = '';
-        if ($digits === '237') {
-            $hit = app(MobileMoneyHolderService::class)->lookup(ltrim($phone, '+'));
-            $name = trim((string) ($hit['name'] ?? ''));
-            $source = $name !== '' ? 'campay' : '';
-        } else {
-            $name = trim((string) app(BeyondWasenderService::class)->getContactName($phone));
-            $source = $name !== '' ? 'whatsapp' : '';
+        if ($request->input('intent') !== 'retrieve') {
+            if ($digits === '237') {
+                $hit = app(MobileMoneyHolderService::class)->lookup(ltrim($phone, '+'));
+                $name = trim((string) ($hit['name'] ?? ''));
+                $source = $name !== '' ? 'campay' : '';
+            } else {
+                $name = trim((string) app(BeyondWasenderService::class)->getContactName($phone));
+                $source = $name !== '' ? 'whatsapp' : '';
+            }
         }
 
+        $recovered = [
+            'checks' => $request->input('checks', []),
+            'notes' => $request->input('notes', []),
+            'summary' => $request->input('summary'),
+            'name' => trim((string) $request->input('tester_name')),
+        ];
         session([
             'system_test_lookup_phone' => $phone,
             'system_test_lookup_name' => $name,
             'system_test_lookup_source' => $source,
-            'system_test_recovered' => [
-                'checks' => $request->input('checks', []),
-                'notes' => $request->input('notes', []),
-                'summary' => $request->input('summary'),
-            ],
+            'system_test_recovered' => $recovered,
         ]);
 
+        if ($request->input('intent') === 'retrieve') {
+            return $this->retrieve($phone, $recovered, $name);
+        }
+
         return redirect()->route('system-test.show', ['step' => 'name']);
+    }
+
+    protected function retrieve($phone, array $recovered, $lookedUpName)
+    {
+        $draft = SystemTestDraft::find($phone);
+        $name = trim((string) ($draft['tester_name'] ?? ''));
+        if ($name === '') {
+            $name = trim((string) ($recovered['name'] ?? ''));
+        }
+        if ($name === '') {
+            $name = trim((string) $lookedUpName);
+        }
+        if (! $draft) {
+            $draft = SystemTestDraft::blank($name !== '' ? $name : 'Tester', $phone);
+        }
+        $draft = $this->fillBlanks($draft, new Request($recovered));
+        if ($name !== '' && $name !== 'Tester') {
+            $draft['tester_name'] = $name;
+        }
+
+        if ($this->answeredCount($draft) === 0) {
+            return redirect()->route('system-test.show')->withInput()->withErrors([
+                'phone_local' => 'No saved answers were found for this number. Open this page in the same browser where the answers were entered, then press Retrieve saved answers.',
+            ]);
+        }
+
+        if (trim((string) $draft['tester_name']) === '' || $draft['tester_name'] === 'Tester') {
+            SystemTestDraft::put($phone, $draft);
+            session([
+                'system_test_lookup_phone' => $phone,
+                'system_test_lookup_name' => '',
+                'system_test_lookup_source' => '',
+            ]);
+
+            return redirect()->route('system-test.show', ['step' => 'name']);
+        }
+
+        return $this->sendCode($phone, $draft);
     }
 
     public function confirmName(Request $request)
@@ -147,34 +208,17 @@ class SystemTestController extends Controller
             ]);
         }
 
-        $draft = SystemTestDraft::find($phone);
-        if (! $draft) {
-            $draft = SystemTestDraft::blank($name, $phone);
-            $recovered = session('system_test_recovered');
-            if (is_array($recovered)) {
-                $draft = $this->mergeAnywhere($draft, new Request($recovered));
-                $draft['page'] = $this->firstIncompletePage($this->pages(), $draft);
-            }
+        $draft = SystemTestDraft::find($phone) ?: SystemTestDraft::blank($name, $phone);
+        $recovered = session('system_test_recovered');
+        if (is_array($recovered)) {
+            $draft = $this->fillBlanks($draft, new Request($recovered));
         }
         $draft['tester_name'] = $name;
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $draft['otp_hash'] = password_hash($code, PASSWORD_DEFAULT);
-        $draft['otp_expires'] = time() + 600;
-        $draft['otp_attempts'] = 0;
-        SystemTestDraft::put($phone, $draft);
-        session(['system_test_pending_phone' => $phone]);
-
-        $sent = app(BeyondWasenderService::class)->sendText(
-            $phone,
-            WhatsAppMessage::otpMessage($code, 'system test', 10)
-        );
-        if (empty($sent['success'])) {
-            return redirect()->route('system-test.show', ['step' => 'name'])->withErrors([
-                'tester_name' => 'The code could not be sent on WhatsApp. Check the number and try again.',
-            ]);
+        if ($this->answeredCount($draft) > 0) {
+            $draft['page'] = $this->firstIncompletePage($this->pages(), $draft);
         }
 
-        return redirect()->route('system-test.show', ['verify' => 1]);
+        return $this->sendCode($phone, $draft, 'system-test.show', ['step' => 'name'], 'tester_name');
     }
 
     public function start(Request $request)
@@ -291,7 +335,8 @@ class SystemTestController extends Controller
             \Log::error('[system-test] tester account failed: '.$e->getMessage());
         }
 
-        $redirect = redirect()->route('system-test.show', ['page' => $draft['page'] ?? 1]);
+        $openReview = $this->missing($this->pages(), $draft) === [];
+        $redirect = redirect()->route('system-test.show', $openReview ? ['review' => 1] : ['page' => $draft['page'] ?? 1]);
         if ($login && ! empty($login['password'])) {
             $sent = app(BeyondWasenderService::class)->sendText(
                 $phone,
@@ -331,22 +376,26 @@ class SystemTestController extends Controller
             $action = 'goto';
         }
 
-        if ($action === 'submit') {
+        if ($action === 'review' || $action === 'submit' || $action === 'confirm') {
             $missing = $this->missing($pages, $draft);
             if ($missing) {
                 SystemTestDraft::put($phone, $draft);
                 $first = $this->firstIncompletePage($pages, $draft);
 
                 return redirect()->route('system-test.show', ['page' => $first])->withErrors([
-                    'checks' => 'Answer every question before sending. '.count($missing).' still need an answer. Not tested counts as an answer.',
+                    'checks' => 'Answer every question before the review. '.count($missing).' still need an answer. Not tested counts as an answer.',
                 ]);
             }
+            SystemTestDraft::put($phone, $draft);
+            if ($action === 'confirm') {
+                $report = $this->reportFromDraft($draft);
+                SystemTestDraft::forget($phone);
+                session()->forget('system_test_phone');
 
-            $report = $this->reportFromDraft($draft);
-            SystemTestDraft::forget($phone);
-            session()->forget('system_test_phone');
+                return $this->publish($report);
+            }
 
-            return $this->publish($report);
+            return redirect()->route('system-test.show', ['review' => 1]);
         }
 
         if ($action === 'next') {
@@ -596,6 +645,100 @@ class SystemTestController extends Controller
         return $msg;
     }
 
+    protected function sendCode($phone, array $draft, $errorRoute = 'system-test.show', array $errorParams = [], $errorKey = 'phone_local')
+    {
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $draft['otp_hash'] = password_hash($code, PASSWORD_DEFAULT);
+        $draft['otp_expires'] = time() + 600;
+        $draft['otp_attempts'] = 0;
+        SystemTestDraft::put($phone, $draft);
+        session(['system_test_pending_phone' => $phone]);
+
+        $sent = app(BeyondWasenderService::class)->sendText(
+            $phone,
+            WhatsAppMessage::otpMessage($code, 'system test', 10)
+        );
+        if (empty($sent['success'])) {
+            return redirect()->route($errorRoute, $errorParams)->withErrors([
+                $errorKey => 'The code could not be sent on WhatsApp. Check the number and try again.',
+            ]);
+        }
+
+        return redirect()->route('system-test.show', ['verify' => 1]);
+    }
+
+    protected function fillBlanks(array $draft, Request $request)
+    {
+        $known = array_keys(SystemTestGuide::checkMap());
+        $checks = (array) ($draft['checks'] ?? []);
+        $notes = (array) ($draft['notes'] ?? []);
+        $posted = (array) $request->input('checks', []);
+        $postedNotes = (array) $request->input('notes', []);
+        foreach ($known as $id) {
+            $current = isset($checks[$id]) ? (string) $checks[$id] : '';
+            if (! in_array($current, ['works', 'fails', 'skipped'], true)
+                && isset($posted[$id])
+                && in_array($posted[$id], ['works', 'fails', 'skipped'], true)) {
+                $checks[$id] = $posted[$id];
+            }
+            if (trim((string) ($notes[$id] ?? '')) === '' && trim((string) ($postedNotes[$id] ?? '')) !== '') {
+                $notes[$id] = trim(mb_substr((string) $postedNotes[$id], 0, 500));
+            }
+        }
+        $draft['checks'] = $checks;
+        $draft['notes'] = $notes;
+        if (trim((string) ($draft['summary'] ?? '')) === '') {
+            $summary = trim((string) $request->input('summary'));
+            if ($summary !== '') {
+                $draft['summary'] = mb_substr($summary, 0, 5000);
+            }
+        }
+
+        return $draft;
+    }
+
+    protected function answeredCount(array $draft)
+    {
+        $count = 0;
+        foreach ((array) ($draft['checks'] ?? []) as $value) {
+            if (in_array($value, ['works', 'fails', 'skipped'], true)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    protected function reviewRows(array $pages, array $draft)
+    {
+        $checks = (array) ($draft['checks'] ?? []);
+        $notes = (array) ($draft['notes'] ?? []);
+        $rows = [];
+        $number = 0;
+        $labels = [
+            'works' => 'Works',
+            'fails' => 'Does not work',
+            'skipped' => 'Not tested',
+        ];
+        foreach ($pages as $index => $page) {
+            foreach ($page['checks'] as $check) {
+                $number++;
+                $result = isset($checks[$check['id']]) ? (string) $checks[$check['id']] : '';
+                $rows[] = [
+                    'number' => $number,
+                    'page' => $index + 1,
+                    'section' => $page['title'],
+                    'text' => $check['text'],
+                    'result' => $result,
+                    'label' => isset($labels[$result]) ? $labels[$result] : 'No answer',
+                    'note' => trim((string) ($notes[$check['id']] ?? '')),
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
     protected function loginMessage($name, $username, $password)
     {
         $msg = WhatsAppMessage::statusBlock('🔐', 'Test login');
@@ -649,6 +792,7 @@ class SystemTestController extends Controller
             'lookupPhone' => '',
             'suggestedName' => '',
             'nameSource' => '',
+            'reviewRows' => [],
         ];
 
         return array_merge($data, $extra);

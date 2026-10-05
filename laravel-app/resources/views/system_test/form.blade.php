@@ -121,13 +121,32 @@
     .progress-dock .bar-track { flex: 1; }
     .progress-dock .rail-detail { margin: 0; white-space: nowrap; }
     .has-dock { padding-bottom: 6.5rem; }
+    .review-row {
+        display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto auto;
+        gap: .7rem; align-items: start; padding: .85rem 0; border-top: 1px solid #f0ebe1;
+    }
+    .review-row:first-of-type { border-top: 0; }
+    .review-no { font-weight: 800; color: #003D82; }
+    .review-text { margin: 0; font-weight: 700; color: #1a1f2e; }
+    .review-note { margin: .25rem 0 0; color: #3d4654; font-size: .92rem; }
+    .badge { border-radius: 999px; padding: .25rem .7rem; font-size: .82rem; font-weight: 800; white-space: nowrap; }
+    .badge.works { background: #e8f7f0; color: #0f6b4c; }
+    .badge.fails { background: #fff1f1; color: #8a1f1f; }
+    .badge.skipped { background: #eef4ff; color: #003D82; }
+    .edit-link {
+        border: 1.5px solid #003D82; color: #003D82; border-radius: 999px;
+        padding: .3rem .75rem; font-weight: 800; text-decoration: none; background: #fff; white-space: nowrap;
+    }
+    @media (max-width: 700px) {
+        .review-row { grid-template-columns: 2rem minmax(0, 1fr); }
+    }
 </style>
 
-<div class="test-layout{{ $mode === 'test' ? ' has-dock' : '' }}">
+<div class="test-layout{{ in_array($mode, ['test', 'review'], true) ? ' has-dock' : '' }}">
 <div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
-    <p class="text-stone-600 mb-4">Choose your country and WhatsApp number. We look up your name, then send a code to that phone. After the code matches, the test opens and a login is sent on WhatsApp.</p>
+    <p class="text-stone-600 mb-4">Choose your country and WhatsApp number. Continue starts a test. Retrieve saved answers opens work already entered, including answers kept in this browser. Before the result is sent, you can read every answer and edit it.</p>
 
     @if(session('test_saved'))
         <div class="saved">Saved. You can close this page and come back later with the same WhatsApp number.</div>
@@ -143,7 +162,7 @@
     @if($mode === 'gate')
         <section class="test-card field">
             <h2>Your WhatsApp number</h2>
-            <p class="text-stone-600">Cameroon is first, then Rwanda. Enter the number without the country code. The same number opens a saved test or starts a new one.</p>
+            <p class="text-stone-600">Cameroon is first, then Rwanda. Enter the number without the country code. Retrieve saved answers must be pressed in the same browser where the answers were entered.</p>
             <form method="POST" action="{{ route('system-test.lookup') }}" id="start-test">
                 @csrf
                 <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
@@ -156,7 +175,8 @@
                 <label for="phone_local">Phone number</label>
                 <input id="phone_local" name="phone_local" required value="{{ old('phone_local') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
                 <div class="actions" style="margin-top:1rem;">
-                    <button class="go" type="submit">Continue</button>
+                    <button class="go" type="submit" name="intent" value="start">Continue</button>
+                    <button class="go-ghost" type="submit" name="intent" value="retrieve">Retrieve saved answers</button>
                 </div>
             </form>
         </section>
@@ -198,6 +218,44 @@
                 <p class="text-stone-600" style="margin-top:.8rem;">Start again clears the saved answers for this number.</p>
             </form>
         </section>
+    @elseif($mode === 'review')
+        <section class="test-card">
+            <p class="test-kicker">Review</p>
+            <h2>Check the answers</h2>
+            <p class="text-stone-600">Read each result. Press Edit to change one, then come back here. Send the result only when this list is right. Testing as {{ $draft['tester_name'] }}, {{ $draft['tester_phone'] }}.</p>
+            @php $section = ''; @endphp
+            @foreach($reviewRows as $row)
+                @if($row['section'] !== $section)
+                    @php $section = $row['section']; @endphp
+                    <h3 style="margin:1rem 0 .2rem; color:#003D82;">{{ $section }}</h3>
+                @endif
+                <div class="review-row" id="review-{{ $row['number'] }}">
+                    <span class="review-no">{{ $row['number'] }}</span>
+                    <div>
+                        <p class="review-text">{{ $row['text'] }}</p>
+                        @if($row['note'] !== '')
+                            <p class="review-note">{{ $row['note'] }}</p>
+                        @endif
+                    </div>
+                    <span class="badge {{ $row['result'] }}">{{ $row['label'] }}</span>
+                    <a class="edit-link" href="{{ route('system-test.show', ['page' => $row['page']]) }}#task-{{ $row['number'] }}">Edit</a>
+                </div>
+            @endforeach
+        </section>
+        <form method="POST" action="{{ route('system-test.save') }}" id="system-test" data-total="{{ $progress['total'] }}" data-elsewhere="{{ $progress['answered'] }}" data-page-count="0">
+            @csrf
+            <input type="hidden" name="page" value="{{ $pageCount }}">
+            <input type="hidden" name="action" id="picked-action" value="confirm">
+            <input type="hidden" name="goto" id="picked-goto" value="">
+            <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
+            <section class="test-card field">
+                <h2>Anything else</h2>
+                <textarea name="summary" rows="4" placeholder="Optional. Tell the administrator anything the list did not cover.">{{ old('summary', $draft['summary'] ?? '') }}</textarea>
+            </section>
+            <div class="actions">
+                <button class="go" type="submit" data-action="confirm" id="send-result">Send the result</button>
+            </div>
+        </form>
     @else
     <form method="POST" action="{{ route('system-test.save') }}" id="system-test" data-total="{{ $progress['total'] }}" data-elsewhere="{{ $progress['answered'] - $progress['pages'][$page - 1]['answered'] }}" data-page-count="{{ count($current['checks']) }}">
         @csrf
@@ -264,13 +322,14 @@
             <span id="progress-inline">Save this page when you are ready.</span>
             <div class="actions">
                 <button class="go-ghost" type="submit" data-action="later">Save and continue later</button>
+                <button class="go-ghost" type="submit" data-action="review">Review answers</button>
                 @if($page > 1)
                     <button class="go-ghost" type="submit" data-action="prev">Previous page</button>
                 @endif
                 @if($page < $pageCount)
                     <button class="go" type="submit" data-action="next" id="next-page">Save and next page</button>
                 @else
-                    <button class="go" type="submit" data-action="submit" id="send-result">Send the result</button>
+                    <button class="go" type="submit" data-action="review" id="send-result">Review answers</button>
                 @endif
             </div>
         </div>
@@ -295,7 +354,7 @@
     @endif
 </aside>
 </div>
-@if($mode === 'test')
+@if(in_array($mode, ['test', 'review'], true))
 <div class="progress-dock" aria-live="polite">
     <span class="pct" id="progress-fixed-pct">{{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%</span>
     <div class="bar-track"><div class="bar-fill" id="bar-fill-fixed" style="width: {{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%"></div></div>
@@ -306,43 +365,78 @@
 (function () {
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem('cwacam-system-test') || 'null'); } catch (e) { saved = null; }
+    if (!saved || !saved.checks) return;
+
+    function addHidden(form, name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+
     var start = document.getElementById('start-test');
-    if (start && saved && saved.checks) {
+    if (start) {
         var count = 0;
         Object.keys(saved.checks).forEach(function (field) {
             if (!saved.checks[field]) return;
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = field;
-            input.value = saved.checks[field];
-            start.appendChild(input);
+            addHidden(start, field, saved.checks[field]);
             count++;
         });
         Object.keys(saved.notes || {}).forEach(function (field) {
             if (!saved.notes[field]) return;
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = field;
-            input.value = saved.notes[field];
-            start.appendChild(input);
+            addHidden(start, field, saved.notes[field]);
         });
-        if (saved.summary) {
-            var summary = document.createElement('input');
-            summary.type = 'hidden';
-            summary.name = 'summary';
-            summary.value = saved.summary;
-            start.appendChild(summary);
-        }
+        if (saved.summary) addHidden(start, 'summary', saved.summary);
+        if (saved.name) addHidden(start, 'tester_name', saved.name);
         var phone = document.getElementById('phone_local');
         if (phone && !phone.value && saved.phone) {
             var digits = String(saved.phone).replace(/\D/g, '');
-            phone.value = digits.indexOf('237') === 0 ? digits.slice(3) : digits;
+            if (digits.indexOf('237') === 0) digits = digits.slice(3);
+            else if (digits.indexOf('250') === 0) digits = digits.slice(3);
+            phone.value = digits;
+        }
+        var country = document.getElementById('country_code');
+        if (country && saved.phone && String(saved.phone).replace(/\D/g, '').indexOf('250') === 0) {
+            country.value = '+250';
         }
         var note = document.getElementById('recovered-note');
         if (note && count) {
             note.hidden = false;
-            note.textContent = 'Found ' + count + ' answers from the page that expired' + (saved.name ? ' for ' + saved.name : '') + '. Press Continue and they will be kept. You continue at the first question that still needs an answer.';
+            note.textContent = 'Found ' + count + ' answers kept in this browser' + (saved.name ? ' for ' + saved.name : '') + '. Press Retrieve saved answers and enter the same WhatsApp number. A code will open them so they can be reviewed and sent.';
         }
+    }
+
+    var form = document.getElementById('system-test');
+    if (!form || form.getAttribute('data-page-count') === '0') return;
+    var restored = 0;
+    Object.keys(saved.checks).forEach(function (field) {
+        if (!saved.checks[field]) return;
+        var existing = form.querySelector('input[name="'+field+'"]');
+        if (existing) {
+            var picked = form.querySelector('input[name="'+field+'"]:checked');
+            var match = form.querySelector('input[name="'+field+'"][value="'+saved.checks[field]+'"]');
+            if (!picked && match) { match.checked = true; restored++; }
+            return;
+        }
+        addHidden(form, field, saved.checks[field]);
+        restored++;
+    });
+    Object.keys(saved.notes || {}).forEach(function (field) {
+        if (!saved.notes[field]) return;
+        var noteInput = form.querySelector('input[name="'+field+'"], textarea[name="'+field+'"]');
+        if (noteInput) {
+            if (!noteInput.value) noteInput.value = saved.notes[field];
+            return;
+        }
+        addHidden(form, field, saved.notes[field]);
+    });
+    var summary = form.querySelector('textarea[name="summary"]');
+    if (summary && !summary.value && saved.summary) summary.value = saved.summary;
+    var note = document.getElementById('recovered-note');
+    if (note && restored) {
+        note.hidden = false;
+        note.textContent = 'Answers kept in this browser are on this page. Press Save and continue later so they stay with this phone number.';
     }
 })();
 </script>
@@ -392,7 +486,8 @@
         if (next) next.disabled = pageAnswered < pageCount;
         if (send) send.disabled = answered < total;
         if (inline) {
-            if (send) inline.textContent = send.disabled ? (total - answered) + ' questions still need an answer before sending.' : 'Every question is answered. You can send the result.';
+            if (send && send.getAttribute('data-action') === 'confirm') inline.textContent = 'Read the list, edit anything that is wrong, then send the result.';
+            else if (send) inline.textContent = send.disabled ? (total - answered) + ' questions still need an answer before the review.' : 'Every question is answered. Review them before sending.';
             else if (next) inline.textContent = next.disabled ? 'Answer every question on this page, then save and move on. Not tested counts.' : 'This page is complete.';
         }
     }
