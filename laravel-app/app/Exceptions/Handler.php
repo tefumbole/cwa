@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if ($exception instanceof TokenMismatchException && $request->is('system-test')) {
+        if ($exception instanceof TokenMismatchException && $request->is('system-test*')) {
             return redirect()
                 ->route('system-test.show')
                 ->with('test_expired', true);
