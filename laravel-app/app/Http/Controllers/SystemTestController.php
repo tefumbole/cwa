@@ -34,16 +34,19 @@ class SystemTestController extends Controller
             return redirect()->route('system-test.show');
         }
 
-        $request->validate([
+        $validator = validator($request->all(), [
             'tester_name' => 'required|string|max:120',
             'tester_phone' => 'required|string|max:30',
             'summary' => 'nullable|string|max:5000',
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('system-test.show')->withInput()->withErrors($validator);
+        }
 
         try {
             $testerPhone = WhatsAppPhone::forWasender($request->input('tester_phone'));
         } catch (\InvalidArgumentException $e) {
-            return back()->withInput()->withErrors([
+            return redirect()->route('system-test.show')->withInput()->withErrors([
                 'tester_phone' => 'Enter a WhatsApp number, for example 675321739 or +237675321739.',
             ]);
         }

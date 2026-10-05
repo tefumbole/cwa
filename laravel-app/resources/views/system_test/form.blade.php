@@ -259,7 +259,7 @@
     function freshToken() {
         return fetch('{{ route('system-test.csrf') }}', {
             credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         }).then(function (response) { return response.json(); }).then(function (data) {
             var input = form.querySelector('input[name="_token"]');
             if (input && data && data.token) input.value = data.token;
