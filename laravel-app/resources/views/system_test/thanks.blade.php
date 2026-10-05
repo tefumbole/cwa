@@ -13,7 +13,7 @@
         @else
             <p>The result is saved. WhatsApp to {{ $report['tester_phone'] }} did not go out. The administrator can still open it from Help.</p>
         @endif
-        <p>A copy was sent to the administrator@if(count($adminPhones)) on WhatsApp@endif @if($mailed) and by email@endif.</p>
+        <p>The administrator received a WhatsApp summary of what does not work, plus this full result@if($mailed), and the same result by email@endif.</p>
         <div class="grid grid-cols-3 gap-3 my-5">
             <div class="border border-[#e7e1d4] rounded-xl p-3"><strong class="block text-2xl text-brand-blue">{{ $report['counts']['works'] }}</strong>Works</div>
             <div class="border border-[#e7e1d4] rounded-xl p-3"><strong class="block text-2xl text-[#8a1f1f]">{{ $report['counts']['fails'] }}</strong>Does not work</div>

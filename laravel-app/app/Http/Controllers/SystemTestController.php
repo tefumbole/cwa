@@ -482,7 +482,7 @@ class SystemTestController extends Controller
 
         $whatsapp = app(BeyondWasenderService::class);
         $testerPhone = $report['tester_phone'];
-        $testerSent = $whatsapp->sendText($testerPhone, $this->whatsappSummary($report, false));
+        $testerSent = $this->sendMessages($whatsapp, $testerPhone, $this->testerResultMessages($report));
         $adminPhones = [];
         foreach ($this->adminPhones() as $adminPhone) {
             try {
@@ -493,7 +493,8 @@ class SystemTestController extends Controller
                 continue;
             }
             $adminPhones[] = $adminPhone;
-            $whatsapp->sendText($adminPhone, $this->whatsappSummary($report, true));
+            $this->sendMessages($whatsapp, $adminPhone, $this->adminFailureMessages($report));
+            $this->sendMessages($whatsapp, $adminPhone, $this->adminFullResultMessages($report));
         }
 
         $recipients = $this->reportRecipients();
@@ -501,7 +502,7 @@ class SystemTestController extends Controller
         if ($recipients) {
             try {
                 Mail::send('mail.system_test_report', ['report' => $report], function ($message) use ($recipients, $report) {
-                    $message->to($recipients)->subject('CWACAM system test '.$report['id'].' — '.$report['counts']['fails'].' not working');
+                    $message->to($recipients)->subject($report['counts']['fails'].' do not work — '.$report['tester_name']);
                 });
                 $mailed = true;
             } catch (\Throwable $e) {
@@ -609,40 +610,120 @@ class SystemTestController extends Controller
         return array_slice($phones, 0, 3);
     }
 
-    protected function whatsappSummary(array $report, $forAdmin)
+    protected function sendMessages($whatsapp, $phone, array $messages)
     {
-        $msg = WhatsAppMessage::statusBlock($forAdmin ? '📋' : '✅', $forAdmin ? 'System test copy' : 'System test result');
-        $msg .= WhatsAppMessage::greeting($forAdmin ? 'Administrator' : $report['tester_name']);
-        if ($forAdmin) {
-            $msg .= '*'.$report['tester_name'].'* sent a system test from '.$report['tester_phone'].".\n";
-        } else {
-            $msg .= "Your CWACAM system test has been received. A copy was also sent to the administrator.\n";
+        $ok = false;
+        foreach ($messages as $message) {
+            $sent = $whatsapp->sendText($phone, $message);
+            if (! empty($sent['success'])) {
+                $ok = true;
+            }
         }
-        $msg .= WhatsAppMessage::bullet('Works', (string) $report['counts']['works']);
-        $msg .= WhatsAppMessage::bullet('Does not work', (string) $report['counts']['fails']);
-        $msg .= WhatsAppMessage::bullet('Not tested', (string) $report['counts']['skipped']);
-        $fails = array_values(array_filter($report['rows'], function ($row) {
-            return $row['result'] === 'fails';
-        }));
-        if ($fails) {
-            $msg .= "\n*Does not work:*\n";
-            foreach (array_slice($fails, 0, 8) as $row) {
-                $line = $row['section'].' — '.$row['text'];
-                if ($row['note'] !== '') {
-                    $line .= ' ('.$row['note'].')';
-                }
-                $msg .= '• '.mb_substr($line, 0, 180)."\n";
-            }
-            if (count($fails) > 8) {
-                $msg .= '• '.(count($fails) - 8)." more items are in the full report.\n";
-            }
+
+        return $ok;
+    }
+
+    protected function testerResultMessages(array $report)
+    {
+        $fails = $this->rowsByResult($report, 'fails');
+        $intro = WhatsAppMessage::greeting($report['tester_name']);
+        $intro .= "Your CWACAM system test has been received. The administrator also received this result and a list of what does not work.\n";
+        $intro .= WhatsAppMessage::bullet('Works', (string) $report['counts']['works']);
+        $intro .= WhatsAppMessage::bullet('Does not work', (string) $report['counts']['fails']);
+        $intro .= WhatsAppMessage::bullet('Not tested', (string) $report['counts']['skipped']);
+        $lines = $this->resultLines($fails);
+        if ($report['summary'] !== '') {
+            $lines[] = '*Note:* '.mb_substr($report['summary'], 0, 500);
+        }
+
+        return $this->packMessages('✅', 'System test result', $intro, $lines);
+    }
+
+    protected function adminFailureMessages(array $report)
+    {
+        $fails = $this->rowsByResult($report, 'fails');
+        $intro = WhatsAppMessage::greeting('Administrator');
+        $intro .= '*'.$report['tester_name'].'* ('.$report['tester_phone'].") submitted a system test.\n";
+        if (! $fails) {
+            $intro .= "Nothing was marked as not working.\n";
+        } else {
+            $intro .= 'Focus on these *'.count($fails)."* items that do not work:\n";
+        }
+
+        return $this->packMessages('⚠️', 'What does not work', $intro, $this->resultLines($fails));
+    }
+
+    protected function adminFullResultMessages(array $report)
+    {
+        $intro = WhatsAppMessage::greeting('Administrator');
+        $intro .= 'Full result from *'.$report['tester_name'].'* ('.$report['tester_phone'].").\n";
+        $intro .= WhatsAppMessage::bullet('Works', (string) $report['counts']['works']);
+        $intro .= WhatsAppMessage::bullet('Does not work', (string) $report['counts']['fails']);
+        $intro .= WhatsAppMessage::bullet('Not tested', (string) $report['counts']['skipped']);
+        $intro .= "\nThe items that do not work are in the previous message.\n";
+        $lines = [];
+        $works = $this->rowsByResult($report, 'works');
+        $skipped = $this->rowsByResult($report, 'skipped');
+        if ($works) {
+            $lines[] = '*Works*';
+            $lines = array_merge($lines, $this->resultLines($works));
+        }
+        if ($skipped) {
+            $lines[] = '*Not tested*';
+            $lines = array_merge($lines, $this->resultLines($skipped));
         }
         if ($report['summary'] !== '') {
-            $msg .= "\n*Note:* ".mb_substr($report['summary'], 0, 400)."\n";
+            $lines[] = '*Note:* '.mb_substr($report['summary'], 0, 500);
         }
-        $msg .= WhatsAppMessage::footer();
+        $lines[] = WhatsAppMessage::actionLink('Open the full result', route('system-test.detail', ['id' => $report['id']]));
 
-        return $msg;
+        return $this->packMessages('📋', 'Tester result', $intro, $lines);
+    }
+
+    protected function rowsByResult(array $report, $result)
+    {
+        return array_values(array_filter($report['rows'], function ($row) use ($result) {
+            return $row['result'] === $result;
+        }));
+    }
+
+    protected function resultLines(array $rows)
+    {
+        $lines = [];
+        foreach ($rows as $row) {
+            $line = '• *'.$row['section'].':* '.$row['text'];
+            if ($row['note'] !== '') {
+                $line .= "\n  _".$row['note'].'_';
+            }
+            $lines[] = $line;
+        }
+
+        return $lines;
+    }
+
+    protected function packMessages($emoji, $title, $intro, array $lines)
+    {
+        $footer = WhatsAppMessage::footer();
+        $bodies = [];
+        $current = rtrim($intro);
+        foreach ($lines as $line) {
+            $candidate = $current."\n".$line;
+            if (mb_strlen($candidate) > 2800 && $current !== rtrim($intro)) {
+                $bodies[] = $current;
+                $current = $line;
+            } else {
+                $current = $candidate;
+            }
+        }
+        $bodies[] = $current;
+        $total = count($bodies);
+        $messages = [];
+        foreach ($bodies as $index => $body) {
+            $heading = $title.($total > 1 ? ' ('.($index + 1).'/'.$total.')' : '');
+            $messages[] = WhatsAppMessage::statusBlock($emoji, $heading).$body.$footer;
+        }
+
+        return $messages;
     }
 
     protected function sendCode($phone, array $draft, $errorRoute = 'system-test.show', array $errorParams = [], $errorKey = 'phone_local')

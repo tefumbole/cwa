@@ -2,13 +2,14 @@
     $fails = array_values(array_filter($report['rows'], function ($row) { return $row['result'] === 'fails'; }));
     $works = array_values(array_filter($report['rows'], function ($row) { return $row['result'] === 'works'; }));
 @endphp
+<p><strong>Focus on what does not work.</strong> {{ $report['tester_name'] }} marked {{ $report['counts']['fails'] }} item{{ $report['counts']['fails'] == 1 ? '' : 's' }} as not working.</p>
 <p><strong>{{ $report['tester_name'] }}</strong> finished a CWACAM system test on {{ $report['created_at'] }}.</p>
 @if(!empty($report['tester_phone']))
     <p>Tester WhatsApp: {{ $report['tester_phone'] }}</p>
 @endif
 <p>
-    Works: {{ $report['counts']['works'] }}
-    &nbsp;·&nbsp; Does not work: {{ $report['counts']['fails'] }}
+    Does not work: {{ $report['counts']['fails'] }}
+    &nbsp;·&nbsp; Works: {{ $report['counts']['works'] }}
     &nbsp;·&nbsp; Not tested: {{ $report['counts']['skipped'] }}
     &nbsp;·&nbsp; Total: {{ $report['total'] }}
 </p>
@@ -28,6 +29,18 @@
                     <br>Note: {{ $row['note'] }}
                 @endif
             </li>
+        @endforeach
+    </ul>
+@endif
+
+@php $skipped = array_values(array_filter($report['rows'], function ($row) { return $row['result'] === 'skipped'; })); @endphp
+<h3>Not tested</h3>
+@if(count($skipped) === 0)
+    <p>Nothing was left untested.</p>
+@else
+    <ul>
+        @foreach($skipped as $row)
+            <li>{{ $row['section'] }} — {{ $row['text'] }}@if($row['note'] !== '') ({{ $row['note'] }})@endif</li>
         @endforeach
     </ul>
 @endif
