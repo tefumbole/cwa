@@ -110,9 +110,20 @@
     }
     .err { background: #fff1f1; border: 1px solid #f0c2c2; color: #8a1f1f; border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem; }
     .hp { position: absolute; left: -9999px; }
+    .progress-dock {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+        display: flex; align-items: center; gap: .75rem;
+        padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom));
+        background: rgba(255,255,255,.97); border-top: 1px solid #e7e1d4;
+        box-shadow: 0 -8px 24px rgba(0, 61, 130, .1);
+    }
+    .progress-dock .pct { margin: 0; font-size: 1.45rem; min-width: 3.4rem; }
+    .progress-dock .bar-track { flex: 1; }
+    .progress-dock .rail-detail { margin: 0; white-space: nowrap; }
+    .has-dock { padding-bottom: 6.5rem; }
 </style>
 
-<div class="test-layout">
+<div class="test-layout{{ $mode === 'test' ? ' has-dock' : '' }}">
 <div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
@@ -122,8 +133,9 @@
         <div class="saved">Saved. You can close this page and come back later with the same WhatsApp number.</div>
     @endif
     @if(session('test_expired'))
-        <div class="err">This page was open for a long time, so the first send expired. Your answers are still saved. Press the button again.</div>
+        <div class="saved" id="expired-note">The page that was open expired before it could be sent. Reload this page if you still see the old list. Answers kept in this browser are saved when you press Start page 1.</div>
     @endif
+    <div class="saved" id="recovered-note" hidden></div>
     @if($errors->any())
         <div class="err">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
     @endif
@@ -132,7 +144,7 @@
         <section class="test-card field">
             <h2>Start a new test</h2>
             <p class="text-stone-600">Use the WhatsApp number where the result should be sent.</p>
-            <form method="POST" action="{{ route('system-test.start') }}">
+            <form method="POST" action="{{ route('system-test.start') }}" id="start-test">
                 @csrf
                 <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
                 <label for="tester_name">Your name</label>
@@ -257,6 +269,56 @@
     @endif
 </aside>
 </div>
+@if($mode === 'test')
+<div class="progress-dock" aria-live="polite">
+    <span class="pct" id="progress-fixed-pct">{{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%</span>
+    <div class="bar-track"><div class="bar-fill" id="bar-fill-fixed" style="width: {{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%"></div></div>
+    <span class="rail-detail" id="progress-fixed-detail">{{ $progress['answered'] }} of {{ $progress['total'] }}</span>
+</div>
+@endif
+<script>
+(function () {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem('cwacam-system-test') || 'null'); } catch (e) { saved = null; }
+    var start = document.getElementById('start-test');
+    if (start && saved && saved.checks) {
+        var count = 0;
+        Object.keys(saved.checks).forEach(function (field) {
+            if (!saved.checks[field]) return;
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field;
+            input.value = saved.checks[field];
+            start.appendChild(input);
+            count++;
+        });
+        Object.keys(saved.notes || {}).forEach(function (field) {
+            if (!saved.notes[field]) return;
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field;
+            input.value = saved.notes[field];
+            start.appendChild(input);
+        });
+        if (saved.summary) {
+            var summary = document.createElement('input');
+            summary.type = 'hidden';
+            summary.name = 'summary';
+            summary.value = saved.summary;
+            start.appendChild(summary);
+        }
+        var name = document.getElementById('tester_name');
+        var phone = document.getElementById('tester_phone');
+        if (name && !name.value && saved.name) name.value = saved.name;
+        if (phone && !phone.value && saved.phone) phone.value = saved.phone;
+        var note = document.getElementById('recovered-note');
+        if (note && count) {
+            note.hidden = false;
+            note.textContent = 'Found ' + count + ' answers from the page that expired' + (saved.name ? ' for ' + saved.name : '') + '. Press Start page 1 and they will be kept. You continue at the first question that still needs an answer.';
+        }
+    }
+})();
+</script>
 <script>
 (function () {
     var form = document.getElementById('system-test');
@@ -287,9 +349,17 @@
         });
         var answered = elsewhere + pageAnswered;
         var percent = total ? Math.round(answered / total * 100) : 0;
-        if (pct) pct.textContent = percent + '%';
+        var label = percent + '%';
+        var detail = answered + ' of ' + total + ' answered';
+        if (pct) pct.textContent = label;
         if (bar) bar.style.width = percent + '%';
-        if (out) out.textContent = answered + ' of ' + total + ' answered';
+        if (out) out.textContent = detail;
+        var fixedPct = document.getElementById('progress-fixed-pct');
+        var fixedBar = document.getElementById('bar-fill-fixed');
+        var fixedDetail = document.getElementById('progress-fixed-detail');
+        if (fixedPct) fixedPct.textContent = label;
+        if (fixedBar) fixedBar.style.width = percent + '%';
+        if (fixedDetail) fixedDetail.textContent = answered + ' of ' + total;
         var next = document.getElementById('next-page');
         var send = document.getElementById('send-result');
         if (next) next.disabled = pageAnswered < pageCount;

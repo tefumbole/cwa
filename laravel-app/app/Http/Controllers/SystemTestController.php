@@ -84,10 +84,12 @@ class SystemTestController extends Controller
             ]);
         }
 
-        SystemTestDraft::put($phone, SystemTestDraft::blank($name, $phone));
+        $draft = $this->mergeAnywhere(SystemTestDraft::blank($name, $phone), $request);
+        $draft['page'] = $this->firstIncompletePage($this->pages(), $draft);
+        SystemTestDraft::put($phone, $draft);
         session(['system_test_phone' => $phone]);
 
-        return redirect()->route('system-test.show', ['page' => 1]);
+        return redirect()->route('system-test.show', ['page' => $draft['page']]);
     }
 
     public function resume(Request $request)
@@ -187,7 +189,7 @@ class SystemTestController extends Controller
         $pages = $this->pages();
         $pageCount = count($pages);
         $page = max(1, min($pageCount, (int) $request->input('page', 1)));
-        $draft = $this->mergePage($draft, $pages[$page - 1], $request);
+        $draft = $this->mergeAnywhere($this->mergePage($draft, $pages[$page - 1], $request), $request);
         $draft['page'] = $page;
         $action = (string) $request->input('action', 'later');
         if ($request->filled('goto')) {
@@ -524,6 +526,31 @@ class SystemTestController extends Controller
             'pages' => $pageStats,
             'offsets' => $offsets,
         ];
+    }
+
+    protected function mergeAnywhere(array $draft, Request $request)
+    {
+        $known = array_keys(SystemTestGuide::checkMap());
+        $checks = (array) ($draft['checks'] ?? []);
+        $notes = (array) ($draft['notes'] ?? []);
+        $posted = (array) $request->input('checks', []);
+        $postedNotes = (array) $request->input('notes', []);
+        foreach ($known as $id) {
+            if (isset($posted[$id]) && in_array($posted[$id], ['works', 'fails', 'skipped'], true)) {
+                $checks[$id] = $posted[$id];
+            }
+            if (array_key_exists($id, $postedNotes) && trim((string) $postedNotes[$id]) !== '') {
+                $notes[$id] = trim(mb_substr((string) $postedNotes[$id], 0, 500));
+            }
+        }
+        $draft['checks'] = $checks;
+        $draft['notes'] = $notes;
+        $summary = trim((string) $request->input('summary'));
+        if ($summary !== '') {
+            $draft['summary'] = mb_substr($summary, 0, 5000);
+        }
+
+        return $draft;
     }
 
     protected function mergePage(array $draft, array $page, Request $request)
