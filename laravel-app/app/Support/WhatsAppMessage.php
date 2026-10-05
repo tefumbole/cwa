@@ -534,6 +534,7 @@ class WhatsAppMessage
             'reset' => 'Password reset',
             'register' => 'Account registration',
             'verify' => 'Account verification',
+            'system test' => 'Continue a saved system test',
         ];
 
         return $map[$key] ?? ($purpose ? ucwords(str_replace('_', ' ', (string) $purpose)) : 'Login verification');

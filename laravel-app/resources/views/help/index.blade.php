@@ -41,7 +41,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <strong>Send this link to the person who will test</strong>
-                <p class="mb-2">The page starts with instructions, then the checks. When they submit, the result goes to their WhatsApp number and a copy goes to the administrator. Reports are listed under <a href="{{ route('system-test.index') }}">Test results</a>.</p>
+                <p class="mb-2">The test is split into pages. They save each page and can come back later by confirming their WhatsApp number. The result can be sent only after every question is answered. It goes to their WhatsApp number and a copy goes to the administrator. Reports are listed under <a href="{{ route('system-test.index') }}">Test results</a>.</p>
                 <p class="mb-0"><a href="{{ route('system-test.show') }}" target="_blank">{{ route('system-test.show') }}</a></p>
             </div>
         </div>

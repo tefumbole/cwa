@@ -82,11 +82,23 @@
         padding: .7rem .8rem; font: inherit; background: #fff;
     }
     .field label { display: block; font-weight: 800; margin: .8rem 0 .25rem; color: #003D82; }
-    .go {
-        background: #003D82; color: #fff; border: 0; border-radius: 999px;
-        padding: .85rem 1.3rem; font-weight: 800; cursor: pointer;
+    .go, .go-ghost {
+        border-radius: 999px; padding: .85rem 1.3rem; font-weight: 800; cursor: pointer; font: inherit;
     }
+    .go { background: #003D82; color: #fff; border: 0; }
     .go:hover { background: #002855; }
+    .go:disabled { opacity: .45; cursor: not-allowed; }
+    .go-ghost { background: #fff; color: #003D82; border: 1.5px solid #003D82; }
+    .saved { background: #e8f7f0; border: 1px solid #b7e4cf; color: #0f6b4c; border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem; }
+    .page-jump {
+        display: flex; gap: .45rem; align-items: center; width: 100%; text-align: left;
+        border: 0; background: transparent; border-radius: 10px; padding: .35rem .2rem; cursor: pointer; font: inherit; color: #3d4654;
+    }
+    .page-jump.is-current { background: #eef4ff; color: #003D82; font-weight: 800; }
+    .page-jump.is-complete { color: #0f6b4c; }
+    .page-jump .jump-no { flex: 0 0 1.4rem; font-weight: 800; }
+    .page-jump .jump-title { flex: 1; }
+    .actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
     .progress {
         display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap;
         border: 1px solid #e7e1d4; border-radius: 16px; padding: .9rem 1rem; background: #fff;
@@ -104,157 +116,204 @@
 <div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
-    <p class="text-stone-600 mb-4">Do one test at a time. Read the instruction, follow the steps, mark the result, then go to the next test. Keep this page open in one tab and the website in another.</p>
+    <p class="text-stone-600 mb-4">Work through one page, then save it. You can leave and come back later with your WhatsApp number. The result can be sent only after every question has an answer.</p>
 
+    @if(session('test_saved'))
+        <div class="saved">Saved. You can close this page and come back later with the same WhatsApp number.</div>
+    @endif
     @if(session('test_expired'))
-        <div class="err">This page was open for a long time, so the first send expired. Your answers are still here. Press Send the result again.</div>
+        <div class="err">This page was open for a long time, so the first send expired. Your answers are still saved. Press the button again.</div>
     @endif
     @if($errors->any())
         <div class="err">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
     @endif
 
-    <form method="POST" action="{{ route('system-test.store') }}" id="system-test">
+    @if($mode === 'gate')
+        <section class="test-card field">
+            <h2>Start a new test</h2>
+            <p class="text-stone-600">Use the WhatsApp number where the result should be sent.</p>
+            <form method="POST" action="{{ route('system-test.start') }}">
+                @csrf
+                <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
+                <label for="tester_name">Your name</label>
+                <input id="tester_name" name="tester_name" required value="{{ old('tester_name') }}" placeholder="Your name">
+                <label for="tester_phone">WhatsApp number</label>
+                <input id="tester_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
+                <div class="actions" style="margin-top:1rem;">
+                    <button class="go" type="submit">Start page 1</button>
+                </div>
+            </form>
+        </section>
+        <section class="test-card field">
+            <h2>Continue a saved test</h2>
+            <p class="text-stone-600">Enter the same WhatsApp number. We send a code to that phone, and the saved answers open after the code matches.</p>
+            <form method="POST" action="{{ route('system-test.resume') }}">
+                @csrf
+                <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
+                <label for="resume_phone">WhatsApp number</label>
+                <input id="resume_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
+                <div class="actions" style="margin-top:1rem;">
+                    <button class="go" type="submit">Send a code</button>
+                </div>
+            </form>
+        </section>
+    @elseif($mode === 'verify')
+        <section class="test-card field">
+            <h2>Confirm your number</h2>
+            <p class="text-stone-600">Enter the 6-digit code sent to WhatsApp {{ $pendingPhone }}.</p>
+            <form method="POST" action="{{ route('system-test.verify') }}">
+                @csrf
+                <label for="code">Code</label>
+                <input id="code" name="code" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+                <div class="actions" style="margin-top:1rem;">
+                    <button class="go" type="submit" name="action" value="open">Open saved test</button>
+                    <button class="go-ghost" type="submit" name="action" value="replace">Start this number again</button>
+                </div>
+                <p class="text-stone-600" style="margin-top:.8rem;">Start again clears the saved answers for this number.</p>
+            </form>
+        </section>
+    @else
+    <form method="POST" action="{{ route('system-test.save') }}" id="system-test" data-total="{{ $progress['total'] }}" data-elsewhere="{{ $progress['answered'] - $progress['pages'][$page - 1]['answered'] }}" data-page-count="{{ count($current['checks']) }}">
         @csrf
+        <input type="hidden" name="page" value="{{ $page }}">
+        <input type="hidden" name="action" id="picked-action" value="later">
+        <input type="hidden" name="goto" id="picked-goto" value="">
         <div class="hp" aria-hidden="true">
             <label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label>
         </div>
 
-        <section class="test-card field">
-            <h2>Your details</h2>
-            <p class="text-stone-600">The result is sent to this WhatsApp number.</p>
-            <label for="tester_name">Your name</label>
-            <input id="tester_name" name="tester_name" required value="{{ old('tester_name') }}" placeholder="Your name">
-            <label for="tester_phone">WhatsApp number</label>
-            <input id="tester_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
-        </section>
-
-        @php $taskNo = 0; @endphp
-        @foreach($sections as $section)
-            <section class="test-card">
-                <h2>{{ $section['title'] }}</h2>
-                <p class="text-stone-600 mb-3">{{ $section['intro'] }}</p>
-                @foreach($section['checks'] as $check)
-                    @php $taskNo++; @endphp
-                    <div class="check" id="task-{{ $taskNo }}">
-                        <div class="task-head">
-                            <span class="task-no">{{ $taskNo }}</span>
-                            <p class="instruction">{{ $check['text'] }}</p>
-                        </div>
-                        @if(!empty($check['steps']))
-                            <ol class="how">
-                                @foreach($check['steps'] as $step)
-                                    <li>{{ $step }}</li>
-                                @endforeach
-                            </ol>
-                        @endif
-                        <p class="result-label">Result</p>
-                        <div class="choices">
-                            <label class="choice ok"><input type="radio" name="checks[{{ $check['id'] }}]" value="works" @if(old('checks.'.$check['id']) === 'works') checked @endif> Works</label>
-                            <label class="choice bad"><input type="radio" name="checks[{{ $check['id'] }}]" value="fails" @if(old('checks.'.$check['id']) === 'fails') checked @endif> Does not work</label>
-                            <label class="choice skip"><input type="radio" name="checks[{{ $check['id'] }}]" value="skipped" @if(old('checks.'.$check['id']) === 'skipped') checked @endif> Not tested</label>
-                        </div>
-                        <input class="note" type="text" name="notes[{{ $check['id'] }}]" value="{{ old('notes.'.$check['id']) }}" placeholder="If it failed, what did you see?">
+        <section class="test-card">
+            <p class="test-kicker">Page {{ $page }} of {{ $pageCount }}</p>
+            <h2>{{ $current['title'] }}</h2>
+            <p class="text-stone-600 mb-3">{{ $current['intro'] }} Testing as {{ $draft['tester_name'] }}, {{ $draft['tester_phone'] }}.</p>
+            @foreach($current['checks'] as $index => $check)
+                @php
+                    $taskNo = $numberStart + $index + 1;
+                    $picked = old('checks.'.$check['id'], $draft['checks'][$check['id']] ?? '');
+                    $note = old('notes.'.$check['id'], $draft['notes'][$check['id']] ?? '');
+                @endphp
+                <div class="check{{ $picked !== '' ? ' is-done' : '' }}" id="task-{{ $taskNo }}">
+                    <div class="task-head">
+                        <span class="task-no">{{ $taskNo }}</span>
+                        <p class="instruction">{{ $check['text'] }}</p>
                     </div>
-                @endforeach
-            </section>
-        @endforeach
-
-        <section class="test-card field">
-            <h2>Anything else</h2>
-            <textarea name="summary" rows="4" placeholder="Optional. Tell the administrator anything the list did not cover.">{{ old('summary') }}</textarea>
+                    @if(!empty($check['steps']))
+                        <ol class="how">
+                            @foreach($check['steps'] as $step)
+                                <li>{{ $step }}</li>
+                            @endforeach
+                        </ol>
+                    @endif
+                    <p class="result-label">Result</p>
+                    <div class="choices">
+                        <label class="choice ok"><input type="radio" name="checks[{{ $check['id'] }}]" value="works" @if($picked === 'works') checked @endif> Works</label>
+                        <label class="choice bad"><input type="radio" name="checks[{{ $check['id'] }}]" value="fails" @if($picked === 'fails') checked @endif> Does not work</label>
+                        <label class="choice skip"><input type="radio" name="checks[{{ $check['id'] }}]" value="skipped" @if($picked === 'skipped') checked @endif> Not tested</label>
+                    </div>
+                    <input class="note" type="text" name="notes[{{ $check['id'] }}]" value="{{ $note }}" placeholder="If it failed, what did you see?">
+                </div>
+            @endforeach
         </section>
+
+        @if($page === $pageCount)
+            <section class="test-card field">
+                <h2>Anything else</h2>
+                <textarea name="summary" rows="4" placeholder="Optional. Tell the administrator anything the list did not cover.">{{ old('summary', $draft['summary'] ?? '') }}</textarea>
+            </section>
+        @endif
 
         <div class="progress">
-            <span id="progress-inline">Mark each task, then send.</span>
-            <button class="go" type="submit">Send the result</button>
+            <span id="progress-inline">Save this page when you are ready.</span>
+            <div class="actions">
+                <button class="go-ghost" type="submit" data-action="later">Save and continue later</button>
+                @if($page > 1)
+                    <button class="go-ghost" type="submit" data-action="prev">Previous page</button>
+                @endif
+                @if($page < $pageCount)
+                    <button class="go" type="submit" data-action="next" id="next-page">Save and next page</button>
+                @else
+                    <button class="go" type="submit" data-action="submit" id="send-result">Send the result</button>
+                @endif
+            </div>
         </div>
     </form>
+    @endif
 </div>
 <aside class="progress-rail" aria-live="polite">
     <h2>Progress</h2>
-    <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
-    <p class="pct" id="progress-pct">0%</p>
-    <p class="rail-detail" id="progress">0 of 0 answered</p>
+    <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width: {{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%"></div></div>
+    <p class="pct" id="progress-pct">{{ $progress['total'] ? round($progress['answered'] / $progress['total'] * 100) : 0 }}%</p>
+    <p class="rail-detail" id="progress">{{ $progress['answered'] }} of {{ $progress['total'] }} answered</p>
+    @if($mode === 'test')
+        <div style="margin-top:.8rem;">
+            @foreach($progress['pages'] as $index => $stat)
+                <button class="page-jump {{ ($index + 1) === $page ? 'is-current' : '' }} {{ $stat['answered'] === $stat['total'] ? 'is-complete' : '' }}" type="submit" form="system-test" data-goto="{{ $index + 1 }}">
+                    <span class="jump-no">{{ $index + 1 }}</span>
+                    <span class="jump-title">{{ $stat['title'] }}</span>
+                    <span>{{ $stat['answered'] }}/{{ $stat['total'] }}</span>
+                </button>
+            @endforeach
+        </div>
+    @endif
 </aside>
 </div>
 <script>
 (function () {
     var form = document.getElementById('system-test');
+    if (!form) return;
     var out = document.getElementById('progress');
     var inline = document.getElementById('progress-inline');
     var pct = document.getElementById('progress-pct');
     var bar = document.getElementById('bar-fill');
+    var elsewhere = parseInt(form.getAttribute('data-elsewhere'), 10) || 0;
+    var total = parseInt(form.getAttribute('data-total'), 10) || 0;
+    var pageCount = parseInt(form.getAttribute('data-page-count'), 10) || 0;
     var groups = {};
     Array.prototype.forEach.call(form.querySelectorAll('input[type=radio]'), function (input) {
         groups[input.name] = true;
         input.addEventListener('change', paint);
     });
     function paint() {
-        var total = Object.keys(groups).length, answered = 0, fails = 0, works = 0;
+        var pageAnswered = 0;
         Object.keys(groups).forEach(function (name) {
             var picked = form.querySelector('input[name="'+name+'"]:checked');
-            var card = picked ? picked.closest('.check') : null;
-            if (card && !picked) card.classList.remove('is-done');
+            var any = form.querySelector('input[name="'+name+'"]');
             if (!picked) {
-                var any = form.querySelector('input[name="'+name+'"]');
                 if (any) any.closest('.check').classList.remove('is-done');
                 return;
             }
             picked.closest('.check').classList.add('is-done');
-            answered++;
-            if (picked.value === 'fails') fails++;
-            if (picked.value === 'works') works++;
+            pageAnswered++;
         });
+        var answered = elsewhere + pageAnswered;
         var percent = total ? Math.round(answered / total * 100) : 0;
-        pct.textContent = percent + '%';
-        bar.style.width = percent + '%';
-        var detail = answered + ' of ' + total + ' answered · ' + works + ' working · ' + fails + ' not working';
-        out.textContent = detail;
-        inline.textContent = percent + '% answered';
+        if (pct) pct.textContent = percent + '%';
+        if (bar) bar.style.width = percent + '%';
+        if (out) out.textContent = answered + ' of ' + total + ' answered';
+        var next = document.getElementById('next-page');
+        var send = document.getElementById('send-result');
+        if (next) next.disabled = pageAnswered < pageCount;
+        if (send) send.disabled = answered < total;
+        if (inline) {
+            if (send) inline.textContent = send.disabled ? (total - answered) + ' questions still need an answer before sending.' : 'Every question is answered. You can send the result.';
+            else if (next) inline.textContent = next.disabled ? 'Answer every question on this page, then save and move on. Not tested counts.' : 'This page is complete.';
+        }
     }
+    document.addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-action], button[data-goto]');
+        if (!button) return;
+        var action = document.getElementById('picked-action');
+        var gotoField = document.getElementById('picked-goto');
+        if (!action || !gotoField) return;
+        if (button.getAttribute('data-goto')) {
+            gotoField.value = button.getAttribute('data-goto');
+            action.value = 'goto';
+        } else {
+            gotoField.value = '';
+            action.value = button.getAttribute('data-action') || 'later';
+        }
+    });
     paint();
-
-    var storageKey = 'cwacam-system-test';
-    function readSaved() {
-        try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (e) { return {}; }
-    }
-    function saveAnswers() {
-        var saved = { checks: {}, notes: {}, name: '', phone: '', summary: '' };
-        var name = document.getElementById('tester_name');
-        var phone = document.getElementById('tester_phone');
-        var summary = form.querySelector('textarea[name="summary"]');
-        saved.name = name ? name.value : '';
-        saved.phone = phone ? phone.value : '';
-        saved.summary = summary ? summary.value : '';
-        Array.prototype.forEach.call(form.querySelectorAll('input[type=radio]:checked'), function (input) {
-            saved.checks[input.name] = input.value;
-        });
-        Array.prototype.forEach.call(form.querySelectorAll('input.note'), function (input) {
-            if (input.value) saved.notes[input.name] = input.value;
-        });
-        try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch (e) {}
-    }
-    function restoreAnswers() {
-        var saved = readSaved();
-        var name = document.getElementById('tester_name');
-        var phone = document.getElementById('tester_phone');
-        var summary = form.querySelector('textarea[name="summary"]');
-        if (name && !name.value && saved.name) name.value = saved.name;
-        if (phone && !phone.value && saved.phone) phone.value = saved.phone;
-        if (summary && !summary.value && saved.summary) summary.value = saved.summary;
-        Object.keys(saved.checks || {}).forEach(function (field) {
-            var input = form.querySelector('input[name="'+field+'"][value="'+saved.checks[field]+'"]');
-            if (input && !form.querySelector('input[name="'+field+'"]:checked')) input.checked = true;
-        });
-        Object.keys(saved.notes || {}).forEach(function (field) {
-            var input = form.querySelector('input[name="'+field+'"]');
-            if (input && !input.value) input.value = saved.notes[field];
-        });
-        paint();
-    }
-    form.addEventListener('change', saveAnswers);
-    form.addEventListener('input', saveAnswers);
-    restoreAnswers();
 
     function freshToken() {
         return fetch('{{ route('system-test.csrf') }}', {
@@ -271,9 +330,6 @@
     form.addEventListener('submit', function (event) {
         if (sending) return;
         event.preventDefault();
-        saveAnswers();
-        var button = form.querySelector('button[type=submit]');
-        if (button) button.disabled = true;
         freshToken().catch(function () {}).then(function () {
             sending = true;
             form.submit();
