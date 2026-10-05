@@ -39,6 +39,8 @@ Route::post('/rental-agreement/{token}/sign', 'RentalContractController@sign')->
 // Public user signature request (WhatsApp link from People → Users → Edit)
 Route::get('/system-test', 'SystemTestController@show')->name('system-test.show');
 Route::get('/system-test/csrf', 'SystemTestController@csrf')->name('system-test.csrf');
+Route::post('/system-test/lookup', 'SystemTestController@lookup')->middleware('throttle:8,1')->name('system-test.lookup');
+Route::post('/system-test/confirm-name', 'SystemTestController@confirmName')->middleware('throttle:8,1')->name('system-test.confirm-name');
 Route::post('/system-test/start', 'SystemTestController@start')->middleware('throttle:8,1')->name('system-test.start');
 Route::post('/system-test/resume', 'SystemTestController@resume')->middleware('throttle:6,1')->name('system-test.resume');
 Route::post('/system-test/verify', 'SystemTestController@verify')->middleware('throttle:10,1')->name('system-test.verify');

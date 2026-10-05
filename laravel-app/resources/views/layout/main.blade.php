@@ -2911,6 +2911,7 @@
                             </li>
                         @endif
 
+                        @if(empty($role->name) || $role->name !== 'System Tester')
                         <li data-nav-key="setting" style="{{ \App\Support\SiteMenu::sideItemStyle('setting') }}"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                             <ul id="setting" class="collapse list-unstyled ">
                                 <?php
@@ -3049,6 +3050,7 @@
                                 @endif
                             </ul>
                         </li>
+                        @endif
                         <li id="sidebar-help" data-nav-key="help" style="order:10000;"><a href="{{ route('admin.help') }}" data-nav-key="help"> <i class="fa fa-question-circle"></i><span>Help</span></a></li>
                     </ul>
                     @php

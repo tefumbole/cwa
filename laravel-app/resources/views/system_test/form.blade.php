@@ -77,7 +77,7 @@
     .choice.ok:has(input:checked) { border-color: #0f6b4c; background: #e8f7f0; color: #0f6b4c; }
     .choice.bad:has(input:checked) { border-color: #8a1f1f; background: #fff1f1; color: #8a1f1f; }
     .choice.skip:has(input:checked) { border-color: #003D82; background: #eef4ff; color: #003D82; }
-    .note, .field input, .field textarea {
+    .note, .field input, .field textarea, .field select {
         width: 100%; margin-top: .55rem; border: 1px solid #e7e1d4; border-radius: 12px;
         padding: .7rem .8rem; font: inherit; background: #fff;
     }
@@ -127,13 +127,13 @@
 <div>
     <p class="test-kicker">CWACAM</p>
     <h1 class="text-3xl md:text-4xl text-brand-blue mb-2" style="font-family: Fraunces, Georgia, serif;">Test the website</h1>
-    <p class="text-stone-600 mb-4">Work through one page, then save it. You can leave and come back later with your WhatsApp number. The result can be sent only after every question has an answer.</p>
+    <p class="text-stone-600 mb-4">Choose your country and WhatsApp number. We look up your name, then send a code to that phone. After the code matches, the test opens and a login is sent on WhatsApp.</p>
 
     @if(session('test_saved'))
         <div class="saved">Saved. You can close this page and come back later with the same WhatsApp number.</div>
     @endif
     @if(session('test_expired'))
-        <div class="saved" id="expired-note">The page that was open expired before it could be sent. Reload this page if you still see the old list. Answers kept in this browser are saved when you press Start page 1.</div>
+        <div class="saved" id="expired-note">The page that was open expired before it could be sent. Reload this page if you still see the old list. Answers kept in this browser are saved when you press Continue.</div>
     @endif
     <div class="saved" id="recovered-note" hidden></div>
     @if($errors->any())
@@ -142,30 +142,44 @@
 
     @if($mode === 'gate')
         <section class="test-card field">
-            <h2>Start a new test</h2>
-            <p class="text-stone-600">Use the WhatsApp number where the result should be sent.</p>
-            <form method="POST" action="{{ route('system-test.start') }}" id="start-test">
+            <h2>Your WhatsApp number</h2>
+            <p class="text-stone-600">Cameroon is first, then Rwanda. Enter the number without the country code. The same number opens a saved test or starts a new one.</p>
+            <form method="POST" action="{{ route('system-test.lookup') }}" id="start-test">
                 @csrf
                 <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
-                <label for="tester_name">Your name</label>
-                <input id="tester_name" name="tester_name" required value="{{ old('tester_name') }}" placeholder="Your name">
-                <label for="tester_phone">WhatsApp number</label>
-                <input id="tester_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
+                <label for="country_code">Country</label>
+                <select id="country_code" name="country_code" required>
+                    @foreach(\App\Support\CountryDialCodes::all() as $code => $label)
+                        <option value="{{ $code }}" @if(old('country_code', '+237') === $code) selected @endif>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <label for="phone_local">Phone number</label>
+                <input id="phone_local" name="phone_local" required value="{{ old('phone_local') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
                 <div class="actions" style="margin-top:1rem;">
-                    <button class="go" type="submit">Start page 1</button>
+                    <button class="go" type="submit">Continue</button>
                 </div>
             </form>
         </section>
+    @elseif($mode === 'name')
         <section class="test-card field">
-            <h2>Continue a saved test</h2>
-            <p class="text-stone-600">Enter the same WhatsApp number. We send a code to that phone, and the saved answers open after the code matches.</p>
-            <form method="POST" action="{{ route('system-test.resume') }}">
+            <h2>Confirm your name</h2>
+            <p class="text-stone-600">
+                Number: <strong>{{ $lookupPhone }}</strong>.
+                @if($nameSource === 'campay')
+                    This name came from the mobile-money account. Change it if it is not yours.
+                @elseif($nameSource === 'whatsapp')
+                    This name came from WhatsApp. Change it if it is not yours.
+                @else
+                    No name was found for this number. Type the name to use.
+                @endif
+            </p>
+            <form method="POST" action="{{ route('system-test.confirm-name') }}">
                 @csrf
                 <div class="hp" aria-hidden="true"><label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label></div>
-                <label for="resume_phone">WhatsApp number</label>
-                <input id="resume_phone" name="tester_phone" required value="{{ old('tester_phone') }}" placeholder="675321739" inputmode="tel" autocomplete="tel">
+                <label for="tester_name">Name</label>
+                <input id="tester_name" name="tester_name" required value="{{ old('tester_name', $suggestedName) }}" placeholder="Your name">
                 <div class="actions" style="margin-top:1rem;">
-                    <button class="go" type="submit">Send a code</button>
+                    <button class="go" type="submit">Accept name and send code</button>
                 </div>
             </form>
         </section>
@@ -178,7 +192,7 @@
                 <label for="code">Code</label>
                 <input id="code" name="code" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
                 <div class="actions" style="margin-top:1rem;">
-                    <button class="go" type="submit" name="action" value="open">Open saved test</button>
+                    <button class="go" type="submit" name="action" value="open">Confirm and continue</button>
                     <button class="go-ghost" type="submit" name="action" value="replace">Start this number again</button>
                 </div>
                 <p class="text-stone-600" style="margin-top:.8rem;">Start again clears the saved answers for this number.</p>
@@ -194,6 +208,18 @@
             <label>Company website<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label>
         </div>
 
+        @if(session('test_login'))
+            <div class="saved">
+                @if(session('test_login.sent'))
+                    The login was sent on WhatsApp.
+                @else
+                    WhatsApp did not deliver the login, so it is shown here once.
+                @endif
+                Username <strong>{{ session('test_login.username') }}</strong>.
+                Password <strong>{{ session('test_login.password') }}</strong>.
+                Sign in at <a href="{{ url('/login') }}">cwacam.org/login</a>. Settings is not on this account.
+            </div>
+        @endif
         <section class="test-card">
             <p class="test-kicker">Page {{ $page }} of {{ $pageCount }}</p>
             <h2>{{ $current['title'] }}</h2>
@@ -307,14 +333,15 @@
             summary.value = saved.summary;
             start.appendChild(summary);
         }
-        var name = document.getElementById('tester_name');
-        var phone = document.getElementById('tester_phone');
-        if (name && !name.value && saved.name) name.value = saved.name;
-        if (phone && !phone.value && saved.phone) phone.value = saved.phone;
+        var phone = document.getElementById('phone_local');
+        if (phone && !phone.value && saved.phone) {
+            var digits = String(saved.phone).replace(/\D/g, '');
+            phone.value = digits.indexOf('237') === 0 ? digits.slice(3) : digits;
+        }
         var note = document.getElementById('recovered-note');
         if (note && count) {
             note.hidden = false;
-            note.textContent = 'Found ' + count + ' answers from the page that expired' + (saved.name ? ' for ' + saved.name : '') + '. Press Start page 1 and they will be kept. You continue at the first question that still needs an answer.';
+            note.textContent = 'Found ' + count + ' answers from the page that expired' + (saved.name ? ' for ' + saved.name : '') + '. Press Continue and they will be kept. You continue at the first question that still needs an answer.';
         }
     }
 })();

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\BeyondWasenderService;
+use App\Services\MobileMoneyHolderService;
+use App\Support\CountryDialCodes;
 use App\Support\SiteContent;
+use App\Support\SystemTestAccount;
 use App\Support\SystemTestDraft;
 use App\Support\SystemTestGuide;
 use App\Support\WhatsAppMessage;
@@ -24,6 +27,16 @@ class SystemTestController extends Controller
         if ($phone && ! $draft) {
             session()->forget('system_test_phone');
             $phone = null;
+        }
+
+        if ($request->query('step') === 'name' && session('system_test_lookup_phone')) {
+            return view('system_test.form', $this->viewData($pages, null, [
+                'mode' => 'name',
+                'lookupPhone' => session('system_test_lookup_phone'),
+                'suggestedName' => (string) session('system_test_lookup_name', ''),
+                'nameSource' => (string) session('system_test_lookup_source', ''),
+                'progress' => $this->progress($pages, ['checks' => []]),
+            ]));
         }
 
         $verifyPhone = session('system_test_pending_phone');
@@ -60,6 +73,108 @@ class SystemTestController extends Controller
     public function csrf()
     {
         return response()->json(['token' => csrf_token()]);
+    }
+
+    public function lookup(Request $request)
+    {
+        if ($this->honeypot($request)) {
+            return redirect()->route('system-test.show');
+        }
+
+        $code = (string) $request->input('country_code');
+        if (! isset(CountryDialCodes::all()[$code])) {
+            return redirect()->route('system-test.show')->withErrors([
+                'country_code' => 'Choose a country.',
+            ]);
+        }
+        $local = trim((string) $request->input('phone_local'));
+        if ($local === '') {
+            return redirect()->route('system-test.show')->withInput()->withErrors([
+                'phone_local' => 'Enter the phone number.',
+            ]);
+        }
+
+        try {
+            $phone = WhatsAppPhone::forWasender(CountryDialCodes::combine($code, $local));
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->route('system-test.show')->withInput()->withErrors([
+                'phone_local' => 'Enter a WhatsApp number without the country code, for example 675321739.',
+            ]);
+        }
+
+        $digits = preg_replace('/\D/', '', $code);
+        $name = '';
+        $source = '';
+        if ($digits === '237') {
+            $hit = app(MobileMoneyHolderService::class)->lookup(ltrim($phone, '+'));
+            $name = trim((string) ($hit['name'] ?? ''));
+            $source = $name !== '' ? 'campay' : '';
+        } else {
+            $name = trim((string) app(BeyondWasenderService::class)->getContactName($phone));
+            $source = $name !== '' ? 'whatsapp' : '';
+        }
+
+        session([
+            'system_test_lookup_phone' => $phone,
+            'system_test_lookup_name' => $name,
+            'system_test_lookup_source' => $source,
+            'system_test_recovered' => [
+                'checks' => $request->input('checks', []),
+                'notes' => $request->input('notes', []),
+                'summary' => $request->input('summary'),
+            ],
+        ]);
+
+        return redirect()->route('system-test.show', ['step' => 'name']);
+    }
+
+    public function confirmName(Request $request)
+    {
+        if ($this->honeypot($request)) {
+            return redirect()->route('system-test.show');
+        }
+
+        $phone = session('system_test_lookup_phone');
+        if (! $phone) {
+            return redirect()->route('system-test.show')->withErrors([
+                'phone_local' => 'Enter your phone number again.',
+            ]);
+        }
+        $name = trim((string) $request->input('tester_name'));
+        if ($name === '' || mb_strlen($name) > 120) {
+            return redirect()->route('system-test.show', ['step' => 'name'])->withInput()->withErrors([
+                'tester_name' => 'Enter the name to use for this test.',
+            ]);
+        }
+
+        $draft = SystemTestDraft::find($phone);
+        if (! $draft) {
+            $draft = SystemTestDraft::blank($name, $phone);
+            $recovered = session('system_test_recovered');
+            if (is_array($recovered)) {
+                $draft = $this->mergeAnywhere($draft, new Request($recovered));
+                $draft['page'] = $this->firstIncompletePage($this->pages(), $draft);
+            }
+        }
+        $draft['tester_name'] = $name;
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $draft['otp_hash'] = password_hash($code, PASSWORD_DEFAULT);
+        $draft['otp_expires'] = time() + 600;
+        $draft['otp_attempts'] = 0;
+        SystemTestDraft::put($phone, $draft);
+        session(['system_test_pending_phone' => $phone]);
+
+        $sent = app(BeyondWasenderService::class)->sendText(
+            $phone,
+            WhatsAppMessage::otpMessage($code, 'system test', 10)
+        );
+        if (empty($sent['success'])) {
+            return redirect()->route('system-test.show', ['step' => 'name'])->withErrors([
+                'tester_name' => 'The code could not be sent on WhatsApp. Check the number and try again.',
+            ]);
+        }
+
+        return redirect()->route('system-test.show', ['verify' => 1]);
     }
 
     public function start(Request $request)
@@ -166,10 +281,30 @@ class SystemTestController extends Controller
             $draft = SystemTestDraft::blank($draft['tester_name'], $phone);
         }
         SystemTestDraft::put($phone, $draft);
-        session()->forget('system_test_pending_phone');
+        session()->forget(['system_test_pending_phone', 'system_test_lookup_phone', 'system_test_lookup_name', 'system_test_lookup_source', 'system_test_recovered']);
         session(['system_test_phone' => $phone]);
 
-        return redirect()->route('system-test.show', ['page' => $draft['page'] ?? 1]);
+        $login = null;
+        try {
+            $login = SystemTestAccount::ensure($draft['tester_name'], $phone);
+        } catch (\Throwable $e) {
+            \Log::error('[system-test] tester account failed: '.$e->getMessage());
+        }
+
+        $redirect = redirect()->route('system-test.show', ['page' => $draft['page'] ?? 1]);
+        if ($login && ! empty($login['password'])) {
+            $sent = app(BeyondWasenderService::class)->sendText(
+                $phone,
+                $this->loginMessage($draft['tester_name'], $login['username'], $login['password'])
+            );
+            $redirect->with('test_login', [
+                'username' => $login['username'],
+                'password' => $login['password'],
+                'sent' => ! empty($sent['success']),
+            ]);
+        }
+
+        return $redirect;
     }
 
     public function save(Request $request)
@@ -461,6 +596,20 @@ class SystemTestController extends Controller
         return $msg;
     }
 
+    protected function loginMessage($name, $username, $password)
+    {
+        $msg = WhatsAppMessage::statusBlock('🔐', 'Test login');
+        $msg .= WhatsAppMessage::greeting($name);
+        $msg .= "Your CWACAM test account is ready. Use it to sign in while you test the website.\n";
+        $msg .= WhatsAppMessage::bullet('Username', $username);
+        $msg .= WhatsAppMessage::bullet('Password', $password);
+        $msg .= WhatsAppMessage::actionLink('Login', url('/login'));
+        $msg .= "\nSettings is not included on this account.\n";
+        $msg .= WhatsAppMessage::footer();
+
+        return $msg;
+    }
+
     protected function pages()
     {
         $pages = [];
@@ -497,6 +646,9 @@ class SystemTestController extends Controller
             'progress' => ['answered' => 0, 'total' => 0, 'pages' => [], 'offsets' => []],
             'numberStart' => 0,
             'pendingPhone' => '',
+            'lookupPhone' => '',
+            'suggestedName' => '',
+            'nameSource' => '',
         ];
 
         return array_merge($data, $extra);
