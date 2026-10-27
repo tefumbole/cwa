@@ -99,7 +99,46 @@ class BeyondController extends Controller
 
     public function speech()
     {
-        return view('beyond.speech');
+        return view('beyond.speech', $this->speechPayload());
+    }
+
+    public function speechPdf()
+    {
+        $payload = $this->speechPayload();
+        $payload['use_system_letterhead'] = true;
+        $payload['letterhead_flow'] = true;
+        $name = app()->getLocale() === 'fr'
+            ? 'Discours-60e-anniversaire-CWA.pdf'
+            : 'CWA-60th-Anniversary-Speech.pdf';
+
+        return \PDF::loadView('pdf.speech_pdf', $payload)
+            ->setPaper('A4', 'portrait')
+            ->download($name);
+    }
+
+    protected function speechPayload()
+    {
+        $president = \App\User::query()
+            ->where('name', 'like', '%Edith Tanyi%')
+            ->where(function ($q) {
+                $q->where('is_deleted', false)->orWhereNull('is_deleted');
+            })
+            ->orderBy('id')
+            ->first();
+        $signPath = null;
+        $signUrl = null;
+        if ($president && $president->sign) {
+            $signPath = \App\Support\LetterSignature::userImagePath($president->sign);
+            if ($signPath) {
+                $signUrl = url('public/images/user/'.$president->sign);
+            }
+        }
+
+        return [
+            'portraitUrl' => url('public/branding/edith-tanyi.jpg'),
+            'signPath' => $signPath,
+            'signUrl' => $signUrl,
+        ];
     }
 
     public function contact()

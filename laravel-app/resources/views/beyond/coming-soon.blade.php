@@ -617,7 +617,7 @@
             <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
         @endforeach
         <div class="lp-drawer-cta">
-            <a class="is-join" href="{{ route('beyond.membership') }}">{{ __('cwa.nav.join') }}</a>
+            <a class="is-join" href="{{ route('beyond.membership') }}">{{ \App\Support\SiteContent::text('home.join', __('cwa.nav.join')) }}</a>
             <a class="is-give" href="{{ route('beyond.donate') }}">{{ __('cwa.nav.donate') }}</a>
         </div>
         <a href="{{ url('/documents') }}">{{ __('cwa.nav.resources') }}</a>
@@ -637,7 +637,7 @@
             <div class="lp-btns">
                 <a class="lp-btn gold" href="{{ route('beyond.membership') }}">
                     <i data-lucide="heart" class="w-4 h-4"></i>
-                    {{ __('cwa.nav.join') }} →
+                    {{ \App\Support\SiteContent::text('home.join', __('cwa.nav.join')) }} →
                 </a>
             </div>
 
@@ -658,7 +658,7 @@
                         </div>
                     @endforeach
                 </div>
-                <a class="lp-speech" href="{{ route('beyond.speech') }}">{{ __('cwa.home.speech_link') }}</a>
+                <a class="lp-speech" href="{{ route('beyond.speech') }}">{{ \App\Support\SiteContent::text('home.speech_link', __('cwa.home.speech_link')) }}</a>
             </div>
         </div>
 

@@ -212,7 +212,7 @@
                     @if($tab === 'contact')
                         <p class="text-info" style="font-size:13px;"><i class="dripicons-information"></i> Contact details and the message form now appear on the <strong>About Us</strong> page (<code>#contact</code> section). Edit the fields below to update that section.</p>
                     @elseif($tab === 'home')
-                        <p class="text-muted" style="font-size:13px;">These fields are the words on the public homepage. Vision and Mission text are edited on the About tab. Save, then refresh the homepage.</p>
+                        <p class="text-muted" style="font-size:13px;">These fields are the words on the public homepage, including the speech button. Vision and Mission text are edited on the About tab. Save, then refresh the homepage.</p>
                     @elseif($tab === 'about')
                         <p class="text-muted" style="font-size:13px;">These fields are the words on the About Us page, including the motto and the leadership heading. Leader photos are managed under About Us Leaders.</p>
                     @elseif($tab === 'branches')

@@ -443,7 +443,8 @@ return [
         'title' => 'Discours du 60e anniversaire',
         'meta' => 'Message d\'Edith Tanyi, Présidente générale de la CWA Cameroun, pour le 60e anniversaire.',
         'kicker' => 'Message de la Présidente générale',
-        'translate' => 'Langue',
+        'download' => 'Télécharger',
+        'date' => '27 OCT. 2026',
         'sections' => [
             [
                 'icon' => 'book-open',
