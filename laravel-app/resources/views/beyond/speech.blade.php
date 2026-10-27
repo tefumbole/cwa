@@ -7,13 +7,7 @@
 <div class="speech-page">
     <div class="speech-wrap">
         <p class="speech-kicker">{{ __('cwa.speech.kicker') }}</p>
-        <div class="speech-head">
-            <h1>{{ __('cwa.speech.title') }}</h1>
-            <div class="speech-lang">
-                <span>{{ __('cwa.speech.translate') }}</span>
-                @include('beyond.partials.lang_switch', ['variant' => 'light'])
-            </div>
-        </div>
+        <h1 class="speech-title">{{ __('cwa.speech.title') }}</h1>
 
         <div class="speech-cards">
             @foreach (__('cwa.speech.sections') as $index => $section)
@@ -63,38 +57,13 @@
         font-size: 0.72rem;
         font-weight: 800;
     }
-    .speech-head {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.4rem;
-    }
-    .speech-head h1 {
-        margin: 0;
+    .speech-title {
+        margin: 0 0 1.4rem;
         color: #003D82;
         font-family: Fraunces, Georgia, serif;
         font-size: clamp(1.8rem, 4vw, 2.6rem);
         line-height: 1.1;
         font-weight: 700;
-    }
-    .speech-lang {
-        display: flex;
-        align-items: center;
-        gap: 0.55rem;
-        padding: 0.4rem 0.55rem 0.4rem 0.8rem;
-        border-radius: 999px;
-        background: #fff;
-        border: 1px solid rgba(0, 61, 130, 0.12);
-        box-shadow: 0 8px 20px rgba(0, 40, 85, 0.06);
-    }
-    .speech-lang > span {
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #003D82;
     }
     .speech-cards { display: grid; gap: 0.9rem; }
     .speech-card {

@@ -325,15 +325,13 @@
         display: flex;
         align-items: center;
         gap: 1.1rem;
-        margin-top: 1.7rem;
-        padding: 0.85rem 1.15rem 0.95rem;
+        margin-top: 1.15rem;
+        padding: 0;
         width: max-content;
         max-width: calc(100vw - 3rem);
-        border-radius: 1.35rem;
-        background: rgba(6, 18, 42, 0.72);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
     }
     .lp-rings {
         display: flex;
@@ -381,7 +379,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.45rem;
-        margin-left: 0.35rem;
+        margin-left: 0;
         padding: 0.72rem 1.15rem;
         border-radius: 999px;
         background: var(--gold);
