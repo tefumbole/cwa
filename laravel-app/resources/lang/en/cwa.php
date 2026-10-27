@@ -56,6 +56,7 @@ return [
         'headline_em' => 'A New Home is on the Way',
         'sub' => 'A legacy of faith, service and sisterhood.<br>We are preparing the official CWACAM site.<br>The launch countdown is running to 15 October 2026.',
         'quote' => 'For such a time as this, together we build.',
+        'quote_cite' => 'Matthew 5:16',
         'watch' => 'Watch Our Story',
         'days' => 'Days',
         'hours' => 'Hours',

@@ -105,6 +105,7 @@ class SiteContent
                     'headline_em'        => ['text', 'Headline, second line', 'A New Home is on the Way'],
                     'sub'                => ['html', 'Intro under the headline (HTML allowed)', 'A legacy of faith, service and sisterhood.<br>We are preparing the official CWACAM site.<br>The launch countdown is running to 15 October 2026.'],
                     'quote'              => ['text', 'Quote', 'For such a time as this, together we build.'],
+                    'quote_cite'         => ['text', 'Quote credit', 'Matthew 5:16'],
                     'join'               => ['text', 'Join button', 'Join CWA'],
                     'speech_link'        => ['text', 'Speech button', '60th Anniversary Speech'],
                     'credo_title'        => ['text', 'Right panel title', 'CWA Cameroon'],

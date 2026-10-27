@@ -632,7 +632,7 @@
             <p class="lp-sub">{!! $homeSub !!}</p>
             <blockquote class="lp-quote">
                 “{{ $homeQuote }}”
-                <cite>– CWACAM</cite>
+                <cite>– {{ \App\Support\SiteContent::text('home.quote_cite', __('cwa.home.quote_cite')) }}</cite>
             </blockquote>
             <div class="lp-btns">
                 <a class="lp-btn gold" href="{{ route('beyond.membership') }}">

@@ -56,6 +56,7 @@ return [
         'headline_em' => 'Un nouveau foyer est en chemin',
         'sub' => 'Un héritage de foi, de service et de sororité.<br>Nous préparons le site officiel de la CWACAM.<br>Le compte à rebours court jusqu\'au 15 octobre 2026.',
         'quote' => 'Pour un temps comme celui-ci, nous bâtissons ensemble.',
+        'quote_cite' => 'Matthieu 5:16',
         'watch' => 'Voir notre histoire',
         'days' => 'Jours',
         'hours' => 'Heures',
