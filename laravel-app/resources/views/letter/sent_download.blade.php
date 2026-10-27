@@ -77,14 +77,8 @@
                                         <li>
                                             <a href="{{ route('letter.approve', $item->id) }}" class="btn btn-link"><i class="fa fa-check"></i> {{trans('file.Approve')}}</a>
                                         </li>
-                                    @if(in_array("letter_delete", $all_permission))
-                                        {{ Form::open(['route' => ['letter.destroy', $item->id], 'method' => 'DELETE'] ) }}
-                                        <li>
-                                            <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.delete')}}</button>
-                                        </li>
-                                        {{ Form::close() }}
-                                    @endif
                                 @endif
+                                @include('letter.partials.delete_action')
                                 @if(in_array("letter_send", $all_permission))
                                     <li>
                                         <a href="{{ route('letter.send.download', $item->id) }}" class="btn btn-link"><i class="fa fa-download"></i> Download</a>

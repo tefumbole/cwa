@@ -79,14 +79,6 @@
                                         </li>
                                         <li class="divider"></li>
                                     @endif
-                                    @if(in_array("letter_delete", $all_permission))
-
-                                        {{ Form::open(['route' => ['letter.destroy', $item->id], 'method' => 'DELETE'] ) }}
-                                        <li>
-                                            <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.delete')}}</button>
-                                        </li>
-                                        {{ Form::close() }}
-                                    @endif
                                     @if(in_array("letter_approve", $all_permission))
                                         <li>
                                             <a href="{{ route('letter.approve', $item->id) }}" class="btn btn-link"><i class="fa fa-check"></i> {{trans('file.Approve')}}</a>
@@ -121,6 +113,7 @@
                                         </li>
                                     @endif
                                 @endif
+                                @include('letter.partials.delete_action')
                             </ul>
                         </div>
                     </td>

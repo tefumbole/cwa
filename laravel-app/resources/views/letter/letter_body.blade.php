@@ -89,13 +89,16 @@
         <br>
     @endforeach
 @endif
-{{--@if($general_setting->invoice_format != 'beyond_a4')--}}
+@php
+    $systemLetterhead = \App\Support\Letterhead::resolve($general_setting ?? null);
+@endphp
+@if(!empty($systemLetterhead['header_url']))
+    <img src="{{ $systemLetterhead['header_url'] }}" alt="" style="width:100%;max-height:130px;object-fit:contain;display:block;margin:0 0 14px;">
+@elseif($general_setting->site_logo)
     <div class="align-items-center-logo">
-        @if($general_setting->site_logo)
-            <img src="{{url('public/logo/', $general_setting->site_logo)}}" height="150" width="150" style="margin:10px 0;">
-        @endif
+        <img src="{{url('public/logo/', $general_setting->site_logo)}}" height="150" width="150" style="margin:10px 0;">
     </div>
-{{--@endif--}}
+@endif
 
 @php
     use App\Support\LetterSignature;
@@ -239,6 +242,9 @@
     </div>
 @endif
 </div>
+@if(!empty($systemLetterhead['footer_url']))
+    <img src="{{ $systemLetterhead['footer_url'] }}" alt="" style="width:100%;max-height:90px;object-fit:contain;display:block;margin-top:18px;">
+@endif
 @if($data->comment)
     <p class="small text-muted mt-2">Internal comment: {{ $data->comment }}</p>
 @endif

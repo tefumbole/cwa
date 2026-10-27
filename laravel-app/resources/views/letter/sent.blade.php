@@ -97,6 +97,7 @@
                                         <a href="{{ route('letter.send.print', $item->id) }}" class="btn btn-link"><i class="fa fa-print"></i> Print</a>
                                     </li>
                                 @endif
+                                @include('letter.partials.delete_action')
                             </ul>
                         </div>
                     </td>

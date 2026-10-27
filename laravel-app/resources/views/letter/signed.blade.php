@@ -81,6 +81,7 @@
                                     </li>
                                 @endif
                                 @endif
+                                @include('letter.partials.delete_action')
                             </ul>
                         </div>
                     </td>

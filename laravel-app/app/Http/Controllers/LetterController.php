@@ -1653,7 +1653,7 @@ class LetterController extends Controller
         $data = Letter::find($id);
         $data->is_active = false;
         $data->save();
-        return back()->with('not_permitted','Data deleted successfully');
+        return back()->with('message', 'Letter deleted.');
     }
 
     /**
