@@ -371,6 +371,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/site-content/gallery/reorder', 'SiteContentController@reorderGalleryItems')->name('site-content.gallery.reorder');
 
     // About Us — Leaders (Alpha Bridge Members equivalent)
+    Route::get('/admin/gallery', 'SiteContentController@gallery')->name('admin.gallery');
     Route::get('/admin/leaders', 'LeaderController@index')->name('leaders.index');
     Route::post('/admin/leaders', 'LeaderController@store')->name('leaders.store');
     Route::post('/admin/leaders/reorder', 'LeaderController@reorder')->name('leaders.reorder');

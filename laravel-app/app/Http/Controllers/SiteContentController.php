@@ -28,10 +28,13 @@ class SiteContentController extends Controller
 
         $data = [
             'tab'          => $tab,
-            'landing'      => SiteMenu::landingItems(),
+            'landing'      => SiteMenu::landingLabels(),
             'side'         => SiteMenu::sideItems(),
             'settings'     => SiteMenu::settingsItems(),
             'people'       => SiteMenu::peopleItems(),
+            'landingHidden' => SiteMenu::landingHidden(),
+            'sideHidden'   => SiteMenu::sideHidden(),
+            'sideLocked'   => SiteMenu::sideLocked(),
             'landingOrder' => SiteMenu::landingOrder(),
             'sideOrder'    => SiteMenu::sideOrder(),
             'settingsOrder' => SiteMenu::settingsOrder(),
@@ -45,20 +48,47 @@ class SiteContentController extends Controller
         return view('site_content.index', $data);
     }
 
+    public function gallery()
+    {
+        $this->authorizeAdmin();
+
+        return view('gallery.admin', [
+            'galleryItems' => GalleryItem::ordered()->get(),
+            'galleryTypes' => GalleryEmbed::types(),
+            'pageSchema' => SiteContent::pageSchema('gallery'),
+        ]);
+    }
+
     public function saveLandingMenu(Request $request)
     {
         $this->authorizeAdmin();
         $this->saveOrder($request, 'landing_menu_order', SiteMenu::landingItems());
+        $this->saveHidden($request, 'landing_menu_hidden', SiteMenu::landingItems());
 
-        return redirect('/admin/site-content?tab=landing-menu')->with('message', 'Landing menu order saved.');
+        $valid = array_keys(SiteMenu::landingItems());
+        $incoming = (array) $request->input('labels', []);
+        $clean = [];
+        foreach ($valid as $key) {
+            if (! array_key_exists($key, $incoming)) {
+                continue;
+            }
+            $label = trim((string) $incoming[$key]);
+            if ($label !== '') {
+                $clean[$key] = mb_substr($label, 0, 60);
+            }
+        }
+        SiteSetting::setValue('landing_menu_labels', json_encode($clean, JSON_UNESCAPED_UNICODE));
+
+        return redirect('/admin/site-content?tab=landing-menu')->with('message', 'Landing menu order, names, and visibility saved.');
     }
 
     public function saveSideMenu(Request $request)
     {
         $this->authorizeAdmin();
         $this->saveOrder($request, 'side_menu_order', SiteMenu::sideItems());
+        $this->saveHidden($request, 'side_menu_hidden', SiteMenu::sideItems(), SiteMenu::sideLocked());
 
-        return redirect('/admin/site-content?tab=side-menu')->with('message', 'Side menu order saved.');
+        return redirect('/admin/site-content?tab=side-menu')->with('message', 'Side menu order and visibility saved.');
     }
 
     public function saveSettingsMenu(Request $request)
@@ -118,7 +148,7 @@ class SiteContentController extends Controller
             }
         }
 
-        return redirect('/admin/site-content?tab=' . $page)->with('message', ucfirst($page) . ' content saved.');
+        return $this->galleryRedirect(ucfirst($page).' content saved.', '/admin/site-content?tab='.$page);
     }
 
     public function storeGalleryItem(Request $request)
@@ -161,7 +191,7 @@ class SiteContentController extends Controller
             'is_published'=> true,
         ]);
 
-        return redirect('/admin/site-content?tab=gallery')->with('message', 'Gallery item added.');
+        return $this->galleryRedirect('Gallery item added.');
     }
 
     public function updateGalleryItem(Request $request, $id)
@@ -196,7 +226,7 @@ class SiteContentController extends Controller
             'media_url'   => $request->input('media_url'),
         ]);
 
-        return redirect('/admin/site-content?tab=gallery')->with('message', 'Gallery item updated.');
+        return $this->galleryRedirect('Gallery item updated.');
     }
 
     public function deleteGalleryItem($id)
@@ -204,7 +234,7 @@ class SiteContentController extends Controller
         $this->authorizeAdmin();
         GalleryItem::findOrFail($id)->delete();
 
-        return redirect('/admin/site-content?tab=gallery')->with('message', 'Gallery item removed.');
+        return $this->galleryRedirect('Gallery item removed.');
     }
 
     public function reorderGalleryItems(Request $request)
@@ -216,7 +246,18 @@ class SiteContentController extends Controller
             GalleryItem::where('id', $id)->update(['sort_order' => $pos]);
         }
 
-        return redirect('/admin/site-content?tab=gallery')->with('message', 'Gallery order saved.');
+        return $this->galleryRedirect('Gallery order saved.');
+    }
+
+    private function galleryRedirect($message, $fallback = '/admin/gallery')
+    {
+        $return = (string) request()->input('return_to');
+        $allowed = ['/admin/gallery', '/admin/site-content?tab=gallery'];
+        if (! in_array($return, $allowed, true)) {
+            $return = $fallback;
+        }
+
+        return redirect($return)->with('message', $message);
     }
 
     private function storeGalleryFile($file, $type)
@@ -240,5 +281,21 @@ class SiteContentController extends Controller
             return in_array($k, $valid, true);
         }));
         SiteSetting::setValue($settingKey, $order);
+    }
+
+    /** Persist which items are unchecked (hidden). Locked keys cannot be hidden. */
+    private function saveHidden(Request $request, $settingKey, array $items, array $locked = [])
+    {
+        $enabled = (array) $request->input('enabled', []);
+        $hidden = [];
+        foreach (array_keys($items) as $key) {
+            if (in_array($key, $locked, true)) {
+                continue;
+            }
+            if (! in_array($key, $enabled, true)) {
+                $hidden[] = $key;
+            }
+        }
+        SiteSetting::setValue($settingKey, $hidden);
     }
 }

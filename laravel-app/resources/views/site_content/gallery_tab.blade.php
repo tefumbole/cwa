@@ -78,6 +78,9 @@
         margin-bottom: 6px;
     }
 </style>
+@php
+    $galleryReturn = request()->is('admin/gallery') ? '/admin/gallery' : '/admin/site-content?tab=gallery';
+@endphp
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
     <h5 class="mb-0"><i class="dripicons-photo-group"></i> Gallery</h5>
@@ -90,6 +93,7 @@
 {{-- Hero fields --}}
 <form method="POST" action="{{ route('site-content.content', 'gallery') }}" class="mb-4" style="max-width:820px;">
     @csrf
+    <input type="hidden" name="return_to" value="{{ $galleryReturn }}">
     @foreach($pageSchema['fields'] as $key => $field)
         @php [$type, $label, $default] = $field; @endphp
         <div class="form-group">
@@ -111,6 +115,7 @@
 <div class="gallery-upload-zone">
     <form method="POST" action="{{ route('site-content.gallery.store') }}" enctype="multipart/form-data" id="gallery-add-form">
         @csrf
+        <input type="hidden" name="return_to" value="{{ $galleryReturn }}">
         <div class="row">
             <div class="col-md-4 form-group">
                 <label class="font-weight-bold">Type <span class="text-danger">*</span></label>
@@ -118,7 +123,7 @@
                     <option value="">-- Choose --</option>
                     <optgroup label="Files">
                         @foreach(['image' => 'Image', 'video' => 'Video file', 'audio' => 'Audio file'] as $k => $label)
-                            <option value="{{ $k }}">{{ $label }}</option>
+                            <option value="{{ $k }}" @if($k === 'image') selected @endif>{{ $label }}</option>
                         @endforeach
                     </optgroup>
                     <optgroup label="Social links">
@@ -158,6 +163,7 @@
 
     <form method="POST" action="{{ route('site-content.gallery.reorder') }}" id="gallery-reorder-form">
         @csrf
+        <input type="hidden" name="return_to" value="{{ $galleryReturn }}">
         <ul class="gallery-admin-grid" id="gallery-reorder-list">
             @foreach($galleryItems as $item)
                 <li class="gallery-admin-card" data-id="{{ $item->id }}">
@@ -217,9 +223,11 @@
 @foreach($galleryItems as $item)
     <form id="gallery-del-{{ $item->id }}" method="POST" action="{{ route('site-content.gallery.delete', $item->id) }}" class="d-none">
         @csrf
+        <input type="hidden" name="return_to" value="{{ $galleryReturn }}">
     </form>
     <form id="gallery-upd-{{ $item->id }}" method="POST" action="{{ route('site-content.gallery.update', $item->id) }}" enctype="multipart/form-data" class="d-none">
         @csrf
+        <input type="hidden" name="return_to" value="{{ $galleryReturn }}">
         <input type="hidden" name="type" class="upd-type" value="{{ $item->type }}">
         <input type="hidden" name="title" class="upd-title" value="{{ $item->title }}">
         <input type="hidden" name="description" class="upd-description" value="{{ $item->description }}">

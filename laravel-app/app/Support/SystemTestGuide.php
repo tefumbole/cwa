@@ -451,6 +451,11 @@ class SystemTestGuide
                 'Open the list inside that menu.',
                 'The screen should show internships or a clear empty message.',
             ]],
+            'gallery' => ['Upload a gallery image.', [
+                'In the blue menu, click Gallery.',
+                'The upload form should be open, with Image already chosen.',
+                'Choose a photo, add a short title, and add it. The photo should appear in the list. You can remove that test photo afterwards.',
+            ]],
             'supervisor' => ['Work in Supervisor.', [
                 'In the blue menu, click Supervisor.',
                 'Open the list inside that menu.',

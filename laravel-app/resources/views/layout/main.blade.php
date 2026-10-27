@@ -1447,6 +1447,7 @@
                         @if(in_array((int) Auth::user()->role_id, [1, 2], true))
                             <li data-nav-key="site-content" style="{{ \App\Support\SiteMenu::sideItemStyle('site-content') }}"><a href="{{ url('/admin/site-content') }}"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
                             <li data-nav-key="leaders" style="{{ \App\Support\SiteMenu::sideItemStyle('leaders') }}"><a href="{{ url('/admin/leaders') }}"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
+                            <li data-nav-key="gallery" style="{{ \App\Support\SiteMenu::sideItemStyle('gallery') }}"><a href="{{ url('/admin/gallery') }}"> <i class="dripicons-photo-group"></i><span>Gallery</span></a></li>
                         @endif
                         <?php
                         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);

@@ -45,6 +45,7 @@ class SiteMenu
             'dashboard'    => 'Dashboard',
             'site-content' => 'Site Content',
             'leaders'      => 'About Us Leaders',
+            'gallery'      => 'Gallery',
             'product'      => 'Product',
             'purchase'     => 'Purchase',
             'sale'         => 'Sale',
@@ -289,7 +290,19 @@ class SiteMenu
 
     public static function sideOrder()
     {
-        return self::ordered('side_menu_order', self::sideItems());
+        $order = self::ordered('side_menu_order', self::sideItems());
+        $saved = SiteSetting::getValue('side_menu_order', []);
+        if (is_array($saved) && in_array('gallery', $saved, true)) {
+            return $order;
+        }
+
+        $order = array_values(array_filter($order, function ($key) {
+            return $key !== 'gallery';
+        }));
+        $after = array_search('leaders', $order, true);
+        array_splice($order, $after === false ? 2 : $after + 1, 0, ['gallery']);
+
+        return $order;
     }
 
     /**
