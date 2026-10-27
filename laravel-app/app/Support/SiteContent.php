@@ -26,9 +26,11 @@ class SiteContent
         $hasTrans = is_string($translated) && $translated !== 'cwa.'.$key;
         $schemaDefault = self::schemaDefaultFor($key);
 
+        $english = trans('cwa.'.$key, [], 'en');
         $isCustom = is_string($stored) && $stored !== ''
-            && $stored !== $schemaDefault
-            && $stored !== $default;
+            && ! self::sameText($stored, $schemaDefault)
+            && ! self::sameText($stored, $default)
+            && ! self::sameText($stored, $english);
 
         if ($isCustom) {
             return $stored;
@@ -52,6 +54,22 @@ class SiteContent
         }
 
         return $schema[$parts[0]]['fields'][$parts[1]][2];
+    }
+
+    /** Line breaks and repeated spaces do not make a saved English default count as a custom edit. */
+    private static function sameText($left, $right)
+    {
+        if (! is_string($left) || ! is_string($right) || $right === '') {
+            return false;
+        }
+        $flat = function ($value) {
+            $value = str_replace(["\r\n", "\r"], "\n", $value);
+            $value = preg_replace('/\s+/u', ' ', trim($value));
+
+            return $value;
+        };
+
+        return $flat($left) === $flat($right);
     }
 
     public static function html($key, $default = '')
@@ -102,8 +120,8 @@ class SiteContent
                     'kicker'             => ['text', 'Line above the headline', 'Catholic Women\'s Association Cameroon'],
                     'brand_tag'          => ['text', 'Name under the logo', 'Catholic Women\'s Association Cameroon'],
                     'headline'           => ['text', 'Headline', '60 Years'],
-                    'headline_em'        => ['text', 'Headline, second line', 'A New Home is on the Way'],
-                    'sub'                => ['html', 'Intro under the headline (HTML allowed)', 'A legacy of faith, service and sisterhood.<br>We are preparing the official CWACAM site.<br>The launch countdown is running to 15 October 2026.'],
+                    'headline_em'        => ['text', 'Headline, second line', '60th Anniversary Speech'],
+                    'sub'                => ['html', 'Intro under the headline (HTML allowed)', 'For over 60 years, the Catholic Women’s Association (CWA) Cameroon has been a vibrant instrument of faith, service and human development in the Church and society.'],
                     'quote'              => ['text', 'Quote', 'For such a time as this, together we build.'],
                     'quote_cite'         => ['text', 'Quote credit', 'Matthew 5:16'],
                     'join'               => ['text', 'Join button', 'Join CWA'],
