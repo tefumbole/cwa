@@ -48,7 +48,7 @@
 @include('pdf.partials._letter_branded_open')
 <div class="speech-pdf">
     <h1>{{ __('cwa.speech.title') }}</h1>
-    <p class="who">{{ __('cwa.speech.sign_name') }} · {{ __('cwa.speech.sign_role') }} · {{ __('cwa.speech.date') }}</p>
+    <p class="who">{{ __('cwa.speech.sign_name') }} · {{ __('cwa.speech.sign_role') }}</p>
     @foreach (__('cwa.speech.sections') as $section)
         <p class="body">{{ $section['body'] }}</p>
     @endforeach

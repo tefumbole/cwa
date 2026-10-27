@@ -16,7 +16,6 @@
                 <img src="{{ $portraitUrl }}" alt="{{ __('cwa.speech.sign_name') }}">
                 <div>
                     <h1>{{ __('cwa.speech.sign_name') }}</h1>
-                    <p>{{ __('cwa.speech.date') }}</p>
                 </div>
             </header>
 
@@ -108,13 +107,6 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         font-weight: 700;
-    }
-    .speech-letter-head p {
-        margin: 0.2rem 0 0;
-        color: #8a6d1d;
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.12em;
     }
     .speech-letter-body { padding: 1.15rem 0 0.4rem; }
     .speech-letter-body p {

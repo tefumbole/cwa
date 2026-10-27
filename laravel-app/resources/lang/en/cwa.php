@@ -444,7 +444,6 @@ return [
         'meta' => 'Message of Edith Tanyi, General President of CWA Cameroon, for the 60th anniversary.',
         'kicker' => 'Message of the General President',
         'download' => 'Download',
-        'date' => '27 OCT 2026',
         'sections' => [
             [
                 'icon' => 'book-open',
