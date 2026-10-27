@@ -63,6 +63,7 @@ return [
         'secs' => 'Sec',
         'launched' => 'Nous avons lancé !',
         'launch' => 'Lancement',
+        'speech_link' => 'Discours du 60e anniversaire',
         'vision_label' => 'Vision',
         'mission_label' => 'Mission',
         'verse' => 'Car je connais les projets que j\'ai formés sur vous…',
@@ -437,5 +438,31 @@ return [
         'handoff_sign_title' => 'Signez l\'adhésion',
         'handoff_done' => 'Terminé. Vous pouvez revenir à l\'ordinateur.',
         'handoff_missing' => 'Ce lien a expiré. Revenez à l\'ordinateur et réessayez.',
+    ],
+    'speech' => [
+        'title' => 'Discours du 60e anniversaire',
+        'meta' => 'Message d\'Edith Tanyi, Présidente générale de la CWA Cameroun, pour le 60e anniversaire.',
+        'kicker' => 'Message de la Présidente générale',
+        'translate' => 'Langue',
+        'sections' => [
+            [
+                'icon' => 'book-open',
+                'title' => 'Foi, service et développement humain',
+                'body' => 'Depuis plus de 60 ans, l’Association des Femmes Catholiques (CWA) du Cameroun est un instrument vivant de foi, de service et de développement humain dans l’Église et dans la société. Enracinée dans l’Évangile et inspirée par les valeurs d’amour, de solidarité, de dignité et de service, la CWA cherche à donner aux femmes catholiques la force de vivre leur foi avec courage et de contribuer de façon réelle à la transformation de leurs familles, de leurs communautés et de la nation.',
+            ],
+            [
+                'icon' => 'heart',
+                'title' => 'Vision et mission',
+                'body' => 'Notre vision est de bâtir une communauté de femmes spirituellement mûres, socialement responsables, économiquement autonomes et engagées pour la paix, la justice et la dignité humaine. Notre mission est d’approfondir la foi des femmes, de fortifier la vie de famille, de promouvoir le bien-être et l’autonomisation des femmes et des enfants, et de répondre avec compassion à celles et ceux qui sont dans le besoin. Nous l’avons fait par la création de Centres de formation à l’autonomisation aux niveaux général et diocésain. Ainsi, la CWA a enregistré des réalisations remarquables à travers ses structures diocésaines et paroissiales. Elle a promu l’évangélisation, la formation chrétienne, l’éducation, les soins de santé, les œuvres caritatives, l’autonomisation économique et le développement communautaire. Les membres de la CWA ont soutenu les familles vulnérables, les migrants et les réfugiés, encouragé l’éducation des filles et des femmes, contribué aux projets de l’Église et joué un rôle important dans la promotion de la paix et de la réconciliation.',
+            ],
+            [
+                'icon' => 'sunrise',
+                'title' => 'Espérance, courage et dévouement renouvelé',
+                'body' => 'Avec la foi pour fondement et le service pour vocation, la CWA Cameroun regarde l’avenir avec espérance, courage et un dévouement renouvelé.',
+            ],
+        ],
+        'sign_name' => 'Edith Tanyi',
+        'sign_role' => 'Présidente générale',
+        'sign_org' => 'CWA Cameroun',
     ],
 ];

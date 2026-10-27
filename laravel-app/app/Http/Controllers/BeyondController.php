@@ -97,6 +97,11 @@ class BeyondController extends Controller
         ]);
     }
 
+    public function speech()
+    {
+        return view('beyond.speech');
+    }
+
     public function contact()
     {
         return redirect(url('/about') . '#contact', 301);

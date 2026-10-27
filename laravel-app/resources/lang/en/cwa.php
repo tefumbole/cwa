@@ -63,6 +63,7 @@ return [
         'secs' => 'Secs',
         'launched' => 'We have launched!',
         'launch' => 'Launch',
+        'speech_link' => '60th Anniversary Speech',
         'vision_label' => 'Vision',
         'mission_label' => 'Mission',
         'verse' => 'For I know the plans I have for you…',
@@ -437,5 +438,31 @@ return [
         'handoff_sign_title' => 'Sign membership',
         'handoff_done' => 'Done. You can return to the computer.',
         'handoff_missing' => 'This link has expired. Go back to the computer and try again.',
+    ],
+    'speech' => [
+        'title' => '60th Anniversary Speech',
+        'meta' => 'Message of Edith Tanyi, General President of CWA Cameroon, for the 60th anniversary.',
+        'kicker' => 'Message of the General President',
+        'translate' => 'Language',
+        'sections' => [
+            [
+                'icon' => 'book-open',
+                'title' => 'Faith, service and human development',
+                'body' => 'For over 60 years, the Catholic Women’s Association (CWA) Cameroon has been a vibrant instrument of faith, service and human development in the Church and society. Rooted in the Gospel and inspired by the values of love, solidarity, dignity and service, the CWA seeks to empower Catholic women to live their faith courageously and to contribute meaningfully to the transformation of their families, communities and nation.',
+            ],
+            [
+                'icon' => 'heart',
+                'title' => 'Vision and mission',
+                'body' => 'Our vision is to build a community of women who are spiritually mature, socially responsible, economically empowered and committed to promoting peace, justice and human dignity. Our mission is to deepen the faith of women, strengthen family life, promote the welfare and empowerment of women and children, and respond with compassion to those in need. This we have done through the establishment of Empowerment Training Centres at the General and Diocesan levels. So, the CWA has recorded remarkable achievements through its diocesan and Parish Structures, it has promoted Evangelisation, Christian Formation, Education, Healthcare, Charitable Works, Economic Empowerment and Community Development. CWA members have supported vulnerable families, migrants and refugees, encouraged girls’ and women’s education, contributed to Church projects and played important roles in promoting peace and reconciliation.',
+            ],
+            [
+                'icon' => 'sunrise',
+                'title' => 'Hope, courage and renewed dedication',
+                'body' => 'With faith as our foundation and service as our calling, CWA Cameroon looks to the future with hope, courage and renewed dedication.',
+            ],
+        ],
+        'sign_name' => 'Edith Tanyi',
+        'sign_role' => 'General President',
+        'sign_org' => 'CWA Cameroon',
     ],
 ];

@@ -66,6 +66,7 @@ Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')
 
 Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('beyond.language');
 Route::get('/', 'BeyondController@comingSoon')->name('beyond.home');
+Route::get('/speech', 'BeyondController@speech')->name('beyond.speech');
 Route::get('/home', 'BeyondController@home')->name('beyond.home.full');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
 Route::get('/branches', 'BeyondController@branches')->name('beyond.branches');

@@ -18,7 +18,6 @@
     $homeMissionLabel = \App\Support\SiteContent::text('home.mission_label', __('cwa.home.mission_label'));
     $homeVerse = \App\Support\SiteContent::text('home.verse', __('cwa.home.verse'));
     $homeVerseRef = \App\Support\SiteContent::text('home.verse_ref', __('cwa.home.verse_ref'));
-    $homeLaunchWord = \App\Support\SiteContent::text('home.launch', __('cwa.home.launch'));
     $homeSearch = \App\Support\SiteContent::text('home.search_placeholder', __('cwa.home.search_placeholder'));
     $homeDays = \App\Support\SiteContent::text('home.days', __('cwa.home.days'));
     $homeHours = \App\Support\SiteContent::text('home.hours', __('cwa.home.hours'));
@@ -377,31 +376,25 @@
         color: var(--gold-soft);
         font-weight: 700;
     }
-    .lp-launch {
-        display: flex;
+    .lp-speech {
+        display: inline-flex;
         align-items: center;
-        gap: 0.55rem;
-        padding-left: 1rem;
-        border-left: 1px solid rgba(255, 255, 255, 0.16);
-        color: #fff;
-        min-width: 9.5rem;
-    }
-    .lp-launch i { color: var(--gold-soft); }
-    .lp-launch small {
-        display: block;
-        font-size: 0.58rem;
-        letter-spacing: 0.16em;
-        font-weight: 700;
-        color: var(--gold-soft);
-    }
-    .lp-launch strong {
-        display: block;
-        margin-top: 0.12rem;
-        font-size: 0.82rem;
-        letter-spacing: 0.04em;
+        justify-content: center;
+        gap: 0.45rem;
+        margin-left: 0.35rem;
+        padding: 0.72rem 1.15rem;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #3b2a08;
+        font-size: 0.88rem;
         font-weight: 800;
-        text-transform: uppercase;
+        line-height: 1.2;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 8px 18px rgba(212, 175, 55, 0.28);
+        max-width: 16rem;
     }
+    .lp-speech:hover { background: #e0c05a; color: #3b2a08; }
     .lp-credo {
         position: absolute;
         right: 4.2%;
@@ -465,7 +458,6 @@
         letter-spacing: 0.04em;
     }
     .lp-rings.is-hidden { display: none; }
-    .lp-rings.is-hidden + .lp-launch { border-left: 0; padding-left: 0; }
     @media (min-width: 1024px) {
         .lp-links, .lp-actions { display: flex; }
         .lp-menu-btn { display: none; }
@@ -474,7 +466,7 @@
         .lp-copy { padding: 1.6rem 1.2rem 1.8rem; width: 100%; }
         .lp-credo, .lp-verse { display: none; }
         .lp-meter { width: 100%; max-width: 100%; flex-wrap: wrap; }
-        .lp-launch { border-left: 0; padding-left: 0; }
+        .lp-speech { margin-left: 0; max-width: none; width: 100%; }
         .lp-hero { background-position: 62% 20%; }
         .lp-hero::before {
             background: linear-gradient(180deg, rgba(0,40,85,0.2) 0%, rgba(0,61,130,0.55) 42%, rgba(0,61,130,0.96) 100%);
@@ -567,7 +559,7 @@
             flex-wrap: wrap;
             margin-top: 1.15rem;
         }
-        .lp-launch { min-width: 0; flex: 1 1 8.5rem; }
+        .lp-speech { min-width: 0; flex: 1 1 12rem; max-width: none; }
     }
     @media (max-width: 380px) {
         .lp-brand-name { font-size: 0.95rem; letter-spacing: 0.04em; }
@@ -576,7 +568,7 @@
         .dial-inner { inset: 6px; }
         .dial-value { font-size: 0.82rem; }
         .lp-drawer-cta { grid-template-columns: 1fr; }
-        .lp-launch { border-left: 0; padding-left: 0; }
+        .lp-speech { margin-left: 0; }
     }
 </style>
 @endpush
@@ -668,13 +660,7 @@
                         </div>
                     @endforeach
                 </div>
-                <div class="lp-launch">
-                    <i data-lucide="calendar" class="w-5 h-5"></i>
-                    <span>
-                        <small>{{ $homeLaunchWord }}</small>
-                        <strong>{{ strtoupper($launchLabel ?? '15 October 2026') }}</strong>
-                    </span>
-                </div>
+                <a class="lp-speech" href="{{ route('beyond.speech') }}">{{ __('cwa.home.speech_link') }}</a>
             </div>
         </div>
 
