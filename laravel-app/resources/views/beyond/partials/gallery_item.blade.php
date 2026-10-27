@@ -1,10 +1,12 @@
 @php $card = \App\Support\GalleryEmbed::cardData($item); @endphp
 
 <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full">
-    <div class="relative bg-gray-100 flex items-center justify-center overflow-hidden min-h-[280px]">
+    <div class="relative bg-gray-100 overflow-hidden" style="aspect-ratio:4/3;">
         @if ($item->type === 'image' && $card['file_url'])
-            <img src="{{ $card['file_url'] }}" alt="{{ $item->title ?: 'Gallery image' }}"
-                 class="w-full h-full object-cover max-h-[420px] cursor-zoom-in gallery-lightbox-trigger"
+            <img src="{{ $item->thumbUrl() }}" alt="{{ $item->title ?: 'Gallery image' }}"
+                 class="cursor-zoom-in gallery-lightbox-trigger"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+                 loading="lazy" decoding="async"
                  data-full="{{ $card['file_url'] }}">
         @elseif ($item->type === 'video' && $card['file_url'])
             <video controls playsinline class="w-full max-h-[420px] bg-black">
@@ -51,6 +53,9 @@
     </div>
 
     <div class="p-5 flex-grow">
+        @if ($item->eventHeading() !== 'General')
+            <p class="text-xs font-bold uppercase tracking-wide text-brand-gold mb-1">{{ $item->eventHeading() }}</p>
+        @endif
         @if ($item->title)
             <h3 class="text-lg font-bold text-brand-blue mb-2">{{ $item->title }}</h3>
         @endif

@@ -93,7 +93,7 @@ class BeyondController extends Controller
     public function gallery()
     {
         return view('beyond.gallery', [
-            'items' => \App\GalleryItem::published()->ordered()->get(),
+            'items' => \App\GalleryItem::published()->with('event')->ordered()->get(),
         ]);
     }
 

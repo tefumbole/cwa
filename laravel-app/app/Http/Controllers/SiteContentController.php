@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Event;
 use App\GalleryItem;
 use App\SiteSetting;
 use App\Support\GalleryEmbed;
+use App\Support\GalleryImage;
 use App\Support\SiteContent;
 use App\Support\SiteMenu;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class SiteContentController extends Controller
             'pageSchema'   => SiteContent::pageSchema($tab),
             'galleryItems' => $tab === 'gallery' ? GalleryItem::ordered()->get() : collect(),
             'galleryTypes' => GalleryEmbed::types(),
+            'events' => $tab === 'gallery' ? $this->galleryEvents() : collect(),
         ];
 
         return view('site_content.index', $data);
@@ -56,7 +59,19 @@ class SiteContentController extends Controller
             'galleryItems' => GalleryItem::ordered()->get(),
             'galleryTypes' => GalleryEmbed::types(),
             'pageSchema' => SiteContent::pageSchema('gallery'),
+            'events' => $this->galleryEvents(),
         ]);
+    }
+
+    protected function galleryEvents()
+    {
+        return Event::query()
+            ->where(function ($query) {
+                $query->whereNull('internal_status')->orWhere('internal_status', '!=', 'cancelled');
+            })
+            ->orderByDesc('event_start_at')
+            ->orderByDesc('created_at')
+            ->get(['id', 'name', 'event_start_at']);
     }
 
     public function saveLandingMenu(Request $request)
@@ -162,17 +177,22 @@ class SiteContentController extends Controller
             'description' => 'nullable|string|max:2000',
             'media_url'   => 'nullable|url|max:2048',
             'file'        => 'nullable|file|max:51200',
+            'event_id'    => 'nullable|string|max:64',
+            'event_label' => 'nullable|string|max:120',
         ]);
 
         $type = $request->input('type');
         $filePath = null;
+        $thumbPath = null;
 
         if (in_array($type, GalleryEmbed::fileTypes(), true)) {
             $file = $request->file('file');
             if (! $file || ! $file->isValid()) {
                 return back()->withErrors(['file' => 'Please upload a file for this media type.'])->withInput();
             }
-            $filePath = $this->storeGalleryFile($file, $type);
+            $stored = $this->storeGalleryFile($file, $type);
+            $filePath = $stored['file'];
+            $thumbPath = $stored['thumb'];
         } elseif (in_array($type, GalleryEmbed::urlTypes(), true)) {
             if (! $request->filled('media_url')) {
                 return back()->withErrors(['media_url' => 'Please paste a link for this media type.'])->withInput();
@@ -181,15 +201,16 @@ class SiteContentController extends Controller
 
         $maxSort = (int) GalleryItem::max('sort_order');
 
-        GalleryItem::create([
+        GalleryItem::create(array_merge([
             'type'        => $type,
             'title'       => $request->input('title'),
             'description' => $request->input('description'),
             'file_path'   => $filePath,
+            'thumb_path'  => $thumbPath,
             'media_url'   => $request->input('media_url'),
             'sort_order'  => $maxSort + 1,
             'is_published'=> true,
-        ]);
+        ], $this->galleryEventInput($request)));
 
         return $this->galleryRedirect('Gallery item added.');
     }
@@ -207,24 +228,31 @@ class SiteContentController extends Controller
             'description' => 'nullable|string|max:2000',
             'media_url'   => 'nullable|url|max:2048',
             'file'        => 'nullable|file|max:51200',
+            'event_id'    => 'nullable|string|max:64',
+            'event_label' => 'nullable|string|max:120',
         ]);
 
         $type = $request->input('type');
         $filePath = $item->file_path;
+        $thumbPath = $item->thumb_path;
 
         if ($request->hasFile('file') && $request->file('file')->isValid()) {
-            $filePath = $this->storeGalleryFile($request->file('file'), $type);
+            $stored = $this->storeGalleryFile($request->file('file'), $type);
+            $filePath = $stored['file'];
+            $thumbPath = $stored['thumb'];
         } elseif (in_array($type, GalleryEmbed::urlTypes(), true)) {
             $filePath = null;
+            $thumbPath = null;
         }
 
-        $item->update([
+        $item->update(array_merge([
             'type'        => $type,
             'title'       => $request->input('title'),
             'description' => $request->input('description'),
             'file_path'   => $filePath,
+            'thumb_path'  => $thumbPath,
             'media_url'   => $request->input('media_url'),
-        ]);
+        ], $this->galleryEventInput($request)));
 
         return $this->galleryRedirect('Gallery item updated.');
     }
@@ -260,17 +288,37 @@ class SiteContentController extends Controller
         return redirect($return)->with('message', $message);
     }
 
+    private function galleryEventInput(Request $request)
+    {
+        $eventId = trim((string) $request->input('event_id'));
+        if ($eventId !== '' && ! Event::where('id', $eventId)->exists()) {
+            $eventId = '';
+        }
+        $label = trim((string) $request->input('event_label'));
+
+        return [
+            'event_id' => $eventId !== '' ? $eventId : null,
+            'event_label' => $label !== '' ? mb_substr($label, 0, 120) : null,
+        ];
+    }
+
     private function storeGalleryFile($file, $type)
     {
         $dir = public_path('images/gallery');
         if (! is_dir($dir)) {
             @mkdir($dir, 0775, true);
         }
+        if ($type === 'image') {
+            $pair = GalleryImage::storeUpload($file, $dir);
+            if ($pair) {
+                return $pair;
+            }
+        }
         $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
         $name = 'gallery_' . $type . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $file->move($dir, $name);
 
-        return 'images/gallery/' . $name;
+        return ['file' => 'images/gallery/' . $name, 'thumb' => null];
     }
 
     private function saveOrder(Request $request, $settingKey, array $items)
