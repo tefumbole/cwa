@@ -7,40 +7,44 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <h1 class="text-[1.7rem] leading-tight sm:text-2xl font-extrabold text-brand-blue mb-6">{{ __('cwa.gallery.title') }}</h1>
         @php
-            $eventFilters = [];
+            $groups = [];
             foreach ($items as $item) {
                 $key = $item->eventKey();
-                if ($key === 'general' || isset($eventFilters[$key])) {
-                    continue;
+                if (! isset($groups[$key])) {
+                    $groups[$key] = ['label' => $item->eventHeading(), 'items' => []];
                 }
-                $eventFilters[$key] = $item->eventHeading();
+                $groups[$key]['items'][] = $item;
             }
         @endphp
-        @if (count($eventFilters))
+        @if (count($groups) > 1)
             <div class="flex flex-wrap gap-2 mb-6" id="gallery-filters">
                 <button type="button" class="gallery-filter is-on" data-gallery-filter="all">All</button>
-                @foreach ($eventFilters as $key => $label)
-                    <button type="button" class="gallery-filter" data-gallery-filter="{{ $key }}">{{ $label }}</button>
+                @foreach ($groups as $key => $group)
+                    <button type="button" class="gallery-filter" data-gallery-filter="{{ $key }}">{{ $group['label'] }}</button>
                 @endforeach
             </div>
-            <style>
-                .gallery-filter { border: 1.5px solid #e7e1d4; background: #fff; color: #003D82; border-radius: 999px; padding: .4rem .9rem; font-weight: 800; cursor: pointer; }
-                .gallery-filter.is-on { background: #003D82; color: #fff; border-color: #003D82; }
-            </style>
         @endif
+        <style>
+            .gallery-filter { border: 1.5px solid #e7e1d4; background: #fff; color: #003D82; border-radius: 999px; padding: .4rem .9rem; font-weight: 800; cursor: pointer; }
+            .gallery-filter.is-on { background: #003D82; color: #fff; border-color: #003D82; }
+            .gallery-event-title { font-family: Fraunces, Georgia, serif; color: #003D82; font-size: 1.6rem; line-height: 1.25; margin: 0 0 1rem; padding-bottom: .55rem; border-bottom: 3px solid #D4AF37; }
+        </style>
         @if ($items->isEmpty())
             <div class="text-center py-20 text-gray-500">
                 <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
                 <p class="text-lg">{{ __('cwa.gallery.empty') }}</p>
             </div>
         @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-                @foreach ($items as $item)
-                    <div class="gallery-card" data-event="{{ $item->eventKey() }}">
-                        @include('beyond.partials.gallery_item', ['item' => $item])
+            @foreach ($groups as $key => $group)
+                <section class="gallery-section mb-12" data-event="{{ $key }}">
+                    <h2 class="gallery-event-title">{{ $group['label'] }}</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+                        @foreach ($group['items'] as $item)
+                            @include('beyond.partials.gallery_item', ['item' => $item])
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
+                </section>
+            @endforeach
         @endif
     </div>
 </div>
@@ -62,8 +66,8 @@ document.querySelectorAll('.gallery-filter').forEach(function (button) {
         document.querySelectorAll('.gallery-filter').forEach(function (other) {
             other.classList.toggle('is-on', other === button);
         });
-        document.querySelectorAll('.gallery-card').forEach(function (card) {
-            card.style.display = key === 'all' || card.getAttribute('data-event') === key ? '' : 'none';
+        document.querySelectorAll('.gallery-section').forEach(function (section) {
+            section.style.display = key === 'all' || section.getAttribute('data-event') === key ? '' : 'none';
         });
     });
 });

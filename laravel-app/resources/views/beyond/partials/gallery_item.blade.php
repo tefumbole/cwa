@@ -53,9 +53,6 @@
     </div>
 
     <div class="p-5 flex-grow">
-        @if ($item->eventHeading() !== 'General')
-            <p class="text-xs font-bold uppercase tracking-wide text-brand-gold mb-1">{{ $item->eventHeading() }}</p>
-        @endif
         @if ($item->title)
             <h3 class="text-lg font-bold text-brand-blue mb-2">{{ $item->title }}</h3>
         @endif

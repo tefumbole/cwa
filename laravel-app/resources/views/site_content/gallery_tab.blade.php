@@ -166,7 +166,7 @@
                 <input type="text" name="event_label" class="form-control" maxlength="120" placeholder="Used when the event is not in the list">
             </div>
         </div>
-        <p class="text-muted" style="font-size:13px;">Leave both empty to file this under General. If you pick an event, that name is what visitors see.</p>
+        <p class="text-muted" style="font-size:13px;">The event you pick, or the name you type, becomes the heading above those photos. Leave both empty to file this under General.</p>
         <button type="submit" class="btn btn-primary"><i class="dripicons-plus"></i> Add to gallery</button>
     </form>
 </div>
