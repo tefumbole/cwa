@@ -1153,8 +1153,8 @@ class LetterController extends Controller
                 }
             }
         }
-        catch(\Exception $e){
-            $message = 'Letter not sent. Please setup your whatsapp setting.';
+        catch(\Throwable $e){
+            $message = $this->letterWhatsAppFailure($letter, $e);
         }
 
 
@@ -1163,8 +1163,8 @@ class LetterController extends Controller
             try{
                 $this->wpPDFMessage($attachment_path . $letter->attachment, $lims_customer_data, $attachment_name);
             }
-            catch(\Exception $e){
-                $message = 'Letter not sent. Please setup your whatsapp setting.';
+            catch(\Throwable $e){
+                $message = $this->letterWhatsAppFailure($letter, $e);
             }
         }
         if(isset($letter->attachmentlib[0])) {
@@ -1176,13 +1176,27 @@ class LetterController extends Controller
                 try{
                     $this->wpPDFMessage($attachment_path . $attachment->attachment, $lims_customer_data, $attachment_name);
                 }
-                catch(\Exception $e){
-                    $message = 'Letter not sent. Please setup your whatsapp setting.';
+                catch(\Throwable $e){
+                    $message = $this->letterWhatsAppFailure($letter, $e);
                 }
             }
 
         }
         return $message;
+    }
+
+    protected function letterWhatsAppFailure($letter, \Throwable $e)
+    {
+        \Log::warning('Letter WhatsApp failed', [
+            'letter_id' => $letter->id ?? null,
+            'error' => $e->getMessage(),
+        ]);
+        $detail = trim($e->getMessage());
+        if ($detail === '') {
+            $detail = 'Please setup your whatsapp setting.';
+        }
+
+        return 'Letter not sent. '.$detail;
     }
 
     protected function isInternshipAcceptanceLetter($letter): bool
@@ -1447,16 +1461,16 @@ class LetterController extends Controller
 
         try {
             $this->wpPDFMessage($path, $ccRecipient, 'letter.pdf', null, $caption);
-        } catch (\Exception $e) {
-            $message = 'Letter not sent. Please setup your whatsapp setting.';
+        } catch (\Throwable $e) {
+            $message = $this->letterWhatsAppFailure($letter, $e);
         }
 
         if ($letter->attachment) {
             $attachment_name = 'attachment-'.$letter->attachment;
             try {
                 $this->wpPDFMessage($attachment_path.$letter->attachment, $ccRecipient, $attachment_name, null, $caption);
-            } catch (\Exception $e) {
-                $message = 'Letter not sent. Please setup your whatsapp setting.';
+            } catch (\Throwable $e) {
+                $message = $this->letterWhatsAppFailure($letter, $e);
             }
         }
         if (isset($letter->attachmentlib[0])) {
@@ -1467,8 +1481,8 @@ class LetterController extends Controller
                 $attachment_name = 'attachment-'.$attachment->attachment;
                 try {
                     $this->wpPDFMessage($attachment_path.$attachment->attachment, $ccRecipient, $attachment_name, null, $caption);
-                } catch (\Exception $e) {
-                    $message = 'Letter not sent. Please setup your whatsapp setting.';
+                } catch (\Throwable $e) {
+                    $message = $this->letterWhatsAppFailure($letter, $e);
                 }
             }
         }

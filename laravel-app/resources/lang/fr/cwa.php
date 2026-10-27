@@ -239,6 +239,7 @@ return [
         'pay_mtn' => 'Payer par MTN MoMo',
         'pay_orange' => 'Payer par Orange Money',
         'invalid_phone' => 'Entrez un numéro MoMo valide (9 chiffres).',
+        'invalid_cm_phone' => 'Un numéro camerounais doit comporter 9 chiffres et commencer par 6, par exemple 675321739.',
         'failed' => 'Le paiement MoMo n\'a pas pu démarrer. Réessayez.',
         'thanks_title' => 'Merci',
         'thanks_meta' => 'Merci pour votre don à la CWACAM.',

@@ -68,10 +68,12 @@ class CampayService
         if (strpos($digits, '237') === 0) {
             return $digits;
         }
-        if (strlen($digits) === 9) {
+        // Only Cameroon mobiles (9 digits starting with 6) get 237 added.
+        // A 9-digit value such as 250782024 is not a Cameroon number.
+        if (strlen($digits) === 9 && $digits[0] === '6') {
             return '237'.$digits;
         }
-        if (strlen($digits) === 10 && substr($digits, 0, 1) === '0') {
+        if (strlen($digits) === 10 && substr($digits, 0, 2) === '06') {
             return '237'.substr($digits, 1);
         }
 

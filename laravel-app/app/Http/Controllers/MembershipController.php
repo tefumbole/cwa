@@ -239,8 +239,11 @@ class MembershipController extends Controller
         $campay = app(CampayService::class);
         $cc = preg_replace('/\D/', '', (string) ($data['country_code'] ?? '237')) ?: '237';
         $phone = $campay->normalizePhone($cc === '237' ? $data['phone'] : ($cc.$data['phone']));
-        if ($cc === '237' && strlen(CameroonMomoNetwork::localDigits($phone)) < 9) {
-            return back()->withInput()->withErrors(['phone' => __('cwa.donate.invalid_phone')]);
+        if ($cc === '237') {
+            $local = CameroonMomoNetwork::localDigits($phone);
+            if (strlen($local) !== 9 || $local[0] !== '6') {
+                return back()->withInput()->withErrors(['phone' => __('cwa.donate.invalid_cm_phone')]);
+            }
         }
         if ($cc !== '237' && strlen(preg_replace('/\D/', '', $phone)) < 8) {
             return back()->withInput()->withErrors(['phone' => __('cwa.donate.invalid_phone')]);
