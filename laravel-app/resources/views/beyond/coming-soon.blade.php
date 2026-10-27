@@ -501,7 +501,7 @@
         .lp-btns { flex-direction: column; }
         .lp-btn { width: 100%; justify-content: center; min-height: 3rem; }
         .lp-hero { min-height: calc(100dvh - 4.15rem); padding-bottom: 6.5rem; }
-        .lp-meter { padding: 0.7rem 0.75rem; gap: 0.55rem; }
+        .lp-meter { padding: 0; gap: 0.55rem; }
         .dial, .dial svg { width: 58px; height: 58px; }
         .dial-inner { inset: 7px; }
         .dial-value { font-size: 1rem; }
