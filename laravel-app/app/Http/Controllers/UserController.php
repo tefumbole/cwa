@@ -477,10 +477,15 @@ class UserController extends Controller
             'approve' => 'image|mimes:jpg,jpeg,png,gif,svg|max:10000',
         ]);
 
-        $input = $request->except('sign', 'stemp', 'password', 'approve');
+        $this->validate($request, [
+            'selfie' => 'image|mimes:jpg,jpeg,png,webp|max:8192',
+        ]);
+
+        $input = $request->except('sign', 'stemp', 'password', 'approve', 'selfie');
         $sign = $request->sign;
         $stemp = $request->stemp;
         $approve = $request->approve;
+        $selfie = $request->selfie;
         $lims_user_data = User::find($id);
 
         if ($sign) {
@@ -522,6 +527,20 @@ class UserController extends Controller
             }
             $approve->move('public/images/user', $imageName);
             $input['approve'] = $imageName;
+        }
+
+        if ($selfie) {
+            $ext = pathinfo($selfie->getClientOriginalName(), PATHINFO_EXTENSION);
+            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', pathinfo($selfie->getClientOriginalName(), PATHINFO_FILENAME));
+            $imageName = ($imageName ?: 'selfie') . '_' . time() . '.' . $ext;
+            if ($lims_user_data->selfie) {
+                $old = public_path('images/user/'.$lims_user_data->selfie);
+                if (is_file($old)) {
+                    @unlink($old);
+                }
+            }
+            $selfie->move('public/images/user', $imageName);
+            $input['selfie'] = $imageName;
         }
 
         if(!isset($input['is_active']))

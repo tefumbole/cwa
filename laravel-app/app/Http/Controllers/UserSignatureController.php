@@ -20,6 +20,7 @@ class UserSignatureController extends Controller
         'sign' => 'Signature',
         'stemp' => 'Comment',
         'approve' => 'Approver',
+        'selfie' => 'Selfie',
         'all' => 'Signature, comment, and approver',
     ];
 
@@ -102,10 +103,15 @@ class UserSignatureController extends Controller
 
         $display = WhatsAppPhone::display($phone);
         if (empty($result['success']) || ! empty($result['skipped'])) {
+            $error = (string) ($result['error'] ?? 'messaging skipped or failed');
+            if (preg_match('/invalid api key|session not found|not configured|unauthorized/i', $error)) {
+                $error = 'the WhatsApp session key was rejected, so the message was not sent';
+            }
+
             return $this->signatureResponse(
                 $request,
                 false,
-                'WhatsApp did not deliver to '.$display.': '.($result['error'] ?? 'messaging skipped or failed').'. Copy the link below.',
+                'WhatsApp did not deliver to '.$display.' ('.$error.'). Copy the link below and send it yourself.',
                 422,
                 $link
             );
@@ -178,11 +184,26 @@ class UserSignatureController extends Controller
         }
 
         $type = $this->normalizeType($user->sign_request_type ?: 'sign');
+        $request->validate([
+            'selfie_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'signature_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
+        ]);
+
         $fields = $type === 'all'
             ? ['sign' => 'signature_image', 'stemp' => 'comment_image', 'approve' => 'approver_image']
             : [$type => 'signature_image'];
 
         $saved = 0;
+        if ($type === 'selfie' && $request->hasFile('selfie_file')) {
+            if ($this->persistUploaded($user, $request->file('selfie_file'), 'selfie')) {
+                $saved++;
+            }
+        } elseif ($type !== 'selfie' && $request->hasFile('signature_file')) {
+            $column = $type === 'all' ? 'sign' : $type;
+            if ($this->persistUploaded($user, $request->file('signature_file'), $column)) {
+                $saved++;
+            }
+        }
         foreach ($fields as $column => $input) {
             $dataUrl = (string) $request->input($input, '');
             if ($dataUrl === '') {
@@ -200,7 +221,11 @@ class UserSignatureController extends Controller
         }
 
         if ($saved === 0) {
-            return back()->with('not_permitted', 'Draw at least one signature, then save.');
+            $hint = $type === 'selfie'
+                ? 'Add a selfie photo, then save.'
+                : 'Draw a signature or add a photo of it, then save.';
+
+            return back()->with('not_permitted', $hint);
         }
 
         $user->sign_request_token = null;
@@ -273,9 +298,12 @@ class UserSignatureController extends Controller
                     return null;
                 }
             } else {
-                if (! preg_match('/^data:image\/png;base64,/', (string) $dataUrl)) {
+                if (! preg_match('#^data:image/(png|jpe?g|webp);base64,#i', (string) $dataUrl, $mime)) {
                     return null;
                 }
+                $ext = strtolower($mime[1]) === 'png' ? 'png' : (strtolower($mime[1]) === 'webp' ? 'webp' : 'jpg');
+                $accountFile = $type.'_'.$user->id.'_'.date('YmdHis').'_'.Str::random(4).'.'.$ext;
+                $dest = $dir.'/'.$accountFile;
                 $raw = base64_decode(substr($dataUrl, strpos($dataUrl, ',') + 1));
                 if ($raw === false || @file_put_contents($dest, $raw) === false) {
                     return null;
@@ -293,6 +321,37 @@ class UserSignatureController extends Controller
 
             return null;
         }
+    }
+
+    protected function persistUploaded(User $user, $file, $type)
+    {
+        if (! $file || ! $file->isValid()) {
+            return null;
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        if ($ext === 'jpeg') {
+            $ext = 'jpg';
+        }
+        if (! in_array($ext, ['jpg', 'png', 'webp'], true)) {
+            $ext = 'jpg';
+        }
+
+        $dir = LetterSignature::ensureWritableDir([
+            public_path('images/user'),
+            storage_path('app/public/images/user'),
+        ]);
+        if (! $dir) {
+            return null;
+        }
+
+        $accountFile = $type.'_'.$user->id.'_'.date('YmdHis').'_'.Str::random(4).'.'.$ext;
+        $file->move($dir, $accountFile);
+        $this->deleteUserImageFile($user->{$type});
+        $user->{$type} = $accountFile;
+        $user->save();
+
+        return $accountFile;
     }
 
     protected function deleteUserImage(User $user, $type)

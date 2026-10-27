@@ -143,10 +143,21 @@
                                         <strong>Send a sign link on WhatsApp</strong>
                                         <p class="small text-muted mb-2">{{ $lims_user_data->phone ?: $lims_user_data->additional_phone }} receives a link and can sign in the browser. Choose the signer, the approver, the comment, or all of them.</p>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="sign">Send for signature</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="selfie">Request for Selfie</button>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="approve">Send for approver</button>
                                         <button type="button" class="btn btn-outline-primary btn-sm btn-request-from-edit" data-type="stemp">Send for comment</button>
                                         <button type="button" class="btn btn-primary btn-sm btn-request-from-edit" data-type="all">Send for all</button>
                                         <div class="sig-request-result mt-2" data-type="edit-mail" style="display:none;"></div>
+                                    </div>
+                                    <div class="form-group" id="selfie">
+                                        <label><strong>Selfie</strong></label>
+                                        @if($lims_user_data->selfie)
+                                            <img src="{{ url('public/images/user', $lims_user_data->selfie) }}" alt="Selfie" style="display:block;width:88px;height:88px;object-fit:cover;border-radius:50%;border:3px solid #d4af37;margin-bottom:8px;">
+                                        @else
+                                            <span class="text-muted d-block mb-2">No selfie yet</span>
+                                        @endif
+                                        <input type="file" class="form-control" name="selfie" accept="image/*" capture="user">
+                                        <p class="text-muted small mb-0">Choose a photo and save the user, or use Request for Selfie so they add it from their phone.</p>
                                     </div>
                                     <div id="sign">
                                         @if($lims_user_data->role_id == 12)
@@ -294,7 +305,7 @@
     });
 
     function sendSignatureRequest(type, skipConfirm) {
-        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
+        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', selfie: 'selfie', all: 'signature, comment, and approver' };
         var target = $('.btn-sig-whatsapp[data-type="'+type+'"]');
         var url = target.length ? target.data('url') : '{{ route('user.signature.request', $lims_user_data->id) }}';
         var phone = '{{ $lims_user_data->phone ?: $lims_user_data->additional_phone }}';
@@ -338,7 +349,7 @@
 
     $(document).on('click', '.btn-request-from-edit', function () {
         var type = $(this).data('type');
-        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
+        var labels = { approve: 'approver', stemp: 'comment', sign: 'signature', selfie: 'selfie', all: 'signature, comment, and approver' };
         if (!confirm('Send a WhatsApp link to {{ $lims_user_data->phone ?: $lims_user_data->additional_phone }} so they can add their ' + (labels[type] || type) + '?')) {
             return;
         }

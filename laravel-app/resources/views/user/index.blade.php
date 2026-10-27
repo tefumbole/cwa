@@ -76,6 +76,20 @@
                                 <li>
                                     <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
                                        data-url="{{ route('user.signature.request', $user->id) }}"
+                                       data-type="selfie"
+                                       data-name="{{ $user->name }}"
+                                       data-phone="{{ $user->phone ?: $user->additional_phone }}">
+                                        <i class="dripicons-camera"></i> Request for Selfie
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('user.edit', $user->id) }}#selfie" class="btn btn-link">
+                                        <i class="dripicons-photo"></i> Add a selfie
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" class="btn btn-link btn-request-sig"
+                                       data-url="{{ route('user.signature.request', $user->id) }}"
                                        data-type="approve"
                                        data-name="{{ $user->name }}"
                                        data-phone="{{ $user->phone ?: $user->additional_phone }}">
@@ -253,7 +267,7 @@
         }
     });
 
-    var requestLabels = { approve: 'approver', stemp: 'comment', sign: 'signature', all: 'signature, comment, and approver' };
+    var requestLabels = { approve: 'approver', stemp: 'comment', sign: 'signature', selfie: 'selfie', all: 'signature, comment, and approver' };
     $(document).on('click', '.btn-request-sig', function (e) {
         e.preventDefault();
         e.stopPropagation();
