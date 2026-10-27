@@ -375,7 +375,7 @@ return [
         'next_bylaws' => 'Continue to the Bylaws',
         'must_agree' => 'You must read and agree the statutes and bylaws before registering.',
         'phone' => 'Phone number',
-        'phone_hint' => 'Select your country and enter the number. Cameroon numbers are looked up automatically.',
+        'phone_hint' => 'Choose the country of the number, then enter it. WhatsApp is sent to that number, whichever country it is.',
         'checking' => 'Checking number…',
         'name' => 'Full name',
         'name_hint' => 'Edit the name if the lookup is wrong.',

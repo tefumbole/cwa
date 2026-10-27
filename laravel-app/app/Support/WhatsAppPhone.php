@@ -92,6 +92,29 @@ class WhatsAppPhone
         return '+'.self::normalize($number);
     }
 
+    /**
+     * Full international digits from a dial code plus what the person typed.
+     * A number that already includes its own country code is kept as-is.
+     * The person's country does not replace a number that is already complete.
+     */
+    public static function international($dialCode, $localNumber)
+    {
+        $digits = preg_replace('/\D/', '', (string) $localNumber);
+        if ($digits !== '' && $digits[0] === '0') {
+            $digits = ltrim($digits, '0');
+        }
+        if ($digits !== '' && self::looksInternational($digits)) {
+            return self::normalize($digits);
+        }
+
+        $dial = preg_replace('/\D/', '', (string) $dialCode);
+        if ($dial === '') {
+            $dial = self::countryCode();
+        }
+
+        return self::normalize($dial.$digits);
+    }
+
     /** UI display: +237681239720 */
     public static function display($number)
     {

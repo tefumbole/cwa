@@ -118,14 +118,19 @@ class MembershipAdmissionService
 
     protected function ensureCustomer(CwaMember $member)
     {
+        $phone = trim((string) ($member->whatsapp_phone ?: $member->phone));
         if ($member->customer_id) {
             $existing = Customer::find($member->customer_id);
             if ($existing) {
+                if ($phone !== '' && $existing->phone_number !== $phone) {
+                    $existing->phone_number = $phone;
+                    $existing->save();
+                }
+
                 return $existing;
             }
         }
 
-        $phone = $member->phone;
         $customer = Customer::where('phone_number', $phone)->first();
         if ($customer) {
             $customer->name = $member->name;

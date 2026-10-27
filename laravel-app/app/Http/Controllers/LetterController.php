@@ -1103,6 +1103,7 @@ class LetterController extends Controller
     }
 
     public function sendPDF($letter, $lims_customer_data, $to) {
+        $lims_customer_data = $this->preferWhatsAppNumber($lims_customer_data);
         $lims_customer_data = \App\Support\LetterPlaceholders::enrich($lims_customer_data);
 
         // Clone and render placeholders for PDF content
@@ -1183,6 +1184,36 @@ class LetterController extends Controller
 
         }
         return $message;
+    }
+
+    protected function preferWhatsAppNumber($recipient)
+    {
+        if (! is_object($recipient)) {
+            return $recipient;
+        }
+
+        $whatsapp = trim((string) ($recipient->whatsapp_phone ?? $recipient->whatsapp_number ?? ''));
+        if ($whatsapp === '' && ! empty($recipient->id)) {
+            $member = \App\CwaMember::where('customer_id', $recipient->id)->orderByDesc('id')->first();
+            if ($member) {
+                $whatsapp = trim((string) ($member->whatsapp_phone ?: ''));
+            }
+        }
+        if ($whatsapp === '') {
+            return $recipient;
+        }
+
+        try {
+            $normalized = \App\Support\WhatsAppPhone::normalize($whatsapp);
+        } catch (\InvalidArgumentException $e) {
+            return $recipient;
+        }
+
+        $copy = clone $recipient;
+        $copy->phone_number = $normalized;
+        $copy->phone = $normalized;
+
+        return $copy;
     }
 
     protected function letterWhatsAppFailure($letter, \Throwable $e)
@@ -1414,6 +1445,7 @@ class LetterController extends Controller
      */
     public function sendPDFToCC($letter, $ccRecipient, $originalTo = null)
     {
+        $ccRecipient = $this->preferWhatsAppNumber($ccRecipient);
         $original = $this->resolveLetterOriginalRecipient($letter, $originalTo);
         if (! $original) {
             $original = (object) ['name' => ''];

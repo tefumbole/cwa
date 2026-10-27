@@ -646,10 +646,16 @@ function membershipWizard() {
             return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         },
         normalizePhone: function () {
-            this.phone = String(this.phone || '').replace(/\D/g, '');
-            if (this.countryCode === '+237') {
-                this.phone = this.phone.replace(/^237/, '').replace(/^0/, '').slice(0, 9);
+            var digits = String(this.phone || '').replace(/\D/g, '');
+            if (digits.charAt(0) === '0') {
+                digits = digits.replace(/^0+/, '');
             }
+            var cameroonLocal = this.countryCode === '+237'
+                && (digits.charAt(0) === '6' || digits.indexOf('2376') === 0 || digits.indexOf('23706') === 0);
+            if (cameroonLocal) {
+                digits = digits.replace(/^237/, '').replace(/^0/, '').slice(0, 9);
+            }
+            this.phone = digits;
         },
         scheduleLookup: function () {
             var self = this;

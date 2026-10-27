@@ -375,7 +375,7 @@ return [
         'next_bylaws' => 'Continuer vers le règlement intérieur',
         'must_agree' => 'Vous devez lire et accepter les statuts et le règlement intérieur avant de vous inscrire.',
         'phone' => 'Numéro de téléphone',
-        'phone_hint' => 'Choisissez le pays et entrez le numéro. Les numéros camerounais sont recherchés automatiquement.',
+        'phone_hint' => 'Choisissez le pays du numéro, puis saisissez-le. WhatsApp est envoyé à ce numéro, quel que soit le pays.',
         'checking' => 'Vérification du numéro…',
         'name' => 'Nom complet',
         'name_hint' => 'Corrigez le nom si la recherche est inexacte.',

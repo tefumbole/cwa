@@ -236,24 +236,24 @@ class MembershipController extends Controller
             return back()->withInput()->withErrors(['diocese' => __('cwa.join.diocese_invalid')]);
         }
 
-        $campay = app(CampayService::class);
         $cc = preg_replace('/\D/', '', (string) ($data['country_code'] ?? '237')) ?: '237';
-        $phone = $campay->normalizePhone($cc === '237' ? $data['phone'] : ($cc.$data['phone']));
-        if ($cc === '237') {
-            $local = CameroonMomoNetwork::localDigits($phone);
-            if (strlen($local) !== 9 || $local[0] !== '6') {
-                return back()->withInput()->withErrors(['phone' => __('cwa.donate.invalid_cm_phone')]);
-            }
-        }
-        if ($cc !== '237' && strlen(preg_replace('/\D/', '', $phone)) < 8) {
+        try {
+            $phone = \App\Support\WhatsAppPhone::international($cc, $data['phone']);
+        } catch (\InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['phone' => __('cwa.donate.invalid_phone')]);
         }
 
         $waCc = preg_replace('/\D/', '', (string) ($data['whatsapp_country'] ?? $cc)) ?: $cc;
         $waRaw = trim((string) ($data['whatsapp_phone'] ?? ''));
-        $whatsapp = $waRaw !== ''
-            ? $campay->normalizePhone($waCc === '237' ? $waRaw : ($waCc.$waRaw))
-            : $phone;
+        if ($waRaw === '') {
+            $whatsapp = $phone;
+        } else {
+            try {
+                $whatsapp = \App\Support\WhatsAppPhone::international($waCc, $waRaw);
+            } catch (\InvalidArgumentException $e) {
+                return back()->withInput()->withErrors(['whatsapp_phone' => __('cwa.donate.invalid_phone')]);
+            }
+        }
 
         $dup = CwaMember::where('phone', $phone)
             ->whereIn('status', [CwaMember::STATUS_AWAITING, CwaMember::STATUS_APPROVED])
